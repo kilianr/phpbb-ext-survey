@@ -1,0 +1,33 @@
+{
+	"name": "kilianr/survey",
+	"type": "phpbb-extension",
+	"description": "This Extension adds the possibility of permofming surveys with multiple people to your topics.",
+	"homepage": "https://github.com/kilianr/phpbb-ext-survey/",
+	"version": "1.0.0-b1",
+	"time": "2015-08-26",
+	"license": "AGPL-3.0",
+	"authors": [
+		{
+			"name": "Kilian Röhner",
+			"email": "kilian@mirdan.de",
+			"role": "Lead Developer"
+		}
+	],
+	"require": {
+		"php": ">=5.3.3"
+	},
+	"require-dev": {
+		"phpbb/epv": "dev-master"
+	},
+	"extra": {
+		"display-name": "Survey",
+		"soft-require": {
+			"phpbb/phpbb": ">=3.1.5,<3.2.*@dev"
+		},
+		"version-check": {
+			"host": "phpbb.mirdan.de",
+			"directory": "/extensions",
+			"filename": "phpbb-ext-survey.json"
+		}
+	}
+}
