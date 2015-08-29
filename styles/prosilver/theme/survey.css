@@ -1,0 +1,61 @@
+#survey-intro, #survey-error-box, #survey-table, #survey-add-date, #survey-add-users, #survey-submit {
+	margin: 1em;
+}
+
+#survey-error-box {
+	color: red;
+	font-size: 12px;
+}
+
+#survey-add-date, #survey-add-users {
+	float: left;
+	padding: 1em;
+}
+
+fieldset input.submit {
+	display: block;
+	float: right;
+}
+
+table.survey, table.survey th, table.survey td {
+	border-collapse:collapse;
+}
+
+table.survey th, table.survey td {
+	border: 1px solid black;
+}
+table.survey td.spacerow {
+	height: 10px;
+	border-left: none;
+	border-right: none;
+	border-bottom: 3px double black;
+}
+
+#survey-table table th {
+	color: inherit;
+}
+
+div.summary {
+	float: left;
+	color: black;
+}
+div.set-bg, td.set-bg, select.set-bg, option.set-bg {
+	background: #FEFEFE;
+}
+div.unset-bg, td.unset-bg, select.unset-bg, option.unset-bg {
+	background: #ABABAB;
+}
+
+@media all and (max-width: 700px), all and (max-device-width: 700px) {
+	.survey_hidemobile {
+		display:none;
+	}
+	tr td:first-child dfn {
+		display:none !important;
+	}
+	.summary-box {
+		width:60%;
+		min-width:150px;
+		float:right;
+	}
+}

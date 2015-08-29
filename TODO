@@ -1,0 +1,34 @@
+= Features =
+* Edit Questions
+* Sums
+* Choices
+* Question-Types
+* Cap
+* Sort-Order
+* Owner-Edit other users
+* Owner-Add other users
+* Owner-Del other users
+* Display Start-Time and Stop-Time
+* Hide results
+* Redirect after Confirm-Box
+* Special chars
+* Implement Disable-button
+* Stop-Time input as humal readable date
+* Delete all entries if last question has been deleted
+* Class for Constants?
+
+= Security =
+* SQL Injections
+* XSS Injections
+* HTMLSpecialchars
+
+= Style =
+* fill <td title=""> in Sum-Row
+* Hide button
+* Do Settings Input right
+* No Tabs, if no owner
+* Mobile?
+
+= QA =
+* Write tests
+* Documentation

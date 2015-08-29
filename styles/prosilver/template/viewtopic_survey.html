@@ -1,0 +1,250 @@
+<div style="clear:both"></div>
+<!-- <style type="text/css">
+#survey-table, #survey-tabs-boundary{
+	display: none;
+}
+</style> -->
+<script>
+function toggle_survey_table() {
+	if(document.getElementById('survey-table').style.display == 'block') {
+		var link_text = '{L_SURVEY_SHOW}';
+		var set_display = 'none';
+	}
+	else {
+		var link_text = '{L_SURVEY_HIDE}';
+		var set_display = 'block';
+	}
+	document.getElementById('show-survey-link').innerHTML = link_text;
+	
+	document.getElementById('survey-table').style.display = set_display;
+	if(document.getElementById('survey-tabs-boundary')) document.getElementById('survey-tabs-boundary').style.display = set_display;
+}
+</script>
+
+
+<div id="survey-tabs-boundary">
+<div id="tabs" class="sub-panels" role="tablist" data-show-panel="survey-overview-panel">
+	<ul>
+		<li id="survey-overview-panel-tab" class="tab activetab"><a href="#tabs" aria-controls="survey-overview-panel" role="tab" data-subpanel="survey-overview-panel"><span>{L_SURVEY_OVERVIEW}</span></a></li>
+		<!-- IF S_IS_SURVEY_OWNER -->
+		<li id="settings-tab" class="tab"><a href="#tabs" aria-controls="settings-panel" role="tab" data-subpanel="settings-panel"><span>{L_SURVEY_SETTINGS}</span></a></li>
+		<li id="add-question-panel-tab" class="tab"><a href="#tabs" aria-controls="add-questions-panel" role="tab" data-subpanel="add-questions-panel"><span>{L_SURVEY_ADD_QUESTIONS}</span></a></li>
+		<!-- ENDIF -->
+	</ul>
+</div>
+
+<div class="panel bg3" id="survey-overview-panel">
+<div class="inner"><span class="corners-top"><span></span></span>
+<h2>{S_SURVEY_CAPTION}</h2>
+<!-- IF S_IS_SURVEY_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_SHOW}</a>
+<p class="author">{L_SURVEY_DESC}</p>
+
+<!-- IF SURVEY_ERRORS -->
+<div id="survey-error-box">
+	{SURVEY_ERRORS}
+</div>
+<!-- ENDIF -->
+
+<!-- IF S_HAS_QUESTIONS or S_HAS_ENTRIES -->
+<form method="post" action="{S_SURVEY_ACTION}" id="surveyform">
+<div id="survey-table">
+	<div id="survey-table-scrollwrapper">
+	<table class="table1" cellspacing="0" cellpadding="4">
+		<thead>
+			<tr>
+				<th>&nbsp;</th>
+				<!-- BEGIN questions -->
+				<th style="white-space: nowrap" title="{questions.LABEL}">{questions.LABEL}<!-- IF S_IS_SURVEY_OWNER --> <a href="{questions.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_QUESTION}"></a><!-- ENDIF --></th>
+				<!-- END questions -->
+			</tr>
+		</thead>
+		<tbody>
+			<!-- BEGIN entries -->
+			<tr <!-- IF !entries.IS_SELF -->class="survey_hidemobile"<!-- ENDIF -->>
+				<td>{entries.USERNAME_FULL}<!-- IF not entries.IS_NEW and ( S_IS_SURVEY_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) --> <a href="{entries.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a><!-- ENDIF --></td>
+				<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) -->
+					<!-- DEFINE $USER_IS_IN_LIST = 1 -->
+					<!-- BEGIN questions -->
+					<td class="<!-- IF entries.questions.IS_SET -->set-bg<!-- ELSE -->unset-bg<!-- ENDIF -->" style="color: black;">
+						<input name="{entries.questions.S_INPUT_NAME}" type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> class="<!-- IF entries.questions.IS_SET -->set-bg<!-- ELSE -->unset-bg<!-- ENDIF -->" />
+					</td>
+					<!-- END questions -->
+				<!-- ELSEIF not entries.IS_NEW -->
+					<!-- BEGIN questions -->
+						<td class="<!-- IF entries.questions.IS_SET -->set-bg<!-- ELSE -->unset-bg<!-- ENDIF -->" style="color: black;">
+							{entries.questions.VALUE}
+						</td>
+					<!-- END questions -->
+				<!-- ENDIF -->
+			</tr>
+			<!-- END entries -->
+			
+			
+			<tr style="border-bottom: 3px double black;">
+				<td class="spacerow"></td>
+				
+				<!-- BEGIN questions -->
+				<td class="spacerow"></td>
+				<!-- END questions -->
+			</tr>
+			
+			<tr>
+				<td>{L_SURVEY_SUM}{L_COLON}</td>
+				<!-- BEGIN questions -->
+					<td>
+					<div class="summary-box">
+						<div class="summary" >{questions.SUM_VALUE}</div>
+					</div>
+					</td>
+				<!-- END questions -->
+			</tr>
+		</tbody>
+	</table>
+	</div><!--scrollwrapper ende-->
+	<!-- IF S_CAN_MODIFY_OWN_ENTRY or S_CAN_ADD_ENTRY -->
+	{S_FORM_TOKEN}
+	<input type="hidden" name="entries_to_modify" value="{S_SURVEY_MODIFYABLE_ENTRIES}" />
+	<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="own_entry_modification" />
+	<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
+	<!-- ENDIF -->
+</div>
+</form>
+<!-- ENDIF -->
+	<span class="corners-bottom"><span></span></span></div>
+</div>
+
+
+<!-- IF S_IS_SURVEY_OWNER -->
+<div class="panel bg3" id="settings-panel">
+	<div class="inner"><span class="corners-top"><span></span></span>
+
+	<p>{SURVEY_SETTINGS_EXPLAIN}</p>
+	
+	<fieldset class="fields1">
+		<form method="post" action="{S_SURVEY_ACTION}">
+			<fieldset>
+				{S_FORM_TOKEN}
+				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="config_change" />
+				<dl>
+					<dt><label>{L_SURVEY_CAPTION}{L_COLON}</label></dt>
+					<dd><input type="text" name="survey_setting_caption" value="{S_SURVEY_CAPTION}" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_SHOW_ORDER}{L_COLON}</label></dt>
+					<dd><input type="text" name="survey_setting_show_order" value="{S_SURVEY_SHOW_ORDER}" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_ALLOW_CHANGE_ANSWER}{L_COLON}</label></dt>
+					<dd><input type="text" name="survey_setting_allow_change_answer" value="{S_SURVEY_ALLOW_CHANGE_ANSWER}" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_ALLOW_MULTIPLE_ANSWER}{L_COLON}</label></dt>
+					<dd><input type="text" name="survey_setting_allow_multiple_answer" value="{S_SURVEY_ALLOW_MULTIPLE_ANSWER}" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_HIDE_RESULTS}{L_COLON}</label></dt>
+					<dd><input type="text" name="survey_setting_hide_results" value="{S_SURVEY_HIDE_RESULTS}" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_STOP_TIME}{L_COLON}</label></dt>
+					<dd><input type="text" name="survey_setting_stop_time" value="{S_SURVEY_STOP_TIME}" /></dd>
+				</dl>
+		
+				<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
+			</fieldset>
+		</form>
+	</fieldset>
+
+	<hr class="dashed"/>
+
+	<p>{L_SURVEY_DELETE_EXPLAIN}</p>
+	
+	<fieldset class="fields1">
+		<p>{L_SURVEY_DELETE_WHOLE}{L_COLON}</p>
+	
+		<form method="post" action="{S_SURVEY_ACTION}">
+			<fieldset>
+				{S_FORM_TOKEN}
+				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="disable">
+				<dl>
+					<dt><label>{L_SURVEY_DISABLE}{L_COLON}</label></dt>
+					<dd>
+						<input class="button1" type="submit" name="post" value="{L_SURVEY_RUN}" /><br />
+						{L_SURVEY_DISABLE_EXPLAIN}
+					</dd>
+				</dl>
+			</fieldset>
+		</form>
+				
+		<form method="post" action="{S_SURVEY_ACTION}">
+			<fieldset>
+				{S_FORM_TOKEN}
+				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="delete">
+				<dl>
+					<dt><label>{L_SURVEY_DELETE_ALL}{L_COLON}</label></dt>
+					<dd>
+						<input class="button1" type="submit" name="post" value="{L_SURVEY_RUN}" /><br />
+						{L_SURVEY_DELETE_ALL_EXPLAIN}
+					</dd>
+				</dl>
+			</fieldset>
+		</form>
+	</fieldset>
+
+	<span class="corners-bottom"><span></span></span></div>
+</div>
+
+<div class="panel bg3" id="add-questions-panel">
+	<div class="inner"><span class="corners-top"><span></span></span>
+
+	<p>{L_SURVEY_ADD_QUESTIONS_EXPLAIN}</p>
+	
+	<fieldset class="fields2">
+
+		<form method="post" action="{S_SURVEY_ACTION}" id="survey_date">
+			<fieldset>
+				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="question_addition">
+				{S_FORM_TOKEN}
+				<dl>
+					<dt><label>{L_SURVEY_LABEL}{L_COLON}</label></dt>
+					<dd><input type="text" name="question_label" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_TYPE}{L_COLON}</label></dt>
+					<dd><input type="text" name="question_type" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_SUM_TYPE}{L_COLON}</label></dt>
+					<dd><input type="text" name="question_sum_type" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_SUM_BY}{L_COLON}</label></dt>
+					<dd><input type="text" name="question_sum_by" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_CAP}{L_COLON}</label></dt>
+					<dd><input type="text" name="question_cap" /></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_CHOICES}{L_COLON}</label></dt>
+					<dd><input type="text" name="question_choices" /></dd>
+				</dl>
+
+				<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
+			</fieldset>
+		</form>
+	</fieldset>
+
+	<span class="corners-bottom"><span></span></span></div>
+</div>
+<!-- ENDIF -->
+
+</div>
+
+<script type="text/javascript">
+<!--
+	subPanels(show_panel);
+-->
+</script>
+
+<hr/>

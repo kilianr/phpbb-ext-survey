@@ -1,0 +1,16 @@
+<!-- IF S_SURVEY_ALLOWED -->
+	<dl>
+		<dt><label for="survey_enabled">{L_SURVEY_ADD}{L_COLON}</label></dt>
+		<dd>
+			<!-- IF S_TOPIC_HAS_SURVEY -->
+			<input type="hidden" name="survey_enabled" value="true"/>
+			{L_SURVEY_VIEWTOPIC_EXPLAIN}
+			<!-- ELSEIF S_TOPIC_HAS_INACTIVE_SURVEY -->
+			<label for="survey_enabled"><input type="checkbox" id="survey_enabled" name="survey_enabled"{S_SURVEY_CHECKED} />{L_SURVEY_ADD_REACTIVATE}</label><br/>
+			{L_SURVEY_ADD_REACTIVATE_EXPLAIN}
+			<!-- ELSE -->
+			<label for="survey_enabled"><input type="checkbox" id="survey_enabled" name="survey_enabled"{S_SURVEY_CHECKED} />{L_SURVEY_ADD_DESC}</label>
+			<!-- ENDIF -->
+		</dd>
+	</dl>
+<!-- ENDIF -->

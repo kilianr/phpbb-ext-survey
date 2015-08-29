@@ -1,0 +1,50 @@
+imports:
+    - { resource: parameters.yml }
+
+services:
+    kilianr.survey.functions.survey:
+        class: kilianr\survey\functions\survey
+        arguments:
+            - @dbal.conn
+            - @config
+            - @user
+            - @auth
+            - %tables.kilianr.survey.surveys%
+            - %tables.kilianr.survey.questions%
+            - %tables.kilianr.survey.question_choices%
+            - %tables.kilianr.survey.entries%
+            - %tables.kilianr.survey.answers%
+    kilianr.survey.events.posting:
+        class: kilianr\survey\event\posting
+        arguments:
+            - @kilianr.survey.functions.survey
+            - @template
+            - @user
+            - @auth
+            - @request
+        tags:
+            - { name: event.listener }
+    kilianr.survey.events.viewtopic:
+        class: kilianr\survey\event\viewtopic
+        arguments:
+            - @kilianr.survey.functions.survey
+            - @template
+            - @dbal.conn
+            - @user
+            - @auth
+            - @request
+            - %core.root_path%
+            - %core.php_ext%
+            - %kilianr.survey.path%
+        tags:
+            - { name: event.listener }
+    kilianr.survey.events.mcp_events:
+        class: kilianr\survey\event\mcp_events
+        arguments:
+            - @kilianr.survey.functions.survey
+        tags:
+            - { name: event.listener }
+    kilianr.survey.events.acp_events:
+        class: kilianr\survey\event\acp_events
+        tags:
+            - { name: event.listener }
