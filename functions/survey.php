@@ -92,7 +92,7 @@ class survey
 		// load survey settings
 		$sql = 'SELECT ';
 		$first = key($this->settings);
-		foreach($this->settings as $setting => $entry)
+		foreach ($this->settings as $setting => $entry)
 		{
 			if ($setting !== $first)
 			{
@@ -112,7 +112,7 @@ class survey
 		{
 			$this->settings[$setting] = $row[$setting];
 		}
-		
+
 		// load questions for this survey
 		$sql = 'SELECT q_id, label, type, sum_value, sum_type, sum_by, cap
 				FROM ' . $this->tables['questions'] . '
@@ -178,7 +178,7 @@ class survey
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Checks if the user can participate in the survey
 	 *
@@ -469,7 +469,7 @@ class survey
 		{
 			//TODO: Choices, Type checks
 			//TODO: Sums
-			if(isset($this->survey_entries[$entry_id]['answers'][$question_id]))
+			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
 			{
 				$sql = 'UPDATE ' . $this->tables['answers'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('answer' => $answer)) . ' WHERE q_id=' . $question_id . ' AND entry_id=' . $entry_id;
 				$this->db->sql_query($sql);
@@ -503,7 +503,7 @@ class survey
 		$this->db->sql_query($sql);
 		$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
 	}
-	
+
 	/**
 	 * Initialize the survey
 	 *
@@ -590,13 +590,13 @@ class survey
 	 */
 	public function is_closed()
 	{
-		if($this->settings['stop_time'] !== null && time() >= $this->settings['stop_time'])
+		if ($this->settings['stop_time'] !== null && time() >= $this->settings['stop_time'])
 		{
 			return true;
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Efficiently delete one or multiple surveys directly in DB.
 	 *
@@ -609,7 +609,7 @@ class survey
 		{
 			$topic_ids = array($topic_ids);
 		}
-		
+
 		foreach ($topic_ids as $tid)
 		{
 			$sql = 'SELECT s_id FROM ' . $this->tables['surveys'] . ' WHERE topic_id=' . $tid;

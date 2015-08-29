@@ -13,7 +13,6 @@ namespace kilianr\survey\event;
  * @ignore
  */
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use kilianr\survey\functions\survey;
 
 class viewtopic implements EventSubscriberInterface
 {
@@ -54,7 +53,7 @@ class viewtopic implements EventSubscriberInterface
 
 	/** @var string */
 	protected $survey_path;
-	
+
 	/** @var string */
 	protected $action_name;
 
@@ -156,7 +155,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_IS_CLOSED'			=> $this->survey->is_closed(),
 			'U_CHANGE_OPEN'			=> $action_url . ($this->survey->is_closed() ? 'reopen' : 'close'),
 		);
-		foreach($this->survey->settings as $key => $value)
+		foreach ($this->survey->settings as $key => $value)
 		{
 			$template_vars['S_SURVEY_' . strtoupper($key)] = $value;
 		}
@@ -166,7 +165,7 @@ class viewtopic implements EventSubscriberInterface
 		foreach ($this->survey->survey_questions as $question_id => $question)
 		{
 			$template_vars = array();
-			foreach($question as $key => $value)
+			foreach ($question as $key => $value)
 			{
 				if ($key != 'choices')
 				{
@@ -175,10 +174,10 @@ class viewtopic implements EventSubscriberInterface
 			}
 			$template_vars['DELETE_LINK'] =  $action_url . 'question_deletion&amp;question_to_delete=' . $question_id;
 			$this->template->assign_block_vars('questions', $template_vars);
-			foreach($question['choices'] as $choice)
+			foreach ($question['choices'] as $choice)
 			{
 				$template_vars = array();
-				foreach($choice as $key => $value)
+				foreach ($choice as $key => $value)
 				{
 					$template_vars[strtoupper($key)] = $value;
 				}
@@ -188,7 +187,7 @@ class viewtopic implements EventSubscriberInterface
 
 		// Fetch User details
 		$user_details = array();
-		foreach($this->survey->survey_entries as $entry)
+		foreach ($this->survey->survey_entries as $entry)
 		{
 			$user_details[$entry['user_id']] = true;
 		}
@@ -207,7 +206,8 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$template_vars = array();
 			$last = false;
-			if ($entry == "new_entry") {
+			if ($entry == "new_entry")
+			{
 				$last = true;
 				$entry = array(
 					'entry_id'	=> -1,
@@ -307,14 +307,14 @@ class viewtopic implements EventSubscriberInterface
 			{
 				$right_type = "integer";
 			}
-			elseif ($new_setting == 'stop_time' && $right_type != "NULL" && ($new_value == '' || gettype($new_value) == "NULL"))
+			else if ($new_setting == 'stop_time' && $right_type != "NULL" && ($new_value == '' || gettype($new_value) == "NULL"))
 			{
 				$right_type = "NULL";
 				$new_settings[$new_setting] = null;
 			}
 			if ($right_type != gettype($new_value))
 			{
-				if(!settype($new_settings[$new_setting], $right_type))
+				if (!settype($new_settings[$new_setting], $right_type))
 				{
 					return array($this->user->lang('FORM_INVALID'));
 				}
@@ -423,7 +423,7 @@ class viewtopic implements EventSubscriberInterface
 		$entry_ids = array_unique(explode(",", $this->request->variable('entries_to_modify', '')));
 		$user_id = $this->user->data['user_id'];
 		$errors = array();
-		foreach($entry_ids as $entry_id)
+		foreach ($entry_ids as $entry_id)
 		{
 			$entry_id = (int) $entry_id;
 			if ($entry_id == -1 && !$this->survey->can_add_new_entry($user_id))
@@ -431,11 +431,11 @@ class viewtopic implements EventSubscriberInterface
 				$errors = array_merge($errors, array($this->user->lang('NO_AUTH_OPERATION')));
 				continue;
 			}
-			elseif ($entry_id > -1 && !$this->survey->entry_exists($entry_id))
+			else if ($entry_id > -1 && !$this->survey->entry_exists($entry_id))
 			{
 				continue;
 			}
-			elseif ($entry_id > -1 && !$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->survey_entries[$entry_id]['user_id']))
+			else if ($entry_id > -1 && !$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->survey_entries[$entry_id]['user_id']))
 			{
 				$errors = array_merge($errors, array($this->user->lang('NO_AUTH_OPERATION')));
 				continue;
@@ -529,7 +529,7 @@ class viewtopic implements EventSubscriberInterface
 			{
 				$question[$key] = $this->request->variable('question_'. $key, '');
 			}
-			if($question[$key] == '')
+			if ($question[$key] == '')
 			{
 				unset($question[$key]);
 			}
@@ -685,7 +685,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('NO_AUTH_OPERATION'));
 		}
-		
+
 		if ($this->survey->is_closed() && !$is_owner)
 		{
 			return array($this->user->lang('SURVEY_IS_CLOSED'));
@@ -709,7 +709,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('SURVEY_IS_CLOSED'));
 		}
-		
+
 		if ($action == "close")
 		{
 			return $this->process_close($event);
