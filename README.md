@@ -31,4 +31,4 @@ master: [![Build Status](https://travis-ci.org/kilianr/phpbb-ext-survey.png?bran
 
 ## License
 
-[AGPLv3](license.txt)
+[AGPLv3](LICENCE)
