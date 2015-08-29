@@ -1,15 +1,10 @@
-#survey-intro, #survey-error-box, #survey-table, #survey-add-date, #survey-add-users, #survey-submit {
+#survey-intro, #survey-error-box, #survey-table, #survey-submit {
 	margin: 1em;
 }
 
 #survey-error-box {
 	color: red;
 	font-size: 12px;
-}
-
-#survey-add-date, #survey-add-users {
-	float: left;
-	padding: 1em;
 }
 
 fieldset input.submit {
