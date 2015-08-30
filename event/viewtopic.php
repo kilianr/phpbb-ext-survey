@@ -295,10 +295,7 @@ class viewtopic implements EventSubscriberInterface
 		$new_settings = array();
 		foreach (array_diff_key($this->survey->settings, array('s_id' => 0, 'topic_id' => 0, 'start_time' => 0)) as $setting => $entry)
 		{
-			if ($this->request->is_set_post('survey_setting_'. $setting))
-			{
-				$new_settings[$setting] = $this->request->variable('survey_setting_'. $setting, '');
-			}
+			$new_settings[$setting] = $this->request->is_set_post('survey_setting_'. $setting) ? $this->request->variable('survey_setting_'. $setting, '') : 0;
 		}
 		foreach ($new_settings as $new_setting => $new_value)
 		{

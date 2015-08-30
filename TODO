@@ -24,10 +24,13 @@
 = Style =
 * fill <td title=""> in Sum-Row
 * Hide button
-* Do Settings Input right
+* Do ordering input right
+* Do new question input right
 * No Tabs, if no owner
 * Mobile?
+* Make forms look nice
 
 = QA =
 * Write tests
 * Documentation
+* Tabs are 4 spaces...

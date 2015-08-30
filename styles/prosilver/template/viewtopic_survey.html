@@ -126,28 +126,28 @@ function toggle_survey_table() {
 				{S_FORM_TOKEN}
 				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="config_change" />
 				<dl>
-					<dt><label>{L_SURVEY_CAPTION}{L_COLON}</label></dt>
-					<dd><input type="text" name="survey_setting_caption" value="{S_SURVEY_CAPTION}" /></dd>
+					<dt><label for="survey_setting_caption">{L_SURVEY_CAPTION}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_caption" type="text" name="survey_setting_caption" value="{S_SURVEY_CAPTION}" /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_SHOW_ORDER}{L_COLON}</label></dt>
-					<dd><input type="text" name="survey_setting_show_order" value="{S_SURVEY_SHOW_ORDER}" /></dd>
+					<dt><label for="survey_setting_show_order">{L_SURVEY_SHOW_ORDER}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_show_order" type="text" name="survey_setting_show_order" value="{S_SURVEY_SHOW_ORDER}" /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_ALLOW_CHANGE_ANSWER}{L_COLON}</label></dt>
-					<dd><input type="text" name="survey_setting_allow_change_answer" value="{S_SURVEY_ALLOW_CHANGE_ANSWER}" /></dd>
+					<dt><label for="survey_setting_allow_change_answer">{L_SURVEY_ALLOW_CHANGE_ANSWER}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_allow_change_answer" type="checkbox" value="1" name="survey_setting_allow_change_answer"<!-- IF S_SURVEY_ALLOW_CHANGE_ANSWER --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_ALLOW_MULTIPLE_ANSWER}{L_COLON}</label></dt>
-					<dd><input type="text" name="survey_setting_allow_multiple_answer" value="{S_SURVEY_ALLOW_MULTIPLE_ANSWER}" /></dd>
+					<dt><label for="survey_setting_allow_multiple_answer">{L_SURVEY_ALLOW_MULTIPLE_ANSWER}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_allow_multiple_answer" type="checkbox" value="1" name="survey_setting_allow_multiple_answer"<!-- IF S_SURVEY_ALLOW_MULTIPLE_ANSWER --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_HIDE_RESULTS}{L_COLON}</label></dt>
-					<dd><input type="text" name="survey_setting_hide_results" value="{S_SURVEY_HIDE_RESULTS}" /></dd>
+					<dt><label for="survey_setting_hide_results">{L_SURVEY_HIDE_RESULTS}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_hide_results" type="checkbox" value="1" name="survey_setting_hide_results"<!-- IF S_SURVEY_HIDE_RESULTS --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_STOP_TIME}{L_COLON}</label></dt>
-					<dd><input type="text" name="survey_setting_stop_time" value="{S_SURVEY_STOP_TIME}" /></dd>
+					<dt><label for="survey_setting_stop_time">{L_SURVEY_STOP_TIME}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_stop_time" type="text" name="survey_setting_stop_time" value="{S_SURVEY_STOP_TIME}" /></dd>
 				</dl>
 		
 				<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
