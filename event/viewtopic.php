@@ -637,6 +637,30 @@ class viewtopic implements EventSubscriberInterface
 	}
 
 	/**
+	 * Process disable
+	 *
+	 * @param \phpbb\event\data $event
+	 * @return array errors
+	 */
+	protected function process_disable($event)
+	{
+		if (confirm_box(true))
+		{
+			$this->survey->disable();
+		}
+		else
+		{
+			$s_hidden_fields = build_hidden_fields(array(
+				't'			=> $event['topic_id'],
+				$this->action_name	=> $this->request->variable($this->action_name, ''),
+			));
+			confirm_box(false, $this->user->lang['SURVEY_DISABLE_CONFIRM'], $s_hidden_fields);
+		}
+
+		return array();
+	}
+
+	/**
 	 * Process delete
 	 *
 	 * @param \phpbb\event\data $event
@@ -681,7 +705,7 @@ class viewtopic implements EventSubscriberInterface
 
 		$is_owner  = $event['topic_data']['topic_poster'] == $this->user->data['user_id'] || $this->auth->acl_get('m_edit', $event['forum_id']);
 
-		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_deletion|other_entry_modification|question_addition|question_deletion|question_modification|delete)$/", $action))
+		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_deletion|other_entry_modification|question_addition|question_deletion|question_modification|delete|disable)$/", $action))
 		{
 			return array($this->user->lang('NO_AUTH_OPERATION'));
 		}
@@ -753,6 +777,11 @@ class viewtopic implements EventSubscriberInterface
 		if ($action == "question_modification")
 		{
 			return $this->process_question_modification($event);
+		}
+
+		if ($action == "disable")
+		{
+			return $this->process_disable($event);
 		}
 
 		if ($action == "delete")
