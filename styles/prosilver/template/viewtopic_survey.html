@@ -38,14 +38,14 @@ function toggle_survey_table() {
 <h2>{S_SURVEY_CAPTION}</h2>
 <!-- IF S_IS_SURVEY_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_SHOW}</a>
 <p class="author">{L_SURVEY_DESC}</p>
-
+<!-- IF S_SURVEY_HIDE_RESULTS and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_USER}</b></p><!-- ELSEIF S_SURVEY_HIDE_RESULTS --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_OWNER}</b></p><!-- ENDIF -->
 <!-- IF SURVEY_ERRORS -->
 <div id="survey-error-box">
 	{SURVEY_ERRORS}
 </div>
 <!-- ENDIF -->
 
-<!-- IF S_HAS_QUESTIONS or S_HAS_ENTRIES -->
+<!-- IF S_HAS_QUESTIONS and S_SURVEY_CAN_SEE_OR_ADD_ENTRIES -->
 <form method="post" action="{S_SURVEY_ACTION}" id="surveyform">
 <div id="survey-table">
 	<div id="survey-table-scrollwrapper">
@@ -78,7 +78,7 @@ function toggle_survey_table() {
 				<!-- ENDIF -->
 			</tr>
 			<!-- END entries -->
-			
+			<!-- IF S_IS_SURVEY_OWNER or not S_SURVEY_HIDE_RESULTS -->
 			
 			<tr style="border-bottom: 3px double black;">
 				<td class="spacerow"></td>
@@ -98,6 +98,7 @@ function toggle_survey_table() {
 					</td>
 				<!-- END questions -->
 			</tr>
+			<!-- ENDIF -->
 		</tbody>
 	</table>
 	</div><!--scrollwrapper ende-->

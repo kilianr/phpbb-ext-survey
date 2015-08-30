@@ -121,7 +121,7 @@ class viewtopic implements EventSubscriberInterface
 		// Some frequently used data:
 		$forum_id = $event['forum_id'];
 		$user_id = $this->user->data['user_id'];
-		$is_owner  = $event['topic_data']['topic_poster'] == $user_id || $this->auth->acl_get('m_edit', $event['forum_id']);
+		$is_owner  = $event['topic_data']['topic_poster'] == $user_id || $this->auth->acl_gets('f_edit', 'm_edit', $event['forum_id']);
 		$is_member = $this->survey->is_participating($user_id);
 		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t=$topic_id");
 		$action_url = $viewtopic_url . '&amp;' . $this->action_name . '=';
@@ -202,6 +202,7 @@ class viewtopic implements EventSubscriberInterface
 
 		// Output entries
 		$entries_modifyable = '';
+		$can_see_or_add_entries = false;
 		foreach (array_merge($this->survey->survey_entries, $can_add_new_entry ? array("new_entry") : array()) as $entry)
 		{
 			$template_vars = array();
@@ -215,6 +216,11 @@ class viewtopic implements EventSubscriberInterface
 					'answers'	=> array(),
 				);
 			}
+			else if($entry['user_id'] != $user_id && $this->survey->settings['hide_results'] && !$is_owner)
+			{
+				continue;
+			}
+			$can_see_or_add_entries = true;
 			foreach ($entry as $key => $value)
 			{
 				if ($key != 'answers')
@@ -276,7 +282,10 @@ class viewtopic implements EventSubscriberInterface
 				}*/
 			}
 		}
-		$this->template->assign_vars(array('S_SURVEY_MODIFYABLE_ENTRIES' => $entries_modifyable));
+		$this->template->assign_vars(array(
+			'S_SURVEY_MODIFYABLE_ENTRIES'		=> $entries_modifyable,
+			'S_SURVEY_CAN_SEE_OR_ADD_ENTRIES'	=> $can_see_or_add_entries,
+		));
 		add_form_key($this->form_key);
 	}
 
