@@ -125,10 +125,10 @@ class posting implements EventSubscriberInterface
 		$is_inactive = $is_inactive && $this->survey->survey_enabled == false;
 
 		$this->template->assign_vars(array(
-			'S_SURVEY_ALLOWED'			=> true,
+			'S_SURVEY_ALLOWED'				=> true,
 			'S_TOPIC_HAS_SURVEY'			=> $this->survey->survey_enabled,
-			'S_TOPIC_HAS_INACTIVE_SURVEY'		=> $is_inactive,
-			'S_SURVEY_CHECKED'			=> $this->survey->survey_enabled ? "checked='checked'" : '',
+			'S_TOPIC_HAS_INACTIVE_SURVEY'	=> $is_inactive,
+			'S_SURVEY_CHECKED'				=> $this->survey->survey_enabled ? "checked='checked'" : '',
 		));
 	}
 }

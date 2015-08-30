@@ -39,14 +39,14 @@ class survey
 	public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\config\config $config, \phpbb\user $user, \phpbb\auth\auth $auth, $surveys_table, $questions_table, $question_choices_table, $entries_table, $answers_table)
 	{
 		$this->settings = array(
-			's_id'			=> 0,
-			'caption'		=> 0,
-			'show_order'		=> 0,
+			's_id'					=> 0,
+			'caption'				=> 0,
+			'show_order'			=> 0,
 			'allow_change_answer'	=> 0,
 			'allow_multiple_answer'	=> 0,
-			'hide_results'		=> 0,
-			'start_time'		=> 0,
-			'stop_time'		=> null,
+			'hide_results'			=> 0,
+			'start_time'			=> 0,
+			'stop_time'				=> null,
 		);
 
 		$this->survey_questions = array();
@@ -57,11 +57,11 @@ class survey
 		$this->user = $user;
 		$this->auth = $auth;
 		$this->tables = array(
-			'surveys' => $surveys_table,
-			'questions' => $questions_table,
-			'question_choices' => $question_choices_table,
-			'entries' => $entries_table,
-			'answers' => $answers_table,
+			'surveys'			=> $surveys_table,
+			'questions'			=> $questions_table,
+			'question_choices'	=> $question_choices_table,
+			'entries'			=> $entries_table,
+			'answers'			=> $answers_table,
 		);
 	}
 
@@ -344,9 +344,9 @@ class survey
 		foreach ($choices as $choice)
 		{
 			$insert_choice = array(
-				'q_id'		=> $question_id,
-				'text'		=> $choice,
-				'sum'		=> 0,
+				'q_id'	=> $question_id,
+				'text'	=> $choice,
+				'sum'	=> 0,
 			);
 			$sql = 'INSERT INTO ' . $this->tables['question_choices'] . ' ' . $this->db->sql_build_array('INSERT', $insert_choice);
 			$this->db->sql_query($sql);
@@ -401,9 +401,9 @@ class survey
 		foreach ($choices as $choice)
 		{
 			$insert_choice = array(
-				'q_id'		=> $question_id,
-				'text'		=> $choice,
-				'sum'		=> 0,
+				'q_id'	=> $question_id,
+				'text'	=> $choice,
+				'sum'	=> 0,
 			);
 			$sql = 'INSERT INTO ' . $this->tables['question_choices'] . ' ' . $this->db->sql_build_array('INSERT', $insert_choice);
 			$this->db->sql_query($sql);
@@ -513,13 +513,13 @@ class survey
 	{
 		$this->user->add_lang_ext('kilianr/survey', 'survey');
 		$inserts = array(
-			'topic_id'		=> $tid,
-			'caption'		=> $this->user->lang['SURVEY'],
-			'show_order'		=> $this->config['kilianr_survey_default_show_order'],
+			'topic_id'				=> $tid,
+			'caption'				=> $this->user->lang['SURVEY'],
+			'show_order'			=> $this->config['kilianr_survey_default_show_order'],
 			'allow_change_answer'	=> $this->config['kilianr_survey_default_allow_change_answer'],
 			'allow_multiple_answer'	=> $this->config['kilianr_survey_default_allow_multiple_answer'],
-			'hide_results'		=> $this->config['kilianr_survey_default_hide_results'],
-			'start_time'		=> time(),
+			'hide_results'			=> $this->config['kilianr_survey_default_hide_results'],
+			'start_time'			=> time(),
 		);
 		$sql = 'INSERT INTO ' . $this->tables['surveys'] . ' ' . $this->db->sql_build_array('INSERT', $inserts);
 		$this->db->sql_query($sql);

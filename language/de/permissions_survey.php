@@ -18,5 +18,5 @@ if (empty($lang) || !is_array($lang))
 
 // Define categories and permission types
 $lang = array_merge($lang, array(
-	'ACL_F_SURVEY'		=> 'Kann Fragebogen hinzufügen',
+	'ACL_F_SURVEY'	=> 'Kann Fragebogen hinzufügen',
 ));

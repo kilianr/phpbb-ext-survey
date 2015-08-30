@@ -72,17 +72,17 @@ class viewtopic implements EventSubscriberInterface
 	 */
 	function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\auth\auth $auth, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $survey_path)
 	{
-		$this->survey = $survey;
-		$this->template = $template;
-		$this->db = $db;
-		$this->user = $user;
-		$this->auth = $auth;
-		$this->request = $request;
-		$this->phpbb_root_path = $phpbb_root_path;
-		$this->phpEx = $phpEx;
-		$this->survey_path = $survey_path;
-		$this->action_name = 'survey_action';
-		$this->form_key = 'survey_form_key';
+		$this->survey			= $survey;
+		$this->template			= $template;
+		$this->db				= $db;
+		$this->user				= $user;
+		$this->auth				= $auth;
+		$this->request			= $request;
+		$this->phpbb_root_path	= $phpbb_root_path;
+		$this->phpEx			= $phpEx;
+		$this->survey_path		= $survey_path;
+		$this->action_name		= 'survey_action';
+		$this->form_key			= 'survey_form_key';
 	}
 
 	/**
@@ -137,23 +137,23 @@ class viewtopic implements EventSubscriberInterface
 		}
 
 		$template_vars = array(
-			'S_HAS_SURVEY'			=> true,
-			'S_IS_SURVEY_OWNER'		=> $is_owner,
-			'S_IS_SURVEY_MEMBER'		=> $is_member,
-			'S_HAS_QUESTIONS'		=> empty($this->survey->survey_questions) ? false : true,
-			'S_HAS_ENTRIES'			=> empty($this->survey->survey_entries) ? false : true,
+			'S_HAS_SURVEY'					=> true,
+			'S_IS_SURVEY_OWNER'				=> $is_owner,
+			'S_IS_SURVEY_MEMBER'			=> $is_member,
+			'S_HAS_QUESTIONS'				=> empty($this->survey->survey_questions) ? false : true,
+			'S_HAS_ENTRIES'					=> empty($this->survey->survey_entries) ? false : true,
 			'S_HAS_RIGHT_TO_PARTICIPATE'	=> $this->survey->has_right_to_participate($user_id),
-			'S_CAN_ADD_ENTRY'		=> $can_add_new_entry,
-			'S_CAN_MODIFY_OWN_ENTRY'	=> $this->survey->can_modify_entry($user_id),
-			'S_SURVEY_ACTION'		=> $viewtopic_url,
-			'S_SURVEY_ACTION_NAME'		=> $this->action_name,
-			'U_FIND_USERNAME'		=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=ucp&amp;field=usernames'),
-			'UA_FIND_USERNAME'		=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&form=ucp&field=usernames', false),
-			'SURVEY_ERRORS'			=> (count($survey_errors) > 0) ? implode('<br />', $survey_errors) : false,
-			'S_ROOT_PATH'			=> $this->phpbb_root_path,
-			'S_EXT_PATH'			=> $this->survey_path,
-			'S_IS_CLOSED'			=> $this->survey->is_closed(),
-			'U_CHANGE_OPEN'			=> $action_url . ($this->survey->is_closed() ? 'reopen' : 'close'),
+			'S_CAN_ADD_ENTRY'				=> $can_add_new_entry,
+			'S_CAN_MODIFY_OWN_ENTRY'		=> $this->survey->can_modify_entry($user_id),
+			'S_SURVEY_ACTION'				=> $viewtopic_url,
+			'S_SURVEY_ACTION_NAME'			=> $this->action_name,
+			'U_FIND_USERNAME'				=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=ucp&amp;field=usernames'),
+			'UA_FIND_USERNAME'				=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&form=ucp&field=usernames', false),
+			'SURVEY_ERRORS'					=> (count($survey_errors) > 0) ? implode('<br />', $survey_errors) : false,
+			'S_ROOT_PATH'					=> $this->phpbb_root_path,
+			'S_EXT_PATH'					=> $this->survey_path,
+			'S_IS_CLOSED'					=> $this->survey->is_closed(),
+			'U_CHANGE_OPEN'					=> $action_url . ($this->survey->is_closed() ? 'reopen' : 'close'),
 		);
 		foreach ($this->survey->settings as $key => $value)
 		{
@@ -392,7 +392,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'			=> $event['topic_id'],
+				't'					=> $event['topic_id'],
 				'entry_to_delete'	=> $entry_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
@@ -648,7 +648,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'			=> $event['topic_id'],
+				't'					=> $event['topic_id'],
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
 			confirm_box(false, $this->user->lang['SURVEY_DISABLE_CONFIRM'], $s_hidden_fields);
@@ -672,7 +672,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'			=> $event['topic_id'],
+				't'					=> $event['topic_id'],
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
 			confirm_box(false, $this->user->lang['SURVEY_DELETE_ALL_CONFIRM'], $s_hidden_fields);
