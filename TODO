@@ -12,7 +12,6 @@
 * Redirect after Confirm-Box
 * Special chars
 * Stop-Time input as humal readable date
-* Class for Constants?
 
 = Security =
 * SQL Injections
