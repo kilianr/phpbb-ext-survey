@@ -530,17 +530,6 @@ class viewtopic implements EventSubscriberInterface
 	}
 
 	/**
-	 * Process deletion of other entry
-	 *
-	 * @return array errors
-	 */
-	protected function process_other_entry_deletion()
-	{
-		$this->survey->delete_entry();
-		return array();
-	}
-
-	/**
 	 * Process modification of other entry
 	 *
 	 * @return array errors
@@ -750,7 +739,7 @@ class viewtopic implements EventSubscriberInterface
 
 		$is_owner = $this->survey->is_owner($this->user->data['user_id']);
 
-		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_deletion|other_entry_modification|question_addition|question_deletion|question_modification|delete|disable)$/", $action))
+		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_modification|question_addition|question_deletion|question_modification|delete|disable)$/", $action))
 		{
 			return array($this->user->lang('NO_AUTH_OPERATION'));
 		}
@@ -797,11 +786,6 @@ class viewtopic implements EventSubscriberInterface
 		if ($action == "other_entry_addition")
 		{
 			return $this->process_other_entry_addition();
-		}
-
-		if ($action == "other_entry_deletion")
-		{
-			return $this->process_other_entry_deletion();
 		}
 
 		if ($action == "other_entry_modification")
