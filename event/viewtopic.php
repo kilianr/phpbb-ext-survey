@@ -56,6 +56,8 @@ class viewtopic implements EventSubscriberInterface
 	protected $action_name;
 
 	var $topic_id;
+	
+	const NEW_ENTRY_ID = -1;
 
 	/**
 	 * Constructor
@@ -220,7 +222,7 @@ class viewtopic implements EventSubscriberInterface
 			{
 				$last = true;
 				$entry = array(
-					'entry_id'	=> -1,
+					'entry_id'	=> self::NEW_ENTRY_ID,
 					'user_id'	=> $user_id,
 					'answers'	=> array(),
 				);
@@ -238,7 +240,7 @@ class viewtopic implements EventSubscriberInterface
 				}
 				if ($key == 'entry_id')
 				{
-					$template_vars['IS_NEW'] = ($value == -1) ? true : false;
+					$template_vars['IS_NEW'] = ($value == self::NEW_ENTRY_ID) ? true : false;
 					$template_vars['DELETE_LINK'] =  $action_url . 'own_entry_deletion&amp;entry_to_delete=' . $value;
 				}
 			}
@@ -469,16 +471,16 @@ class viewtopic implements EventSubscriberInterface
 		foreach ($entry_ids as $entry_id)
 		{
 			$entry_id = (int) $entry_id;
-			if ($entry_id == -1 && !$this->survey->can_add_new_entry($user_id))
+			if ($entry_id == self::NEW_ENTRY_ID && !$this->survey->can_add_new_entry($user_id))
 			{
 				$errors = array_merge($errors, array($this->user->lang('NO_AUTH_OPERATION')));
 				continue;
 			}
-			else if ($entry_id > -1 && !$this->survey->entry_exists($entry_id))
+			else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->entry_exists($entry_id))
 			{
 				continue;
 			}
-			else if ($entry_id > -1 && !$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->survey_entries[$entry_id]['user_id']))
+			else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->survey_entries[$entry_id]['user_id']))
 			{
 				$errors = array_merge($errors, array($this->user->lang('NO_AUTH_OPERATION')));
 				continue;
@@ -496,15 +498,15 @@ class viewtopic implements EventSubscriberInterface
 					}
 				}
 			}
-			if ($entry_id == -1 && $filled_out)
+			if ($entry_id == self::NEW_ENTRY_ID && $filled_out)
 			{
 				$this->survey->add_entry($user_id, $answers);
 			}
-			else if ($entry_id > -1 && $filled_out)
+			else if ($entry_id != self::NEW_ENTRY_ID && $filled_out)
 			{
 				$this->survey->modify_entry($entry_id, $answers);
 			}
-			else if ($entry_id > -1)
+			else if ($entry_id != self::NEW_ENTRY_ID)
 			{
 				$this->survey->delete_entry($entry_id);
 			}
