@@ -31,6 +31,7 @@ class survey
 
 	var $topic_id;
 	var $forum_id;
+	var $topic_poster;
 	var $survey_enabled = 0;
 	var $settings;
 	var $survey_questions;
@@ -69,14 +70,17 @@ class survey
 	 * Loads all available data on a survey from the database. Returns false if the topic does not exist.
 	 *
 	 * @param int $topic_id
+	 * @param int $forum_id
+	 * @param int $topic_poster
 	 * @return bool success
 	 */
-	public function load_survey($topic_id, $forum_id)
+	public function load_survey($topic_id, $forum_id, $topic_poster)
 	{
 		$db = $this->db;
 
 		$this->topic_id = $topic_id;
 		$this->forum_id = $forum_id;
+		$this->topic_poster = $topic_poster;
 		$this->survey_questions = array();
 		$this->survey_entries = array();
 
@@ -162,6 +166,29 @@ class survey
 	}
 
 	/**
+	 * Checks if the survey can be accessed at all
+	 * Called BEFORE load_survey()!
+	 *
+	 * @param int $forum_id
+	 * @return boolean
+	 */
+	public function can_access($forum_id)
+	{
+		return $this->auth->acl_get('f_survey', $forum_id) || $this->auth->acl_get('m_edit', $forum_id);
+	}
+
+	/**
+	 * Checks if the user is owner of the survey
+	 *
+	 * @param int $user_id
+	 * @return boolean
+	 */
+	public function is_owner($user_id)
+	{
+		return $this->topic_poster == $user_id || $this->auth->acl_gets('f_edit', 'm_edit', $this->forum_id);
+	}
+
+	/**
 	 * Checks if the user is already participating
 	 *
 	 * @param int $user_id
@@ -208,7 +235,7 @@ class survey
 		{
 			return false;
 		}
-		if ($this->auth->acl_gets('f_edit', 'm_edit', $this->forum_id))
+		if ($this->is_owner($real_user_id))
 		{
 			return true;
 		}
@@ -245,7 +272,7 @@ class survey
 		{
 			return false;
 		}
-		if ($this->auth->acl_gets('f_edit', 'm_edit', $this->forum_id))
+		if ($this->is_owner($real_user_id))
 		{
 			return true;
 		}

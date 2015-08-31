@@ -39,9 +39,6 @@ class viewtopic implements EventSubscriberInterface
 	/** @var \phpbb\user */
 	protected $user;
 
-	/** @var \phpbb\auth\auth */
-	protected $auth;
-
 	/** @var \phpbb\request\request_interface */
 	protected $request;
 
@@ -57,6 +54,8 @@ class viewtopic implements EventSubscriberInterface
 	/** @var string */
 	protected $action_name;
 
+	var $topic_id;
+
 	/**
 	 * Constructor
 	 *
@@ -64,19 +63,17 @@ class viewtopic implements EventSubscriberInterface
 	 * @param \phpbb\template\template $template
 	 * @param \phpbb\db\driver\driver_interface $db
 	 * @param \phpbb\user $user
-	 * @param \phpbb\auth\auth $auth
 	 * @param \phpbb\request\request_interface $request
 	 * @param string $phpbb_root_path
 	 * @param string $phpEx
 	 * @param string $survey_path
 	 */
-	function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\auth\auth $auth, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $survey_path)
+	function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $survey_path)
 	{
 		$this->survey			= $survey;
 		$this->template			= $template;
 		$this->db				= $db;
 		$this->user				= $user;
-		$this->auth				= $auth;
 		$this->request			= $request;
 		$this->phpbb_root_path	= $phpbb_root_path;
 		$this->phpEx			= $phpEx;
@@ -92,14 +89,14 @@ class viewtopic implements EventSubscriberInterface
 	 */
 	public function show_survey_viewtopic($event)
 	{
-		// Check auth
-		if (!$this->auth->acl_get('f_survey', $event['forum_id']) && !$this->auth->acl_get('m_edit', $event['forum_id']))
+		$forum_id = $event['forum_id'];
+		if (!$this->survey->can_access($forum_id))
 		{
 			return;
 		}
 
-		$topic_id = $event['topic_id'];
-		if (!$this->survey->load_survey($topic_id, $event['forum_id']))
+		$this->topic_id = $event['topic_id'];
+		if (!$this->survey->load_survey($this->topic_id, $forum_id, $event['topic_data']['topic_poster']))
 		{
 			// No survey for this topic
 			return;
@@ -119,11 +116,10 @@ class viewtopic implements EventSubscriberInterface
 		}
 
 		// Some frequently used data:
-		$forum_id = $event['forum_id'];
 		$user_id = $this->user->data['user_id'];
-		$is_owner  = $event['topic_data']['topic_poster'] == $user_id || $this->auth->acl_gets('f_edit', 'm_edit', $event['forum_id']);
+		$is_owner  = $this->survey->is_owner($user_id);
 		$is_member = $this->survey->is_participating($user_id);
-		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t=$topic_id");
+		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t=" . $this->topic_id);
 		$action_url = $viewtopic_url . '&amp;' . $this->action_name . '=';
 		$can_add_new_entry = $this->survey->can_add_new_entry($user_id);
 
@@ -216,7 +212,7 @@ class viewtopic implements EventSubscriberInterface
 					'answers'	=> array(),
 				);
 			}
-			else if($entry['user_id'] != $user_id && $this->survey->settings['hide_results'] && !$is_owner)
+			else if ($entry['user_id'] != $user_id && $this->survey->settings['hide_results'] && !$is_owner)
 			{
 				continue;
 			}
@@ -292,10 +288,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process config change of survey
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_config_change($event)
+	protected function process_config_change()
 	{
 		if (!check_form_key($this->form_key))
 		{
@@ -333,10 +328,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process close of survey
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_close($event)
+	protected function process_close()
 	{
 		if (confirm_box(true))
 		{
@@ -345,7 +339,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'			=> $event['topic_id'],
+				't'					=> $this->topic_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
 			confirm_box(false, $this->user->lang['SURVEY_CLOSE_CONFIRM'], $s_hidden_fields);
@@ -356,10 +350,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process reopen of survey
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_reopen($event)
+	protected function process_reopen()
 	{
 		if (confirm_box(true))
 		{
@@ -368,7 +361,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'			=> $event['topic_id'],
+				't'					=> $this->topic_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
 			confirm_box(false, $this->user->lang['SURVEY_REOPEN_CONFIRM'], $s_hidden_fields);
@@ -379,10 +372,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process deletion of own entry
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_own_entry_deletion($event)
+	protected function process_own_entry_deletion()
 	{
 		$entry_id = (int) $this->request->variable('entry_to_delete', '');
 		if (!$this->survey->entry_exists($entry_id))
@@ -401,7 +393,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'					=> $event['topic_id'],
+				't'					=> $this->topic_id,
 				'entry_to_delete'	=> $entry_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
@@ -413,10 +405,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process modification of own entry
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_own_entry_modification($event)
+	protected function process_own_entry_modification()
 	{
 		if (!check_form_key($this->form_key))
 		{
@@ -469,10 +460,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process addition of other entry
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_other_entry_addition($event)
+	protected function process_other_entry_addition()
 	{
 		if (!check_form_key($this->form_key))
 		{
@@ -485,10 +475,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process deletion of other entry
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_other_entry_deletion($event)
+	protected function process_other_entry_deletion()
 	{
 		$this->survey->delete_entry();
 		return array();
@@ -497,10 +486,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process modification of other entry
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_other_entry_modification($event)
+	protected function process_other_entry_modification()
 	{
 		if (!check_form_key($this->form_key))
 		{
@@ -513,10 +501,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process addition of question
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_question_addition($event)
+	protected function process_question_addition()
 	{
 		if (!check_form_key($this->form_key))
 		{
@@ -561,10 +548,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process deletion of question
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_question_deletion($event)
+	protected function process_question_deletion()
 	{
 		$question_id = (int) $this->request->variable('question_to_delete', '');
 		if (!$this->survey->question_exists($question_id))
@@ -579,7 +565,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'			=> $event['topic_id'],
+				't'						=> $this->topic_id,
 				'question_to_delete'	=> $question_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
@@ -592,10 +578,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process modification of question
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_question_modification($event)
+	protected function process_question_modification()
 	{
 		if (!check_form_key($this->form_key))
 		{
@@ -645,10 +630,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process disable
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_disable($event)
+	protected function process_disable()
 	{
 		if (confirm_box(true))
 		{
@@ -657,7 +641,7 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'					=> $event['topic_id'],
+				't'					=> $this->topic_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
 			confirm_box(false, $this->user->lang['SURVEY_DISABLE_CONFIRM'], $s_hidden_fields);
@@ -669,19 +653,18 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Process delete
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_delete($event)
+	protected function process_delete()
 	{
 		if (confirm_box(true))
 		{
-			$this->survey->delete($event['topic_id']);
+			$this->survey->delete($this->topic_id);
 		}
 		else
 		{
 			$s_hidden_fields = build_hidden_fields(array(
-				't'					=> $event['topic_id'],
+				't'					=> $this->topic_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
 			confirm_box(false, $this->user->lang['SURVEY_DELETE_ALL_CONFIRM'], $s_hidden_fields);
@@ -693,10 +676,9 @@ class viewtopic implements EventSubscriberInterface
 	/**
 	 * Processes all actions
 	 *
-	 * @param \phpbb\event\data $event
 	 * @return array errors
 	 */
-	protected function process_submit($event)
+	protected function process_submit()
 	{
 		if (!$this->request->is_set($this->action_name))
 		{
@@ -709,7 +691,7 @@ class viewtopic implements EventSubscriberInterface
 			return array($this->user->lang('SURVEY_IS_DISABLED'));
 		}
 
-		$is_owner  = $event['topic_data']['topic_poster'] == $this->user->data['user_id'] || $this->auth->acl_get('m_edit', $event['forum_id']);
+		$is_owner = $this->survey->is_owner($this->user->data['user_id']);
 
 		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_deletion|other_entry_modification|question_addition|question_deletion|question_modification|delete|disable)$/", $action))
 		{
@@ -723,7 +705,7 @@ class viewtopic implements EventSubscriberInterface
 
 		if ($action == "config_change")
 		{
-			return $this->process_config_change($event);
+			return $this->process_config_change();
 		}
 
 		if ($action == "reopen")
@@ -732,7 +714,7 @@ class viewtopic implements EventSubscriberInterface
 			{
 				return array($this->user->lang('SURVEY_IS_NOT_CLOSED'));
 			}
-			return $this->process_reopen($event);
+			return $this->process_reopen();
 		}
 
 		if ($this->survey->is_closed())
@@ -742,57 +724,57 @@ class viewtopic implements EventSubscriberInterface
 
 		if ($action == "close")
 		{
-			return $this->process_close($event);
+			return $this->process_close();
 		}
 
 		if ($action == "own_entry_deletion")
 		{
-			return $this->process_own_entry_deletion($event);
+			return $this->process_own_entry_deletion();
 		}
 
 		if ($action == "own_entry_modification")
 		{
-			return $this->process_own_entry_modification($event);
+			return $this->process_own_entry_modification();
 		}
 
 		if ($action == "other_entry_addition")
 		{
-			return $this->process_other_entry_addition($event);
+			return $this->process_other_entry_addition();
 		}
 
 		if ($action == "other_entry_deletion")
 		{
-			return $this->process_other_entry_deletion($event);
+			return $this->process_other_entry_deletion();
 		}
 
 		if ($action == "other_entry_modification")
 		{
-			return $this->process_other_entry_modification($event);
+			return $this->process_other_entry_modification();
 		}
 
 		if ($action == "question_addition")
 		{
-			return $this->process_question_addition($event);
+			return $this->process_question_addition();
 		}
 
 		if ($action == "question_deletion")
 		{
-			return $this->process_question_deletion($event);
+			return $this->process_question_deletion();
 		}
 
 		if ($action == "question_modification")
 		{
-			return $this->process_question_modification($event);
+			return $this->process_question_modification();
 		}
 
 		if ($action == "disable")
 		{
-			return $this->process_disable($event);
+			return $this->process_disable();
 		}
 
 		if ($action == "delete")
 		{
-			return $this->process_delete($event);
+			return $this->process_delete();
 		}
 
 		return array();

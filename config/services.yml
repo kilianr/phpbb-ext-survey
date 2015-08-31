@@ -20,7 +20,6 @@ services:
             - @kilianr.survey.functions.survey
             - @template
             - @user
-            - @auth
             - @request
         tags:
             - { name: event.listener }
@@ -31,7 +30,6 @@ services:
             - @template
             - @dbal.conn
             - @user
-            - @auth
             - @request
             - %core.root_path%
             - %core.php_ext%

@@ -35,18 +35,14 @@ class posting implements EventSubscriberInterface
 	/** @var \phpbb\user */
 	protected $user;
 
-	/** @var \phpbb\auth\auth */
-	protected $auth;
-
 	/** @var \phpbb\request\request_interface */
 	protected $request;
 
-	function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\user $user, \phpbb\auth\auth $auth, \phpbb\request\request_interface $request)
+	function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\user $user, \phpbb\request\request_interface $request)
 	{
 		$this->survey = $survey;
 		$this->template = $template;
 		$this->user = $user;
-		$this->auth = $auth;
 		$this->request = $request;
 	}
 
@@ -57,8 +53,7 @@ class posting implements EventSubscriberInterface
 	 */
 	public function submit_post_modify_sql_data($event)
 	{
-		// Check permissions
-		if (!$this->auth->acl_get('f_survey', $event['data']['forum_id']) && !$this->auth->acl_get('m_edit', $event['data']['forum_id']))
+		if (!$this->survey->can_access($event['data']['forum_id']))
 		{
 			return;
 		}
@@ -83,8 +78,7 @@ class posting implements EventSubscriberInterface
 	 */
 	public function submit_post_end($event)
 	{
-		// Check permissions
-		if (!$this->auth->acl_get('f_survey', $event['data']['forum_id']) && !$this->auth->acl_get('m_edit', $event['data']['forum_id']))
+		if (!$this->survey->can_access($event['data']['forum_id']))
 		{
 			return;
 		}
@@ -102,8 +96,7 @@ class posting implements EventSubscriberInterface
 	 */
 	public function posting_display_template($event)
 	{
-		// Check permissions
-		if (!$this->auth->acl_get('f_survey', $event['forum_id']) && !$this->auth->acl_get('m_edit', $event['forum_id']))
+		if (!$this->survey->can_access($event['forum_id']))
 		{
 			return;
 		}
@@ -118,7 +111,7 @@ class posting implements EventSubscriberInterface
 
 		if (isset($event['topic_id']) && $event['topic_id'])
 		{
-			$this->survey->load_survey($event['topic_id'], $event['forum_id']);
+			$this->survey->load_survey($event['topic_id'], $event['forum_id'], $event['post_data']['topic_poster']);
 		}
 
 		$is_inactive = !empty($this->survey->survey_entries) || !empty($this->survey->survey_questions);
