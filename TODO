@@ -4,7 +4,7 @@
 * Choices
 * Question-Types
 * Cap
-* Sort-Order
+* new entry placement with different show_order's
 * Owner-Edit other users
 * Owner-Add other users
 * Owner-Del other users
@@ -23,7 +23,6 @@
 = Style =
 * fill <td title=""> in Sum-Row
 * Hide button
-* Do ordering input right
 * Do new question input right
 * Mobile?
 * Make forms look nice
