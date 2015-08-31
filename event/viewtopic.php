@@ -286,7 +286,8 @@ class viewtopic implements EventSubscriberInterface
 			$entries_to_assign[] = $template_vars;
 		}
 		$sort_order = SORT_ASC;
-		switch ($this->survey->settings['show_order']) {
+		switch ($this->survey->settings['show_order'])
+		{
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']:
 				$sort_by = 'username';
 				break;
@@ -499,11 +500,11 @@ class viewtopic implements EventSubscriberInterface
 			{
 				$this->survey->add_entry($user_id, $answers);
 			}
-			else if($entry_id > -1 && $filled_out)
+			else if ($entry_id > -1 && $filled_out)
 			{
 				$this->survey->modify_entry($entry_id, $answers);
 			}
-			else if($entry_id > -1)
+			else if ($entry_id > -1)
 			{
 				$this->survey->delete_entry($entry_id);
 			}
