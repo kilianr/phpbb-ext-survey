@@ -10,6 +10,8 @@
 
 namespace kilianr\survey\migrations;
 
+use kilianr\survey\functions\survey;
+
 class survey_compat30x extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
@@ -31,7 +33,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						's_id'					=> array('UINT', null, 'auto_increment'),
 						'topic_id'				=> array('UINT', 0),
 						'caption'				=> array('VCHAR_UNI', ''),
-						'show_order'			=> array('UINT:1', 1),
+						'show_order'			=> array('UINT:1', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']),
 						'allow_change_answer'	=> array('BOOL', 1),
 						'allow_multiple_answer'	=> array('BOOL', 0),
 						'hide_results'			=> array('BOOL', 0),
@@ -130,10 +132,10 @@ class survey_compat30x extends \phpbb\db\migration\migration
 	{
 		return array(
 				array('permission.add', array('f_survey', false, 'f_read')),
-				array('config.add', array('kilianr_survey_default_show_order', 0)),
-				array('config.add', array('kilianr_survey_default_allow_change_answer', 1)),
-				array('config.add', array('kilianr_survey_default_allow_multiple_answer', 0)),
-				array('config.add', array('kilianr_survey_default_hide_results', 0)),
+				array('config.add', array('kilianr_survey_default_show_order', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME'])),
+				array('config.add', array('kilianr_survey_default_allow_change_answer', true)),
+				array('config.add', array('kilianr_survey_default_allow_multiple_answer', false)),
+				array('config.add', array('kilianr_survey_default_hide_results', false)),
 		);
 	}
 }

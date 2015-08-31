@@ -132,7 +132,11 @@ function toggle_survey_table() {
 				</dl>
 				<dl>
 					<dt><label for="survey_setting_show_order">{L_SURVEY_SHOW_ORDER}{L_COLON}</label></dt>
-					<dd><input id="survey_setting_show_order" type="text" name="survey_setting_show_order" value="{S_SURVEY_SHOW_ORDER}" /></dd>
+					<dd><select id="survey_setting_show_order" name="survey_setting_show_order">
+					<!-- BEGIN show_order -->
+					<option value="{show_order.num}"<!-- IF show_order.selected --> selected="selected"<!-- ENDIF -->>{show_order.desc}</option>
+					<!-- END show_order -->
+					</select></dd>
 				</dl>
 				<dl>
 					<dt><label for="survey_setting_allow_change_answer">{L_SURVEY_ALLOW_CHANGE_ANSWER}{L_COLON}</label></dt>

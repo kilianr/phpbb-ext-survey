@@ -15,6 +15,13 @@ namespace kilianr\survey\functions;
  */
 class survey
 {
+	public static $SHOW_ORDER_TYPES = array(
+		'ALPHABETICAL_USERNAME'				=> 0,
+		'RESPONSE_TIME'						=> 1,
+		'ALPHABETICAL_FIRST_ANSWER'			=> 2,
+		'ALPHABETICAL_FIRST_ANSWER_REVERSE'	=> 3,
+	);
+
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
@@ -27,6 +34,7 @@ class survey
 	/** @var \phpbb\auth\auth */
 	protected $auth;
 
+	/** @var array */
 	protected $tables;
 
 	var $topic_id;

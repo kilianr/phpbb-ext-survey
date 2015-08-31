@@ -31,4 +31,4 @@
 = QA =
 * Write tests
 * Documentation
-* Tabs are 4 spaces...
+* version-check json in repository, link to github raw

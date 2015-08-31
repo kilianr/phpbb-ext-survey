@@ -13,6 +13,7 @@ namespace kilianr\survey\event;
  * @ignore
  */
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use kilianr\survey\functions\survey;
 
 class viewtopic implements EventSubscriberInterface
 {
@@ -157,6 +158,17 @@ class viewtopic implements EventSubscriberInterface
 		}
 		$this->template->assign_vars($template_vars);
 
+		// Output show_order
+		foreach (survey::$SHOW_ORDER_TYPES as $type)
+		{
+			$template_vars = array(
+				'num'		=> $type,
+				'selected'	=> ($this->survey->settings['show_order'] == $type) ? true : false,
+				'desc'		=> $this->user->lang('SURVEY_SHOW_ORDER_DESC_' . $type),
+			);
+			$this->template->assign_block_vars('show_order', $template_vars);
+		}
+
 		// Output questions
 		foreach ($this->survey->survey_questions as $question_id => $question)
 		{
@@ -199,6 +211,7 @@ class viewtopic implements EventSubscriberInterface
 		// Output entries
 		$entries_modifyable = '';
 		$can_see_or_add_entries = false;
+		$entries_to_assign = array();
 		foreach (array_merge($this->survey->survey_entries, $can_add_new_entry ? array("new_entry") : array()) as $entry)
 		{
 			$template_vars = array();
@@ -245,37 +258,65 @@ class viewtopic implements EventSubscriberInterface
 			{
 				$template_vars[strtoupper($key)] = $value;
 			}
-			$this->template->assign_block_vars('entries', $template_vars);
+			//$this->template->assign_block_vars('entries', $template_vars);
+			$questions_to_assign = array();
+			$is_first_question = true;
 			foreach ($this->survey->survey_questions as $question_id => $question)
 			{
-				$template_vars = array();
+				$template_vars_question = array();
 				if (isset($entry['answers'][$question_id]))
 				{
-					$template_vars['VALUE'] = $entry['answers'][$question_id];
-					$template_vars['IS_SET'] = true;
+					$template_vars_question['VALUE'] = $entry['answers'][$question_id];
+					$template_vars_question['IS_SET'] = true;
 				}
 				else
 				{
-					$template_vars['IS_SET'] = false;
+					$template_vars_questions['IS_SET'] = false;
 				}
-				/*foreach($question as $key => $value)
+				if ($is_first_question)
 				{
-					if ($key != 'choices')
-					{
-						$template_vars['QUESTION_' . strtoupper($key)] => $value;
-					}
-				}*/
-				$template_vars['S_INPUT_NAME'] = 'answer_' . $entry['entry_id'] . '_' . $question_id;
-				$this->template->assign_block_vars('entries.questions', $template_vars);
-				/*foreach($question['choices'] as $choice)
-				{
-					$template_vars = array();
-					foreach($choice as $key => $value)
-					{
-						$template_vars[strtoupper($key)] => $value;
-					}
-					$this->template->assign_block_vars('entries.questions.choices', $template_vars);
-				}*/
+					$is_first_question = false;
+					$template_vars['first_answer_text'] = isset($entry['answers'][$question_id]) ? $entry['answers'][$question_id] : '';
+				}
+				$template_vars_question['S_INPUT_NAME'] = 'answer_' . $entry['entry_id'] . '_' . $question_id;
+				$questions_to_assign[] = $template_vars_question;
+				//$this->template->assign_block_vars('entries.questions', $template_vars_question);
+			}
+			$template_vars['questions'] = $questions_to_assign;
+			$entries_to_assign[] = $template_vars;
+		}
+		$sort_order = SORT_ASC;
+		switch ($this->survey->settings['show_order']) {
+			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']:
+				$sort_by = 'username';
+				break;
+			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER']:
+				$sort_by = 'first_answer_text';
+				break;
+			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER_REVERSE']:
+				$sort_by = 'first_answer_text';
+				$sort_order = SORT_DESC;
+				break;
+			default:
+				$sort_by = false;
+		}
+		if ($sort_by)
+		{
+			$only_sorting_row = array();
+			foreach ($entries_to_assign as $key => $row)
+			{
+				$only_sorting_row[$key] = $row[$sort_by];
+			}
+			array_multisort($only_sorting_row, $sort_order, $entries_to_assign);
+		}
+		foreach ($entries_to_assign as $entry_to_assign)
+		{
+			$questions_to_assign = $entry_to_assign['questions'];
+			unset($entry_to_assign['questions']);
+			$this->template->assign_block_vars('entries', $entry_to_assign);
+			foreach ($questions_to_assign as $question_to_assign)
+			{
+				$this->template->assign_block_vars('entries.questions', $question_to_assign);
 			}
 		}
 		$this->template->assign_vars(array(
@@ -438,20 +479,29 @@ class viewtopic implements EventSubscriberInterface
 				continue;
 			}
 			$answers = array();
+			$filled_out = false;
 			foreach ($this->survey->survey_questions as $question_id => $question)
 			{
 				if ($this->request->is_set('answer_' . $entry_id . '_'. $question_id))
 				{
 					$answers[$question_id] = $this->request->variable('answer_' . $entry_id . '_'. $question_id, '');
+					if ($answers[$question_id] != '')
+					{
+						$filled_out = true;
+					}
 				}
 			}
-			if ($entry_id == -1)
+			if ($entry_id == -1 && $filled_out)
 			{
 				$this->survey->add_entry($user_id, $answers);
 			}
-			else
+			else if($entry_id > -1 && $filled_out)
 			{
 				$this->survey->modify_entry($entry_id, $answers);
+			}
+			else if($entry_id > -1)
+			{
+				$this->survey->delete_entry($entry_id);
 			}
 		}
 		return $errors;

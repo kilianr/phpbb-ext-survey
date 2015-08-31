@@ -8,6 +8,7 @@
 * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License v3
 */
 
+use kilianr\survey\functions\survey;
 
 /**
 * DO NOT CHANGE
@@ -73,6 +74,10 @@ $lang = array_merge($lang, array(
 	'SURVEY_SETTINGS_EXPLAIN'			=> 'Here you can edit the basic settings of the survey.',
 	'SURVEY_SHOW'						=> 'Show survey',
 	'SURVEY_SHOW_ORDER'					=> 'Ordering',
+	'SURVEY_SHOW_ORDER_DESC_' . survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']				=> 'alphabetical by username',
+	'SURVEY_SHOW_ORDER_DESC_' . survey::$SHOW_ORDER_TYPES['RESPONSE_TIME']						=> 'order of response of the users',
+	'SURVEY_SHOW_ORDER_DESC_' . survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER']			=> 'alphabetical by text of first answer',
+	'SURVEY_SHOW_ORDER_DESC_' . survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER_REVERSE']	=> 'reverse alphabetical by text of first answer',
 	'SURVEY_STOP_TIME'					=> 'Date until which survey can be answered',
 	'SURVEY_SUM'						=> 'Sum',
 	'SURVEY_SUM_BY'						=> 'Sum by',
