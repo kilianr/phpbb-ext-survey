@@ -403,11 +403,11 @@ class survey
 	{
 		$sql = 'DELETE FROM ' . $this->tables['answers'] . ' WHERE q_id=' . $question_id;
 		$this->db->sql_query($sql);
-		foreach ($this->survey_entries as $entry)
+		foreach ($this->survey_entries as $entry_id => $entry)
 		{
-			if (isset($entry['answers'][$question_id]))
+			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
 			{
-				unset($entry['answers'][$question_id]);
+				unset($this->survey_entries[$entry_id]['answers'][$question_id]);
 			}
 		}
 		$sql = 'DELETE FROM ' . $this->tables['question_choices'] . ' WHERE q_id=' . $question_id;
@@ -415,6 +415,21 @@ class survey
 		$sql = 'DELETE FROM ' . $this->tables['questions'] . ' WHERE q_id=' . $question_id;
 		$this->db->sql_query($sql);
 		unset($this->survey_questions[$question_id]);
+		foreach ($this->survey_entries as $entry_id => $entry)
+		{
+			$is_filled = false;
+			foreach ($entry['answers'] as $answer)
+			{
+				if ($answer != '')
+				{
+					$is_filled = true;
+				}
+			}
+			if (!$is_filled)
+			{
+				$this->delete_entry($entry_id);
+			}
+		}
 		//TODO: Sums
 	}
 
