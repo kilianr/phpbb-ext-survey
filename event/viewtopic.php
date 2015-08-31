@@ -311,6 +311,10 @@ class viewtopic implements EventSubscriberInterface
 		}
 		foreach ($entries_to_assign as $entry_to_assign)
 		{
+			if (isset($entry_to_assign['first_answer_text']))
+			{
+				unset($entry_to_assign['first_answer_text']);
+			}
 			$questions_to_assign = $entry_to_assign['questions'];
 			unset($entry_to_assign['questions']);
 			$this->template->assign_block_vars('entries', $entry_to_assign);
