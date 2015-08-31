@@ -56,7 +56,7 @@ class viewtopic implements EventSubscriberInterface
 	protected $action_name;
 
 	var $topic_id;
-	
+
 	const NEW_ENTRY_ID = -1;
 
 	/**
