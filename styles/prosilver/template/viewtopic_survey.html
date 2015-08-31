@@ -21,25 +21,24 @@ function toggle_survey_table() {
 }
 </script>
 
-
+<!-- IF S_IS_SURVEY_OWNER -->
 <div id="survey-tabs-boundary">
 <div id="tabs" class="sub-panels" role="tablist" data-show-panel="survey-overview-panel">
 	<ul>
 		<li id="survey-overview-panel-tab" class="tab activetab"><a href="#tabs" aria-controls="survey-overview-panel" role="tab" data-subpanel="survey-overview-panel"><span>{L_SURVEY_OVERVIEW}</span></a></li>
-		<!-- IF S_IS_SURVEY_OWNER -->
 		<li id="settings-tab" class="tab"><a href="#tabs" aria-controls="settings-panel" role="tab" data-subpanel="settings-panel"><span>{L_SURVEY_SETTINGS}</span></a></li>
 		<li id="add-question-panel-tab" class="tab"><a href="#tabs" aria-controls="add-questions-panel" role="tab" data-subpanel="add-questions-panel"><span>{L_SURVEY_ADD_QUESTIONS}</span></a></li>
-		<!-- ENDIF -->
 	</ul>
 </div>
+<!-- ENDIF -->
 
-<div class="panel bg3" id="survey-overview-panel">
+<div class="<!-- IF not S_IS_SURVEY_OWNER -->no-owner <!-- ENDIF -->panel bg3" id="survey-overview-panel">
 <div class="inner"><span class="corners-top"><span></span></span>
 <h2>{S_SURVEY_CAPTION}</h2>
 <!-- IF S_IS_SURVEY_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_SHOW}</a>
 <p class="author">{L_SURVEY_DESC}</p>
 <!-- IF S_SURVEY_HIDE_RESULTS and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_USER}</b></p><!-- ELSEIF S_SURVEY_HIDE_RESULTS --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_OWNER}</b></p><!-- ENDIF -->
-<!-- IF S_IS_CLOSED and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_IS_CLOSED_DESC_USER}</b></p><!-- ELSEIF S_IS_CLOSED --><p class="post-notice"><b>{L_SURVEY_IS_CLOSED_DESC_OWNER}</b></p><!-- ENDIF -->
+<!-- IF S_IS_CLOSED and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_IS_CLOSED}</b></p><!-- ELSEIF S_IS_CLOSED --><p class="post-notice"><b>{L_SURVEY_IS_CLOSED_DESC_OWNER}</b></p><!-- ENDIF -->
 <!-- IF SURVEY_ERRORS -->
 <div id="survey-error-box">
 	{SURVEY_ERRORS}

@@ -26,6 +26,10 @@ table.survey td.spacerow {
 	border-bottom: 3px double black;
 }
 
+div.no-owner {
+	margin-top: 4px;
+}
+
 #survey-table table th {
 	color: inherit;
 }
