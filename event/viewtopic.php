@@ -159,7 +159,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$this->template->assign_var('S_IS_CLOSED_DESC', $this->user->lang('SURVEY_IS_CLOSED' . ($is_owner ? '_DESC_OWNER' : ''), $this->user->format_date($this->survey->settings['stop_time'])));
 		}
-		else if($this->survey->settings['stop_time'])
+		else if ($this->survey->settings['stop_time'])
 		{
 			$this->template->assign_var('S_WILL_CLOSE_DESC', $this->user->lang('SURVEY_DESC_STOP', $this->user->format_date($this->survey->settings['stop_time'])));
 		}
