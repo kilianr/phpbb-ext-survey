@@ -9,6 +9,8 @@
 * Owner-Add other users
 * Redirect after Confirm-Box
 * Special chars
+* handle topic merge
+* handle locked topics
 
 = Security =
 * SQL Injections
