@@ -36,9 +36,9 @@ function toggle_survey_table() {
 <div class="inner"><span class="corners-top"><span></span></span>
 <h2>{S_SURVEY_CAPTION}</h2>
 <!-- IF S_IS_SURVEY_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_SHOW}</a>
-<p class="author">{L_SURVEY_DESC}</p>
+<p class="author">{S_DESC}<!-- IF not S_IS_CLOSED --> {S_WILL_CLOSE_DESC}<!-- ENDIF --></p>
 <!-- IF S_SURVEY_HIDE_RESULTS and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_USER}</b></p><!-- ELSEIF S_SURVEY_HIDE_RESULTS --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_OWNER}</b></p><!-- ENDIF -->
-<!-- IF S_IS_CLOSED and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_IS_CLOSED}</b></p><!-- ELSEIF S_IS_CLOSED --><p class="post-notice"><b>{L_SURVEY_IS_CLOSED_DESC_OWNER}</b></p><!-- ENDIF -->
+<!-- IF S_IS_CLOSED --><p class="post-notice"><b>{S_IS_CLOSED_DESC}</b></p><!-- ENDIF -->
 <!-- IF SURVEY_ERRORS -->
 <div id="survey-error-box">
 	{SURVEY_ERRORS}

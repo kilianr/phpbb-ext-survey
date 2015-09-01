@@ -122,6 +122,7 @@ class viewtopic implements EventSubscriberInterface
 		$user_id = $this->user->data['user_id'];
 		$is_owner  = $this->survey->is_owner($user_id);
 		$is_member = $this->survey->is_participating($user_id);
+		$is_closed = $this->survey->is_closed();
 		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t=" . $this->topic_id);
 		$action_url = $viewtopic_url . '&amp;' . $this->action_name . '=';
 		$can_add_new_entry = $this->survey->can_add_new_entry($user_id);
@@ -151,11 +152,24 @@ class viewtopic implements EventSubscriberInterface
 			'SURVEY_ERRORS'					=> (count($survey_errors) > 0) ? implode('<br />', $survey_errors) : false,
 			'S_ROOT_PATH'					=> $this->phpbb_root_path,
 			'S_EXT_PATH'					=> $this->survey_path,
-			'S_IS_CLOSED'					=> $this->survey->is_closed(),
-			'U_CHANGE_OPEN'					=> $action_url . ($this->survey->is_closed() ? 'reopen' : 'close'),
+			'S_IS_CLOSED'					=> $is_closed,
+			'U_CHANGE_OPEN'					=> $action_url . ($is_closed ? 'reopen' : 'close'),
 		);
+		if ($is_closed)
+		{
+			$this->template->assign_var('S_IS_CLOSED_DESC', $this->user->lang('SURVEY_IS_CLOSED' . ($is_owner ? '_DESC_OWNER' : ''), $this->user->format_date($this->survey->settings['stop_time'])));
+		}
+		else if($this->survey->settings['stop_time'])
+		{
+			$this->template->assign_var('S_WILL_CLOSE_DESC', $this->user->lang('SURVEY_DESC_STOP', $this->user->format_date($this->survey->settings['stop_time'])));
+		}
+		$this->template->assign_var('S_DESC', $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])));
 		foreach ($this->survey->settings as $key => $value)
 		{
+			if ($key == 'start_time' || ($key == 'stop_time' && $value != ''))
+			{
+				$value = $this->user->format_date($value, $this->user->lang['SURVEY_DATEFORMAT']);
+			}
 			$template_vars['S_SURVEY_' . strtoupper($key)] = $value;
 		}
 		$this->template->assign_vars($template_vars);
@@ -348,6 +362,15 @@ class viewtopic implements EventSubscriberInterface
 		foreach (array_diff_key($this->survey->settings, array('s_id' => 0, 'topic_id' => 0, 'start_time' => 0)) as $setting => $entry)
 		{
 			$new_settings[$setting] = $this->request->is_set_post('survey_setting_'. $setting) ? $this->request->variable('survey_setting_'. $setting, '') : 0;
+		}
+		if (isset($new_settings['stop_time']) && $new_settings['stop_time'] != '')
+		{
+			$orig_input = $new_settings['stop_time'];
+			$new_settings['stop_time'] = $this->user->get_timestamp_from_format('Y-m-d H:i', $new_settings['stop_time']);
+			if ($new_settings['stop_time'] === false || $new_settings['stop_time']+60 < $this->survey->fixed_time())
+			{
+				return array($this->user->lang('SURVEY_INVALID_STOPDATE', $orig_input));
+			}
 		}
 		foreach ($new_settings as $new_setting => $new_value)
 		{

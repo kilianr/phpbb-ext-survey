@@ -37,6 +37,9 @@ class survey
 	/** @var array */
 	protected $tables;
 
+	/** @var int */
+	protected $time_called;
+
 	var $topic_id;
 	var $forum_id;
 	var $topic_poster;
@@ -72,6 +75,7 @@ class survey
 			'entries'			=> $entries_table,
 			'answers'			=> $answers_table,
 		);
+		$this->time_called = false;
 	}
 
 	/**
@@ -569,7 +573,7 @@ class survey
 			'allow_change_answer'	=> $this->config['kilianr_survey_default_allow_change_answer'],
 			'allow_multiple_answer'	=> $this->config['kilianr_survey_default_allow_multiple_answer'],
 			'hide_results'			=> $this->config['kilianr_survey_default_hide_results'],
-			'start_time'			=> time(),
+			'start_time'			=> $this->fixed_time(),
 		);
 		$sql = 'INSERT INTO ' . $this->tables['surveys'] . ' ' . $this->db->sql_build_array('INSERT', $inserts);
 		$this->db->sql_query($sql);
@@ -618,7 +622,7 @@ class survey
 	 */
 	public function close()
 	{
-		$this->settings['stop_time'] = time();
+		$this->settings['stop_time'] = $this->fixed_time();
 		$sql = 'UPDATE ' . $this->tables['surveys'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('stop_time' => $this->settings['stop_time'])) . ' WHERE s_id=' . $this->settings['s_id'];
 		$this->db->sql_query($sql);
 	}
@@ -634,13 +638,27 @@ class survey
 	}
 
 	/**
+	 * Returns time(), but always the same value over one run of the extension
+	 *
+	 * @return int
+	 */
+	public function fixed_time()
+	{
+		if ($this->time_called === false)
+		{
+			$this->time_called = time();
+		}
+		return $this->time_called;
+	}
+
+	/**
 	 * Checks if the survey is is closed
 	 *
 	 * @return boolean
 	 */
 	public function is_closed()
 	{
-		if ($this->settings['stop_time'] !== null && time() >= $this->settings['stop_time'])
+		if ($this->settings['stop_time'] !== null && $this->fixed_time() >= $this->settings['stop_time'])
 		{
 			return true;
 		}
