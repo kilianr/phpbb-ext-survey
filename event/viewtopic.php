@@ -367,7 +367,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$orig_input = $new_settings['stop_time'];
 			$new_settings['stop_time'] = $this->user->get_timestamp_from_format('Y-m-d H:i', $new_settings['stop_time']);
-			if ($new_settings['stop_time'] === false || $new_settings['stop_time']+60 < $this->survey->fixed_time())
+			if ($new_settings['stop_time'] === false || ($new_settings['stop_time']+60 < $this->survey->fixed_time() && $new_settings['stop_time'] != $this->survey->settings['stop_time']))
 			{
 				return array($this->user->lang('SURVEY_INVALID_STOPDATE', $orig_input));
 			}
