@@ -154,6 +154,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_EXT_PATH'					=> $this->survey_path,
 			'S_IS_CLOSED'					=> $is_closed,
 			'U_CHANGE_OPEN'					=> $action_url . ($is_closed ? 'reopen' : 'close'),
+			'S_DESC'						=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),
 		);
 		if ($is_closed)
 		{
@@ -163,7 +164,6 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$this->template->assign_var('S_WILL_CLOSE_DESC', $this->user->lang('SURVEY_DESC_STOP', $this->user->format_date($this->survey->settings['stop_time'])));
 		}
-		$this->template->assign_var('S_DESC', $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])));
 		foreach ($this->survey->settings as $key => $value)
 		{
 			if ($key == 'start_time' || ($key == 'stop_time' && $value != ''))
