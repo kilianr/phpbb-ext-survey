@@ -216,7 +216,15 @@ function toggle_survey_table() {
 				</dl>
 				<dl>
 					<dt><label>{L_SURVEY_TYPE}{L_COLON}</label></dt>
-					<dd><input type="text" name="question_type" /></dd>
+					<dd><select id="question_type" name="question_type">
+					<!-- BEGIN question_type -->
+					<option value="{question_type.num}"<!-- IF question_type.selected --> selected="selected"<!-- ENDIF -->>{question_type.desc}</option>
+					<!-- END question_type -->
+					</select></dd>
+				</dl>
+				<dl>
+					<dt><label>{L_SURVEY_CHOICES}{L_COLON}</label></dt>
+					<dd><input type="text" name="question_choices" /></dd>
 				</dl>
 				<dl>
 					<dt><label>{L_SURVEY_SUM_TYPE}{L_COLON}</label></dt>
@@ -229,10 +237,6 @@ function toggle_survey_table() {
 				<dl>
 					<dt><label>{L_SURVEY_CAP}{L_COLON}</label></dt>
 					<dd><input type="text" name="question_cap" /></dd>
-				</dl>
-				<dl>
-					<dt><label>{L_SURVEY_CHOICES}{L_COLON}</label></dt>
-					<dd><input type="text" name="question_choices" /></dd>
 				</dl>
 
 				<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />

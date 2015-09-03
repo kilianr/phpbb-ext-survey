@@ -22,6 +22,32 @@ class survey
 		'ALPHABETICAL_FIRST_ANSWER_REVERSE'	=> 3,
 	);
 
+	public static $QUESTION_TYPES = array(
+		'NORMAL_TEXT_BOX'	=> 0,
+		'LARGE_TEXT_BOX'	=> 1,
+		'NUMBER'			=> 2,
+		'CHECKBOX'			=> 3,
+		'DROP_DOWN_MENU'	=> 4,
+		'MULTIPLE_CHOICE'	=> 5,
+		'DATE'				=> 6,
+		'TIME'				=> 7,
+		'DATETIME'			=> 8,
+		'DATETIME_LOCAL'	=> 9,
+	);
+
+	public static $QUESTION_SUM_TYPES = array(
+		'NORMAL_TEXT_BOX'	=> 0,
+		'LARGE_TEXT_BOX'	=> 1,
+		'NUMBER'			=> 2,
+		'CHECKBOX'			=> 3,
+		'DROP_DOWN_MENU'	=> 4,
+		'MULTIPLE_CHOICE'	=> 5,
+		'DATE'				=> 6,
+		'TIME'				=> 7,
+		'DATETIME'			=> 8,
+		'DATETIME_LOCAL'	=> 9,
+	);
+
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
