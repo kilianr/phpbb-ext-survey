@@ -196,6 +196,17 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('question_type', $template_vars);
 		}
 
+		// Output question types
+		foreach (survey::$QUESTION_SUM_TYPES as $type)
+		{
+			$template_vars = array(
+				'num'		=> $type,
+				'selected'	=> false,
+				'desc'		=> $this->user->lang('SURVEY_QUESTION_SUM_TYPE_DESC_' . $type),
+			);
+			$this->template->assign_block_vars('question_sum_type', $template_vars);
+		}
+
 		// Output questions
 		foreach ($this->survey->survey_questions as $question_id => $question)
 		{

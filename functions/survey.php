@@ -36,16 +36,11 @@ class survey
 	);
 
 	public static $QUESTION_SUM_TYPES = array(
-		'NORMAL_TEXT_BOX'	=> 0,
-		'LARGE_TEXT_BOX'	=> 1,
-		'NUMBER'			=> 2,
-		'CHECKBOX'			=> 3,
-		'DROP_DOWN_MENU'	=> 4,
-		'MULTIPLE_CHOICE'	=> 5,
-		'DATE'				=> 6,
-		'TIME'				=> 7,
-		'DATETIME'			=> 8,
-		'DATETIME_LOCAL'	=> 9,
+		'NO_SUM'				=> 0,
+		'NUMBER_OF_RESPONSES'	=> 1,
+		'SUM_OF_NUMBERS'		=> 2,
+		'MATCHING_TEXT'			=> 3,
+		'AVERAGE_NUMBERS'		=> 4,
 	);
 
 	/** @var \phpbb\db\driver\driver_interface */

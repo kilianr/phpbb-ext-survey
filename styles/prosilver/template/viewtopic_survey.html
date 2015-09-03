@@ -211,11 +211,11 @@ function toggle_survey_table() {
 				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="question_addition">
 				{S_FORM_TOKEN}
 				<dl>
-					<dt><label>{L_SURVEY_LABEL}{L_COLON}</label></dt>
-					<dd><input type="text" name="question_label" /></dd>
+					<dt><label for="question_label">{L_SURVEY_LABEL}{L_COLON}</label></dt>
+					<dd><input id="question_label" type="text" name="question_label" /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_TYPE}{L_COLON}</label></dt>
+					<dt><label for="question_type">{L_SURVEY_TYPE}{L_COLON}</label></dt>
 					<dd><select id="question_type" name="question_type">
 					<!-- BEGIN question_type -->
 					<option value="{question_type.num}"<!-- IF question_type.selected --> selected="selected"<!-- ENDIF -->>{question_type.desc}</option>
@@ -223,20 +223,24 @@ function toggle_survey_table() {
 					</select></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_CHOICES}{L_COLON}</label></dt>
-					<dd><input type="text" name="question_choices" /></dd>
+					<dt><label for="question_choices">{L_SURVEY_CHOICES}{L_COLON}</label></dt>
+					<dd><input id="question_choices" type="text" name="question_choices" /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_SUM_TYPE}{L_COLON}</label></dt>
-					<dd><input type="text" name="question_sum_type" /></dd>
+					<dt><label for="question_sum_type">{L_SURVEY_SUM_TYPE}{L_COLON}</label></dt>
+					<dd><select id="question_sum_type" name="question_sum_type">
+					<!-- BEGIN question_sum_type -->
+					<option value="{question_sum_type.num}"<!-- IF question_sum_type.selected --> selected="selected"<!-- ENDIF -->>{question_sum_type.desc}</option>
+					<!-- END question_sum_type -->
+					</select></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_SUM_BY}{L_COLON}</label></dt>
-					<dd><input type="text" name="question_sum_by" /></dd>
+					<dt><label for="question_sum_by">{L_SURVEY_SUM_BY}{L_COLON}</label></dt>
+					<dd><input id="question_sum_by" type="text" name="question_sum_by" /></dd>
 				</dl>
 				<dl>
-					<dt><label>{L_SURVEY_CAP}{L_COLON}</label></dt>
-					<dd><input type="text" name="question_cap" /></dd>
+					<dt><label for="question_cap">{L_SURVEY_CAP}{L_COLON}</label></dt>
+					<dd><input id="question_cap" type="number" name="question_cap" /></dd>
 				</dl>
 
 				<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
