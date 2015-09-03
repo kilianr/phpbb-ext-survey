@@ -9,6 +9,7 @@
 * Owner-Add other users
 * Redirect after Confirm-Box
 * Special chars
+* Stop-Time as input=datetime(-local?)
 
 = Security =
 * SQL Injections
