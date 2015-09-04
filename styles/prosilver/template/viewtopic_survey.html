@@ -89,6 +89,10 @@ function toggle_survey_table() {
 									<option value="{entries.questions.choices.C_ID}"{entries.questions.choices.SELECTED}>{entries.questions.choices.TEXT}</option>
 									<!-- END entries.questions.choices -->
 									</select>
+								<!-- ELSEIF entries.questions.TYPE_STRING in ['DATE', 'TIME', 'DATETIME', 'DATETIME_LOCAL'] -->
+									<!-- DEFINE $TYP = '{entries.questions.TYPE_STRING}' -->
+									<!-- IF entries.questions.TYPE_STRING == 'DATETIME_LOCAL' --><!-- DEFINE $TYP = 'datetime-local' --><!-- ENDIF -->
+									<input {$ALWAYS_SAME} type="{$TYP}" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
 								<!-- ELSE -->
 									<input {$ALWAYS_SAME} type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
 								<!-- ENDIF -->

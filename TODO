@@ -1,7 +1,6 @@
 = Features =
 * Edit Questions
 * Sums
-* Question-Types (Date & Time stuff)
 * Input-Validation, esp. for multiple-choice
 * Cap
 * new entry placement with different show_order's
@@ -10,6 +9,7 @@
 * Redirect after Confirm-Box
 * Special chars
 * Stop-Time as input=datetime(-local?)
+* Input checks for date, time, datetime, datetime-local
 
 = Security =
 * SQL Injections

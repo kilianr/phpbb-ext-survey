@@ -400,6 +400,7 @@ class survey
 		$sql = 'INSERT INTO ' . $this->tables['questions'] . ' ' . $this->db->sql_build_array('INSERT', $question);
 		$this->db->sql_query($sql);
 		$question_id = $this->db->sql_nextid();
+		$question['choices'] = array();
 		$this->survey_questions[$question_id] = $question;
 		foreach ($choices as $choice)
 		{
@@ -415,7 +416,6 @@ class survey
 			$insert_choice['c_id'] = $choice_id;
 			$this->survey_questions[$question_id]['choices'][$choice_id] = $insert_choice;
 		}
-		//TODO: Sums
 	}
 
 	/**
@@ -455,7 +455,6 @@ class survey
 				$this->delete_entry($entry_id);
 			}
 		}
-		//TODO: Sums
 	}
 
 	/**
