@@ -317,6 +317,7 @@ class viewtopic implements EventSubscriberInterface
 					$template_vars['first_answer_text'] = isset($entry['answers'][$question_id]) ? $entry['answers'][$question_id] : '';
 				}
 				$template_vars_question['S_INPUT_NAME'] = 'answer_' . $entry['entry_id'] . '_' . $question_id;
+				$template_vars_question['TYPE_STRING'] = array_search($question['type'], survey::$QUESTION_TYPES);
 				$questions_to_assign[] = $template_vars_question;
 				//$this->template->assign_block_vars('entries.questions', $template_vars_question);
 			}
@@ -534,13 +535,10 @@ class viewtopic implements EventSubscriberInterface
 			$filled_out = false;
 			foreach ($this->survey->survey_questions as $question_id => $question)
 			{
-				if ($this->request->is_set('answer_' . $entry_id . '_'. $question_id))
+				$answers[$question_id] = $this->request->is_set_post('answer_' . $entry_id . '_'. $question_id) ? $this->request->variable('answer_' . $entry_id . '_'. $question_id, '') : '';
+				if ($answers[$question_id] != '')
 				{
-					$answers[$question_id] = $this->request->variable('answer_' . $entry_id . '_'. $question_id, '');
-					if ($answers[$question_id] != '')
-					{
-						$filled_out = true;
-					}
+					$filled_out = true;
 				}
 			}
 			if ($entry_id == self::NEW_ENTRY_ID && $filled_out)

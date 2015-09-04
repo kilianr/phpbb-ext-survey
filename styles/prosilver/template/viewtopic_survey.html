@@ -62,17 +62,30 @@ function toggle_survey_table() {
 			<!-- BEGIN entries -->
 			<tr <!-- IF !entries.IS_SELF -->class="survey_hidemobile"<!-- ENDIF -->>
 				<td>{entries.USERNAME_FULL}<!-- IF not entries.IS_NEW and ( S_IS_SURVEY_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) --> <a href="{entries.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a><!-- ENDIF --></td>
-				<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) -->
-					<!-- DEFINE $USER_IS_IN_LIST = 1 -->
+				<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (not entries.IS_NEW) or S_CAN_ADD_ENTRY -->				
 					<!-- BEGIN questions -->
-					<td class="<!-- IF entries.questions.IS_SET -->set-bg<!-- ELSE -->unset-bg<!-- ENDIF -->" style="color: black;">
-						<input name="{entries.questions.S_INPUT_NAME}" type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> class="<!-- IF entries.questions.IS_SET -->set-bg<!-- ELSE -->unset-bg<!-- ENDIF -->" />
-					</td>
-					<!-- END questions -->
-				<!-- ELSEIF not entries.IS_NEW -->
-					<!-- BEGIN questions -->
-						<td class="<!-- IF entries.questions.IS_SET -->set-bg<!-- ELSE -->unset-bg<!-- ENDIF -->" style="color: black;">
-							{entries.questions.VALUE}
+						<!-- IF entries.questions.IS_SET -->
+						<!-- DEFINE $CLASS = 'class="survey_q_input set-bg"' -->
+						<!-- ELSEIF expr2 -->
+						<!-- DEFINE $CLASS = 'class="survey_q_input unset-bg"' -->
+						<!-- ENDIF -->
+						<!-- DEFINE $ALWAYS_SAME = 'name="{entries.questions.S_INPUT_NAME}" {$CLASS}' -->
+						<td {$CLASS} style="color: black;">
+							<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) -->
+								<!-- IF entries.questions.TYPE_STRING == 'NORMAL_TEXT_BOX' -->
+									<input {$ALWAYS_SAME} type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
+								<!-- ELSEIF entries.questions.TYPE_STRING == 'LARGE_TEXT_BOX' -->
+									<textarea {$ALWAYS_SAME} rows="3" cols="35" style="width:100px"><!-- IF entries.questions.IS_SET -->{entries.questions.VALUE}<!-- ENDIF --></textarea>
+								<!-- ELSEIF entries.questions.TYPE_STRING == 'NUMBER' -->
+									<input {$ALWAYS_SAME} type="number" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
+								<!-- ELSEIF entries.questions.TYPE_STRING == 'CHECKBOX' -->
+									<input {$ALWAYS_SAME} type="checkbox" <!-- IF entries.questions.VALUE == 'on' -->checked="checked"<!-- ENDIF --> />
+								<!-- ELSE -->
+									<input {$ALWAYS_SAME} type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
+								<!-- ENDIF -->
+							<!-- ELSEIF not entries.IS_NEW -->
+								{entries.questions.VALUE}
+							<!-- ENDIF -->
 						</td>
 					<!-- END questions -->
 				<!-- ENDIF -->

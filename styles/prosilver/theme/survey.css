@@ -58,3 +58,7 @@ div.unset-bg, td.unset-bg, select.unset-bg, option.unset-bg {
 		float:right;
 	}
 }
+
+input[type=number].survey_q_input {
+	width: 80px;
+}
