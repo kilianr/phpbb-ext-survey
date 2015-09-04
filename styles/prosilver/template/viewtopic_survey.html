@@ -80,11 +80,30 @@ function toggle_survey_table() {
 									<input {$ALWAYS_SAME} type="number" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'CHECKBOX' -->
 									<input {$ALWAYS_SAME} type="checkbox" <!-- IF entries.questions.VALUE == 'on' -->checked="checked"<!-- ENDIF --> />
+								<!-- ELSEIF entries.questions.TYPE_STRING in ['DROP_DOWN_MENU', 'MULTIPLE_CHOICE']  -->
+									<select {$ALWAYS_SAME}<!-- IF entries.questions.TYPE_STRING == 'MULTIPLE_CHOICE' --> multiple<!-- ENDIF -->>
+									<!-- IF entries.questions.TYPE_STRING == 'DROP_DOWN_MENU' -->
+									<option value="none">---</option>
+									<!-- ENDIF -->
+									<!-- BEGIN entries.questions.choices -->
+									<option value="{entries.questions.choices.C_ID}"{entries.questions.choices.SELECTED}>{entries.questions.choices.TEXT}</option>
+									<!-- END entries.questions.choices -->
+									</select>
 								<!-- ELSE -->
 									<input {$ALWAYS_SAME} type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
 								<!-- ENDIF -->
 							<!-- ELSEIF not entries.IS_NEW -->
-								{entries.questions.VALUE}
+								<!-- IF entries.questions.TYPE_STRING == 'CHECKBOX' -->
+									<input type="checkbox" disabled="disabled"<!-- IF entries.questions.VALUE == 'on' -->checked="checked"<!-- ENDIF --> />
+								<!-- ELSEIF entries.questions.TYPE_STRING == 'MULTIPLE_CHOICE' -->
+									<select multiple disabled>
+									<!-- BEGIN entries.questions.choices -->
+									<option{entries.questions.choices.SELECTED}>{entries.questions.choices.TEXT}</option>
+									<!-- END entries.questions.choices -->
+									</select>
+								<!-- ELSE -->
+									{entries.questions.VALUE}
+								<!-- ENDIF -->
 							<!-- ENDIF -->
 						</td>
 					<!-- END questions -->
