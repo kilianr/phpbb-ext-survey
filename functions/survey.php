@@ -22,6 +22,27 @@ class survey
 		'ALPHABETICAL_FIRST_ANSWER_REVERSE'	=> 3,
 	);
 
+	public static $QUESTION_TYPES = array(
+		'NORMAL_TEXT_BOX'	=> 0,
+		'LARGE_TEXT_BOX'	=> 1,
+		'NUMBER'			=> 2,
+		'CHECKBOX'			=> 3,
+		'DROP_DOWN_MENU'	=> 4,
+		'MULTIPLE_CHOICE'	=> 5,
+		'DATE'				=> 6,
+		'TIME'				=> 7,
+		'DATETIME'			=> 8,
+		'DATETIME_LOCAL'	=> 9,
+	);
+
+	public static $QUESTION_SUM_TYPES = array(
+		'NO_SUM'				=> 0,
+		'NUMBER_OF_RESPONSES'	=> 1,
+		'SUM_OF_NUMBERS'		=> 2,
+		'MATCHING_TEXT'			=> 3,
+		'AVERAGE_NUMBERS'		=> 4,
+	);
+
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
@@ -379,6 +400,7 @@ class survey
 		$sql = 'INSERT INTO ' . $this->tables['questions'] . ' ' . $this->db->sql_build_array('INSERT', $question);
 		$this->db->sql_query($sql);
 		$question_id = $this->db->sql_nextid();
+		$question['choices'] = array();
 		$this->survey_questions[$question_id] = $question;
 		foreach ($choices as $choice)
 		{
@@ -394,7 +416,6 @@ class survey
 			$insert_choice['c_id'] = $choice_id;
 			$this->survey_questions[$question_id]['choices'][$choice_id] = $insert_choice;
 		}
-		//TODO: Sums
 	}
 
 	/**
@@ -434,7 +455,6 @@ class survey
 				$this->delete_entry($entry_id);
 			}
 		}
-		//TODO: Sums
 	}
 
 	/**

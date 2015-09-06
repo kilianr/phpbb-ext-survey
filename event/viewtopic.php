@@ -185,6 +185,28 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('show_order', $template_vars);
 		}
 
+		// Output question types
+		foreach (survey::$QUESTION_TYPES as $type)
+		{
+			$template_vars = array(
+				'num'		=> $type,
+				'selected'	=> false,
+				'desc'		=> $this->user->lang('SURVEY_QUESTION_TYPE_DESC_' . $type),
+			);
+			$this->template->assign_block_vars('question_type', $template_vars);
+		}
+
+		// Output question types
+		foreach (survey::$QUESTION_SUM_TYPES as $type)
+		{
+			$template_vars = array(
+				'num'		=> $type,
+				'selected'	=> false,
+				'desc'		=> $this->user->lang('SURVEY_QUESTION_SUM_TYPE_DESC_' . $type),
+			);
+			$this->template->assign_block_vars('question_sum_type', $template_vars);
+		}
+
 		// Output questions
 		foreach ($this->survey->survey_questions as $question_id => $question)
 		{
@@ -294,7 +316,24 @@ class viewtopic implements EventSubscriberInterface
 					$is_first_question = false;
 					$template_vars['first_answer_text'] = isset($entry['answers'][$question_id]) ? $entry['answers'][$question_id] : '';
 				}
-				$template_vars_question['S_INPUT_NAME'] = 'answer_' . $entry['entry_id'] . '_' . $question_id;
+				$template_vars_question['S_INPUT_NAME'] = 'answer_' . $entry['entry_id'] . '_' . $question_id . ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] ? '[]' : '');
+				$template_vars_question['TYPE_STRING'] = array_search($question['type'], survey::$QUESTION_TYPES);
+				$choices_to_assign = array();
+				if (isset($entry['answers'][$question_id]))
+				{
+					$exploded_answers = explode(",", $entry['answers'][$question_id]);
+				}
+				foreach ($question['choices'] as $choice)
+				{
+					$template_vars_choices = array();
+					foreach ($choice as $key => $value)
+					{
+						$template_vars_choices[strtoupper($key)] = $value;
+					}
+					$template_vars_choices['SELECTED'] = (isset($entry['answers'][$question_id]) && (array_search($choice['text'], $exploded_answers) !== false) ? ' selected="selected"' : '');
+					$choices_to_assign[] = $template_vars_choices;
+				}
+				$template_vars_question['choices'] = $choices_to_assign;
 				$questions_to_assign[] = $template_vars_question;
 				//$this->template->assign_block_vars('entries.questions', $template_vars_question);
 			}
@@ -337,7 +376,21 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('entries', $entry_to_assign);
 			foreach ($questions_to_assign as $question_to_assign)
 			{
+				$assign_choices = false;
+				if (isset($question_to_assign['choices']))
+				{
+					$choices_to_assign = $question_to_assign['choices'];
+					unset($question_to_assign['choices']);
+					$assign_choices = true;
+				}
 				$this->template->assign_block_vars('entries.questions', $question_to_assign);
+				if ($assign_choices)
+				{
+					foreach ($choices_to_assign as $choice_to_assign)
+					{
+						$this->template->assign_block_vars('entries.questions.choices', $choice_to_assign);
+					}
+				}
 			}
 		}
 		$this->template->assign_vars(array(
@@ -512,13 +565,32 @@ class viewtopic implements EventSubscriberInterface
 			$filled_out = false;
 			foreach ($this->survey->survey_questions as $question_id => $question)
 			{
-				if ($this->request->is_set('answer_' . $entry_id . '_'. $question_id))
+				$answers[$question_id] = $this->request->is_set_post('answer_' . $entry_id . '_'. $question_id) ? $this->request->variable('answer_' . $entry_id . '_'. $question_id, '') : '';
+				if ($question['type'] == survey::$QUESTION_TYPES['DROP_DOWN_MENU'])
 				{
-					$answers[$question_id] = $this->request->variable('answer_' . $entry_id . '_'. $question_id, '');
-					if ($answers[$question_id] != '')
+					if (isset($question['choices'][$answers[$question_id]]))
 					{
-						$filled_out = true;
+						$answers[$question_id] = $question['choices'][$answers[$question_id]]['text'];
 					}
+					else
+					{
+						$answers[$question_id] = '';
+					}
+				}
+				else if ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] && isset($this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id]))
+				{
+					$answers_choice_array = $this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id];
+					$answers[$question_id] = '';
+					$first = true;
+					foreach ($answers_choice_array as $choice_id)
+					{
+						$answers[$question_id] .= ($first ? '' : ',') . $question['choices'][$choice_id]['text'];
+						$first = false;
+					}
+				}
+				if ($answers[$question_id] != '')
+				{
+					$filled_out = true;
 				}
 			}
 			if ($entry_id == self::NEW_ENTRY_ID && $filled_out)
@@ -587,10 +659,7 @@ class viewtopic implements EventSubscriberInterface
 		);
 		foreach ($question as $key => $value)
 		{
-			if ($this->request->is_set_post('question_'. $key))
-			{
-				$question[$key] = $this->request->variable('question_'. $key, '');
-			}
+			$question[$key] = $this->request->variable('question_'. $key, '');
 			if ($question[$key] == '')
 			{
 				unset($question[$key]);
@@ -605,9 +674,11 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED'));
 		}
-		if ($this->request->is_set('question_choices'))
+		$choices_input = $this->request->variable('question_choices', '');
+		$choices = array();
+		if ($choices_input != '')
 		{
-			$choices = array_unique(explode(",", $this->request->variable('question_choices', '')));
+			$choices = array_unique(explode(",", $choices_input));
 		}
 		$choices = array_map('trim', $choices);
 		$this->survey->add_question($question, $choices);

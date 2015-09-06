@@ -1,8 +1,7 @@
 = Features =
 * Edit Questions
 * Sums
-* Choices
-* Question-Types
+* Input-Validation, esp. for multiple-choice
 * Cap
 * new entry placement with different show_order's
 * Owner-Edit other users
@@ -11,6 +10,8 @@
 * Special chars
 * handle topic merge
 * handle locked topics
+* Stop-Time as input=datetime(-local?)
+* Input checks for date, time, datetime, datetime-local
 
 = Security =
 * SQL Injections
@@ -20,9 +21,9 @@
 = Style =
 * fill <td title=""> in Sum-Row
 * Hide button
-* Do new question input right
 * Mobile?
 * Make forms look nice
+* Limit MC-Box Height
 
 = QA =
 * Write tests
