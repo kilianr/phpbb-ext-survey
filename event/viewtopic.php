@@ -208,6 +208,7 @@ class viewtopic implements EventSubscriberInterface
 		}
 
 		// Output questions
+		$entry_count = $this->survey->get_entry_count();
 		foreach ($this->survey->survey_questions as $question_id => $question)
 		{
 			$template_vars = array();
@@ -219,6 +220,8 @@ class viewtopic implements EventSubscriberInterface
 				}
 			}
 			$template_vars['DELETE_LINK'] =  $action_url . 'question_deletion&amp;question_to_delete=' . $question_id;
+			$template_vars['SUM_STRING'] = $this->survey->get_sum_string($question_id);
+			$template_vars['AVERAGE_STRING'] = $this->survey->get_average_string($question_id, $entry_count);
 			$this->template->assign_block_vars('questions', $template_vars);
 			foreach ($question['choices'] as $choice)
 			{
@@ -344,7 +347,7 @@ class viewtopic implements EventSubscriberInterface
 		switch ($this->survey->settings['show_order'])
 		{
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']:
-				$sort_by = 'username';
+				$sort_by = 'USERNAME';
 				break;
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER']:
 				$sort_by = 'first_answer_text';
@@ -356,7 +359,7 @@ class viewtopic implements EventSubscriberInterface
 			default:
 				$sort_by = false;
 		}
-		if ($sort_by)
+		if ($sort_by && !empty($this->survey->survey_entries))
 		{
 			$only_sorting_row = array();
 			foreach ($entries_to_assign as $key => $row)
@@ -655,6 +658,7 @@ class viewtopic implements EventSubscriberInterface
 			'type'		=> 0,
 			'sum_type'	=> 0,
 			'sum_by'	=> '',
+			'average'	=> 0,
 			'cap'		=> 0,
 		);
 		foreach ($question as $key => $value)
@@ -673,6 +677,10 @@ class viewtopic implements EventSubscriberInterface
 		if ($this->survey->get_question_id_from_label($question['label'], -1) != -1)
 		{
 			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED'));
+		}
+		if (isset($question['average']))
+		{
+			$question['average'] = ($question['average'] == 'on' ? 1 : 0);
 		}
 		$choices_input = $this->request->variable('question_choices', '');
 		$choices = array();
@@ -711,7 +719,6 @@ class viewtopic implements EventSubscriberInterface
 			));
 			confirm_box(false, $this->user->lang('SURVEY_DELETE_QUESTION_CONFIRM', $this->survey->survey_questions[$question_id]['label']), $s_hidden_fields);
 		}
-
 		return array();
 	}
 
@@ -736,18 +743,16 @@ class viewtopic implements EventSubscriberInterface
 			'type'		=> 0,
 			'sum_type'	=> 0,
 			'sum_by'	=> '',
+			'average'	=> 0,
 			'cap'		=> 0,
 		);
-		if (!$this->request->is_set('question_label'))
+		if (!$this->request->is_set_post('question_label'))
 		{
 			return array($this->user->lang('SURVEY_INVALID_QUESTION'));
 		}
 		foreach ($question as $key => $value)
 		{
-			if ($this->request->is_set_post('question_'. $key))
-			{
-				$question[$key] = $this->request->variable('question_'. $key, '');
-			}
+			$question[$key] = $this->request->is_set_post('question_'. $key) ? $this->request->variable('question_'. $key, '') : 0;
 		}
 		$question = array_map('trim', $question);
 		if ($question['label'] == '')
@@ -758,7 +763,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED'));
 		}
-		if ($this->request->is_set('question_choices'))
+		if ($this->request->is_set_post('question_choices'))
 		{
 			$choices = array_unique(explode(",", $this->request->variable('question_choices', '')));
 		}

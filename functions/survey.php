@@ -40,7 +40,6 @@ class survey
 		'NUMBER_OF_RESPONSES'	=> 1,
 		'SUM_OF_NUMBERS'		=> 2,
 		'MATCHING_TEXT'			=> 3,
-		'AVERAGE_NUMBERS'		=> 4,
 	);
 
 	/** @var \phpbb\db\driver\driver_interface */
@@ -151,7 +150,7 @@ class survey
 		}
 
 		// load questions for this survey
-		$sql = 'SELECT q_id, label, type, sum_value, sum_type, sum_by, cap
+		$sql = 'SELECT q_id, label, type, sum_value, sum_type, sum_by, average, cap
 				FROM ' . $this->tables['questions'] . '
 				WHERE s_id=' . $this->settings['s_id'] . '
 				ORDER BY q_id ASC';
@@ -463,13 +462,18 @@ class survey
 	 * The $question MUST NOT contain question_id, s_id and sum_value
 	 * The $choices array contains only the texts
 	 *
-	 * @param array $question
+	 * @param int $question_id
+ 	 * @param array $question
 	 * @param array $choices
 	 */
 	public function modify_question($question_id, $question, $choices)
 	{
+		$this->compute_sum($question_id);
+		$question['sum_value'] = $this->survey_questions[$question_id]['sum_value'];
 		$sql = 'UPDATE ' . $this->tables['questions'] . ' SET ' . $this->db->sql_build_array('UPDATE', $question) . ' WHERE q_id = ' .$question_id;
 		$this->db->sql_query($sql);
+		$question['q_id'] = $question_id;
+		$this->survey_questions[$question_id] = $question;
 		$sql = 'DELETE FROM ' . $this->tables['question_choices'] . ' WHERE q_id=' . $qid;
 		$this->survey_questions[$question_id]['choices'] = array();
 		foreach ($choices as $choice)
@@ -526,6 +530,13 @@ class survey
 		$this->db->sql_query($sql);
 		$sql = 'DELETE FROM ' . $this->tables['entries'] . ' WHERE entry_id=' . $entry_id;
 		$this->db->sql_query($sql);
+		foreach ($this->survey_questions as $question_id => $question)
+		{
+			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
+			{
+				$this->modify_sum_entry($question_id, false, 0, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
+			}
+		}
 		unset($this->survey_entries[$entry_id]);
 		//TODO: Sums
 	}
@@ -547,6 +558,7 @@ class survey
 			{
 				$sql = 'UPDATE ' . $this->tables['answers'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('answer' => $answer)) . ' WHERE q_id=' . $question_id . ' AND entry_id=' . $entry_id;
 				$this->db->sql_query($sql);
+				$this->modify_sum_entry($question_id, true, $answer, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
 				$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
 			}
 			else
@@ -576,6 +588,180 @@ class survey
 		$sql = 'INSERT INTO ' . $this->tables['answers'] . ' ' . $this->db->sql_build_array('INSERT', $insert_answer);
 		$this->db->sql_query($sql);
 		$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
+		$this->modify_sum_entry($question_id, true, $answer, false, 0, true);
+	}
+
+	/**
+	 * Re-compute the sum of a question and then call update_sum
+	 *
+	 * @param int $question_id
+	 */
+	public function compute_sum($question_id, $do_sql_update = false)
+	{
+		$type = $this->survey_questions[$question_id]['sum_type'];
+		$sum = 0;
+		if ($type == self::$QUESTION_SUM_TYPES['NO_SUM'])
+		{
+			$this->update_sum($question_id, $sum, $do_sql_update);
+			return;
+		}
+		foreach ($this->survey_entries as $entry_id => $entry)
+		{
+			if (isset($entry['answers'][$question_id]))
+			{
+				$sum += $this->modify_sum_entry($question_id, true, $entry['answers'][$question_id]);
+			}
+		}
+		$this->update_sum($question_id, $sum, $do_sql_update);
+	}
+
+	/**
+	 * Determine the diff for the sum of a question by changing the answer of a given entry
+	 *
+	 * @param int $question_id
+	 * @param bool $new_exists
+	 * @param mixed $new_value
+	 * @param bool $old_exists
+	 * @param mixed $old_value
+	 * @param bool $do_update
+	 * @return int
+	 */
+	public function modify_sum_entry($question_id, $new_exists, $new_value, $old_exists = false, $old_value = 0, $do_update = false)
+	{
+		$type = $this->survey_questions[$question_id]['sum_type'];
+		$diff = 0;
+		if ($type == self::$QUESTION_SUM_TYPES['NUMBER_OF_RESPONSES'] && $new_exists != $old_exists)
+		{
+			$diff = ($new_exists ? 1 : -1);
+		}
+		else if ($type == self::$QUESTION_SUM_TYPES['SUM_OF_NUMBERS'])
+		{
+			if (!is_numeric($new_value))
+			{
+				$new_value = 0;
+			}
+			if (!is_numeric($old_value))
+			{
+				$old_value = 0;
+			}
+			$diff = (float) $new_value - (float) $old_value;
+		}
+		else if ($type == self::$QUESTION_SUM_TYPES['MATCHING_TEXT'])
+		{
+			$sum_by = mb_strtolower($this->survey_questions[$question_id]['sum_by']);
+			if ($new_exists)
+			{
+				if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+				{
+					$exploded_answers = explode(",", $new_value);
+					$exploded_answers = array_map('mb_strtolower', $exploded_answers);
+					$diff = (array_search($sum_by, $exploded_answers) !== false ? 1 : 0);
+				}
+				else
+				{
+					$diff = ($sum_by == mb_strtolower($new_value) ? 1 : 0);
+				}
+			}
+			if ($old_exists)
+			{
+				if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+				{
+					$exploded_answers = explode(",", $old_value);
+					$exploded_answers = array_map('mb_strtolower', $exploded_answers);
+					$diff -= (array_search($sum_by, $exploded_answers) !== false ? 1 : 0);
+				}
+				else
+				{
+					$diff -= ($sum_by == mb_strtolower($old_value) ? 1 : 0);
+				}
+			}
+		}
+		if ($do_update)
+		{
+			$sum = $this->survey_questions[$question_id]['sum_value'] + $diff;
+			$this->update_sum($question_id, $sum, true);
+		}
+		return $diff;
+	}
+
+	/**
+	 * Update the sum value of question with $question_id.
+	 * Update only the sql value, if $do_sql_update is set.
+	 *
+	 * @param int $question_id
+	 * @param mixed $sum
+	 * @param bool $do_sql_update
+	 */
+	public function update_sum($question_id, $sum, $do_sql_update)
+	{
+		$this->survey_questions[$question_id]['sum_value'] = $sum;
+		if ($do_sql_update)
+		{
+			$sql = 'UPDATE ' . $this->tables['questions'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('sum_value' => $sum)) . ' WHERE q_id=' . $question_id;
+			$this->db->sql_query($sql);
+		}
+	}
+
+	/**
+	 * Return the number of entries in the survey
+	 *
+	 * @return int
+	 */
+	public function get_entry_count()
+	{
+		return count($this->survey_entries);
+	}
+
+	/**
+	 * Returns the sum of the $question.
+	 *
+	 * @param int $question_id
+	 * @return string
+	 */
+	public function get_sum_string($question_id)
+	{
+		if ($this->survey_questions[$question_id]['sum_type'] == self::$QUESTION_SUM_TYPES['NO_SUM'])
+		{
+			return '';
+		}
+		$sum = $this->survey_questions[$question_id]['sum_value'];
+		if ($sum == round($sum))
+		{
+			return strval((int) $sum);
+		}
+		return strval($sum);
+	}
+
+	/**
+	 * Returns the average sum of the $question.
+	 * The number of entries needs to be provided.
+	 *
+	 * @param int $question_id
+	 * @param int $count
+	 * @return string
+	 */
+	public function get_average_string($question_id, $count)
+	{
+		if (!$this->survey_questions[$question_id]['average'])
+		{
+			return '';
+		}
+		if ($count == 0)
+		{
+			return '0';
+		}
+		$type = $this->survey_questions[$question_id]['sum_type'];
+		$sum = $this->survey_questions[$question_id]['sum_value'];
+		$diff = 0;
+		if ($type == self::$QUESTION_SUM_TYPES['MATCHING_TEXT'])
+		{
+			return round(($sum * 100) / $count, 2) . '%';
+		}
+		else if ($type == self::$QUESTION_SUM_TYPES['SUM_OF_NUMBERS'])
+		{
+			return round($sum / $count, 2) . '';
+		}
+		return '';
 	}
 
 	/**

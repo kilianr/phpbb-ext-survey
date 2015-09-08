@@ -129,7 +129,18 @@ function toggle_survey_table() {
 				<!-- BEGIN questions -->
 					<td>
 					<div class="summary-box">
-						<div class="summary" >{questions.SUM_VALUE}</div>
+						<div class="summary" >{questions.SUM_STRING}</div>
+					</div>
+					</td>
+				<!-- END questions -->
+			</tr>
+			
+			<tr>
+				<td>{L_SURVEY_AVERAGE}{L_COLON}</td>
+				<!-- BEGIN questions -->
+					<td>
+					<div class="summary-box">
+						<div class="summary" >{questions.AVERAGE_STRING}</div>
 					</div>
 					</td>
 				<!-- END questions -->
@@ -273,6 +284,10 @@ function toggle_survey_table() {
 				<dl>
 					<dt><label for="question_sum_by">{L_SURVEY_SUM_BY}{L_COLON}</label></dt>
 					<dd><input id="question_sum_by" type="text" name="question_sum_by" /></dd>
+				</dl>
+				<dl>
+					<dt><label for="question_average">{L_SURVEY_QUESTION_SUM_SHOW_AVERAGE}{L_COLON}</label></dt>
+					<dd><input id="question_average" type="checkbox" name="question_average" /></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_cap">{L_SURVEY_CAP}{L_COLON}</label></dt>
