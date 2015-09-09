@@ -463,7 +463,7 @@ class survey
 	 * The $choices array contains only the texts
 	 *
 	 * @param int $question_id
- 	 * @param array $question
+	 * @param array $question
 	 * @param array $choices
 	 */
 	public function modify_question($question_id, $question, $choices)
