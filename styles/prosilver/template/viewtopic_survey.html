@@ -37,7 +37,7 @@ function toggle_survey_table() {
 <h2>{S_SURVEY_CAPTION}</h2>
 <!-- IF S_IS_SURVEY_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_SHOW}</a>
 <p class="author">{S_DESC}<!-- IF not S_IS_CLOSED --> {S_WILL_CLOSE_DESC}<!-- ENDIF --></p>
-<!-- IF S_SURVEY_HIDE_RESULTS and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_USER}</b></p><!-- ELSEIF S_SURVEY_HIDE_RESULTS --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_OWNER}</b></p><!-- ENDIF -->
+<!-- IF S_HIDE_ENTRIES and not S_IS_SURVEY_OWNER --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_USER}</b></p><!-- ELSEIF S_HIDE_ENTRIES --><p class="post-notice"><b>{L_SURVEY_HIDE_RESULTS_DESC_OWNER}</b></p><!-- ENDIF -->
 <!-- IF S_IS_CLOSED --><p class="post-notice"><b>{S_IS_CLOSED_DESC}</b></p><!-- ENDIF -->
 <!-- IF SURVEY_ERRORS -->
 <div id="survey-error-box">
@@ -45,8 +45,8 @@ function toggle_survey_table() {
 </div>
 <!-- ENDIF -->
 
-<!-- IF S_HAS_QUESTIONS and S_SURVEY_CAN_SEE_OR_ADD_ENTRIES -->
-<form method="post" action="{S_SURVEY_ACTION}" id="surveyform">
+<!-- IF S_HAS_QUESTIONS and (S_SURVEY_CAN_SEE_OR_ADD_ENTRIES or S_CAN_SEE_SUMS) -->
+<!-- IF S_CAN_MODIFY_OWN_ENTRY or S_CAN_ADD_ENTRY --><form method="post" action="{S_SURVEY_ACTION}" id="surveyform"><!-- ENDIF -->
 <div id="survey-table">
 	<div id="survey-table-scrollwrapper">
 	<table class="table1" cellspacing="0" cellpadding="4">
@@ -59,9 +59,10 @@ function toggle_survey_table() {
 			</tr>
 		</thead>
 		<tbody>
+		<!-- IF S_SURVEY_CAN_SEE_OR_ADD_ENTRIES -->
 			<!-- BEGIN entries -->
 			<tr <!-- IF !entries.IS_SELF -->class="survey_hidemobile"<!-- ENDIF -->>
-				<td>{entries.USERNAME_FULL}<!-- IF not entries.IS_NEW and ( S_IS_SURVEY_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) --> <a href="{entries.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a><!-- ENDIF --></td>
+				<td><!-- IF S_SHOW_USERNAMES or entries.IS_SELF -->{entries.USERNAME_FULL}<!-- ELSE --><i>hidden</i><!-- ENDIF --><!-- IF not entries.IS_NEW and ( S_IS_SURVEY_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) --> <a href="{entries.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a><!-- ENDIF --></td>
 				<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (not entries.IS_NEW) or S_CAN_ADD_ENTRY -->				
 					<!-- BEGIN questions -->
 						<!-- IF entries.questions.IS_SET -->
@@ -114,8 +115,8 @@ function toggle_survey_table() {
 				<!-- ENDIF -->
 			</tr>
 			<!-- END entries -->
-			<!-- IF S_IS_SURVEY_OWNER or not S_SURVEY_HIDE_RESULTS -->
-			
+		<!-- ENDIF -->
+		<!-- IF S_SURVEY_CAN_SEE_OR_ADD_ENTRIES and S_CAN_SEE_SUMS and (S_IS_SURVEY_OWNER or not S_HIDE_EVERYTHING) -->
 			<tr style="border-bottom: 3px double black;">
 				<td class="spacerow"></td>
 				
@@ -123,7 +124,8 @@ function toggle_survey_table() {
 				<td class="spacerow"></td>
 				<!-- END questions -->
 			</tr>
-			
+		<!-- ENDIF -->
+		<!-- IF S_CAN_SEE_SUMS and (S_IS_SURVEY_OWNER or not S_HIDE_EVERYTHING) -->
 			<tr>
 				<td>{L_SURVEY_SUM}{L_COLON}</td>
 				<!-- BEGIN questions -->
@@ -145,7 +147,7 @@ function toggle_survey_table() {
 					</td>
 				<!-- END questions -->
 			</tr>
-			<!-- ENDIF -->
+		<!-- ENDIF -->
 		</tbody>
 	</table>
 	</div><!--scrollwrapper ende-->
@@ -156,7 +158,7 @@ function toggle_survey_table() {
 	<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
 	<!-- ENDIF -->
 </div>
-</form>
+<!-- IF S_CAN_MODIFY_OWN_ENTRY or S_CAN_ADD_ENTRY --></form><!-- ENDIF -->
 <!-- ENDIF -->
 	<span class="corners-bottom"><span></span></span></div>
 </div>
@@ -194,8 +196,12 @@ function toggle_survey_table() {
 					<dd><input id="survey_setting_allow_multiple_answer" type="checkbox" value="1" name="survey_setting_allow_multiple_answer"<!-- IF S_SURVEY_ALLOW_MULTIPLE_ANSWER --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
-					<dt><label for="survey_setting_hide_results">{L_SURVEY_HIDE_RESULTS}{L_COLON}</label></dt>
-					<dd><input id="survey_setting_hide_results" type="checkbox" value="1" name="survey_setting_hide_results"<!-- IF S_SURVEY_HIDE_RESULTS --> checked="checked"<!-- ENDIF --> /></dd>
+					<dt><label for="survey_setting_hide_results">{L_SURVEY_HIDE_DESC}{L_COLON}</label></dt>
+					<dd><select id="survey_setting_hide_results" name="survey_setting_hide_results">
+					<!-- BEGIN hide_results -->
+					<option value="{hide_results.num}"<!-- IF hide_results.selected --> selected="selected"<!-- ENDIF -->>{hide_results.desc}</option>
+					<!-- END hide_results -->
+					</select></dd>
 				</dl>
 				<dl>
 					<dt><label for="survey_setting_stop_time">{L_SURVEY_STOP_TIME}{L_COLON}</label></dt>
@@ -287,7 +293,7 @@ function toggle_survey_table() {
 				</dl>
 				<dl>
 					<dt><label for="question_average">{L_SURVEY_QUESTION_SUM_SHOW_AVERAGE}{L_COLON}</label></dt>
-					<dd><input id="question_average" type="checkbox" name="question_average" /></dd>
+					<dd><input id="question_average" type="checkbox" value="1" name="question_average" /></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_cap">{L_SURVEY_CAP}{L_COLON}</label></dt>

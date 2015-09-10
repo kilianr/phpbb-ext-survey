@@ -142,7 +142,9 @@ class viewtopic implements EventSubscriberInterface
 			'S_IS_SURVEY_MEMBER'			=> $is_member,
 			'S_HAS_QUESTIONS'				=> empty($this->survey->survey_questions) ? false : true,
 			'S_HAS_ENTRIES'					=> empty($this->survey->survey_entries) ? false : true,
-			'S_HAS_RIGHT_TO_PARTICIPATE'	=> $this->survey->has_right_to_participate($user_id),
+			'S_SHOW_USERNAMES'				=> !$this->survey->is_anonymized() || $is_owner,
+			'S_HIDE_ENTRIES'				=> $this->survey->hide_entries(),
+			'S_HIDE_EVERYTHING'				=> $this->survey->hide_everything(),
 			'S_CAN_ADD_ENTRY'				=> $can_add_new_entry,
 			'S_CAN_MODIFY_OWN_ENTRY'		=> $this->survey->can_modify_entry($user_id),
 			'S_SURVEY_ACTION'				=> $viewtopic_url,
@@ -185,6 +187,17 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('show_order', $template_vars);
 		}
 
+		// Output hide types
+		foreach (survey::$HIDE_TYPES as $type)
+		{
+			$template_vars = array(
+				'num'		=> $type,
+				'selected'	=> ($this->survey->settings['hide_results'] == $type) ? true : false,
+				'desc'		=> $this->user->lang('SURVEY_HIDE_DESC_' . $type),
+			);
+			$this->template->assign_block_vars('hide_results', $template_vars);
+		}
+
 		// Output question types
 		foreach (survey::$QUESTION_TYPES as $type)
 		{
@@ -196,7 +209,7 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('question_type', $template_vars);
 		}
 
-		// Output question types
+		// Output question sum types
 		foreach (survey::$QUESTION_SUM_TYPES as $type)
 		{
 			$template_vars = array(
@@ -209,6 +222,7 @@ class viewtopic implements EventSubscriberInterface
 
 		// Output questions
 		$entry_count = $this->survey->get_entry_count();
+		$can_see_sums = false;
 		foreach ($this->survey->survey_questions as $question_id => $question)
 		{
 			$template_vars = array();
@@ -222,6 +236,10 @@ class viewtopic implements EventSubscriberInterface
 			$template_vars['DELETE_LINK'] =  $action_url . 'question_deletion&amp;question_to_delete=' . $question_id;
 			$template_vars['SUM_STRING'] = $this->survey->get_sum_string($question_id);
 			$template_vars['AVERAGE_STRING'] = $this->survey->get_average_string($question_id, $entry_count);
+			if ($template_vars['SUM_STRING'] != '' || $template_vars['AVERAGE_STRING'] != '')
+			{
+				$can_see_sums = true;
+			}
 			$this->template->assign_block_vars('questions', $template_vars);
 			foreach ($question['choices'] as $choice)
 			{
@@ -233,6 +251,11 @@ class viewtopic implements EventSubscriberInterface
 				$this->template->assign_block_vars('questions.choices', $template_vars);
 			}
 		}
+		if ($entry_count == 0 || ($this->survey->hide_everything() && !$is_owner))
+		{
+			$can_see_sums = false;
+		}
+		$this->template->assign_var('S_CAN_SEE_SUMS', $can_see_sums);
 
 		// Fetch User details
 		$user_details = array();
@@ -266,7 +289,7 @@ class viewtopic implements EventSubscriberInterface
 					'answers'	=> array(),
 				);
 			}
-			else if ($entry['user_id'] != $user_id && $this->survey->settings['hide_results'] && !$is_owner)
+			else if ($entry['user_id'] != $user_id && $this->survey->hide_entries() && !$is_owner)
 			{
 				continue;
 			}
@@ -321,6 +344,7 @@ class viewtopic implements EventSubscriberInterface
 				}
 				$template_vars_question['S_INPUT_NAME'] = 'answer_' . $entry['entry_id'] . '_' . $question_id . ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] ? '[]' : '');
 				$template_vars_question['TYPE_STRING'] = array_search($question['type'], survey::$QUESTION_TYPES);
+				$template_vars_question['CAP_EXEEDED'] = $this->survey->cap_exceeded($question_id);
 				$choices_to_assign = array();
 				if (isset($entry['answers'][$question_id]))
 				{
@@ -566,6 +590,7 @@ class viewtopic implements EventSubscriberInterface
 			}
 			$answers = array();
 			$filled_out = false;
+			$abort = false;
 			foreach ($this->survey->survey_questions as $question_id => $question)
 			{
 				$answers[$question_id] = $this->request->is_set_post('answer_' . $entry_id . '_'. $question_id) ? $this->request->variable('answer_' . $entry_id . '_'. $question_id, '') : '';
@@ -594,7 +619,22 @@ class viewtopic implements EventSubscriberInterface
 				if ($answers[$question_id] != '')
 				{
 					$filled_out = true;
+					if ($this->survey->has_cap($question_id) && !$this->survey->is_owner($user_id))
+					{
+						$old_exists = $entry_id != self::NEW_ENTRY_ID && isset($this->survey->survey_entries[$entry_id]['answers'][$question_id]);
+						$old_value = ($old_exists ? $this->survey->survey_entries[$entry_id]['answers'][$question_id] : 0);
+						$diff = $this->survey->modify_sum_entry($question_id, true, $answers[$question_id], $old_exists, $old_value);
+						if ($diff != 0 && $this->survey->cap_exceeded($question_id, $diff))
+						{
+							$errors = array_merge($errors, array($this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->survey_questions[$question_id]['label'])));
+							$abort = true;
+						}
+					}
 				}
+			}
+			if ($abort)
+			{
+				return $errors;
 			}
 			if ($entry_id == self::NEW_ENTRY_ID && $filled_out)
 			{
@@ -678,10 +718,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED'));
 		}
-		if (isset($question['average']))
-		{
-			$question['average'] = ($question['average'] == 'on' ? 1 : 0);
-		}
+		$question['average'] = (isset($question['average']) ? 1 : 0);
 		$choices_input = $this->request->variable('question_choices', '');
 		$choices = array();
 		if ($choices_input != '')

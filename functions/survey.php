@@ -42,6 +42,13 @@ class survey
 		'MATCHING_TEXT'			=> 3,
 	);
 
+	public static $HIDE_TYPES = array(
+		'NO_HIDE'				=> 0,
+		'ANONYMIZE'				=> 1,
+		'HIDE_ENTRIES'			=> 2,
+		'HIDE_EVERYTHING'		=> 3,
+	);
+
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
@@ -217,7 +224,7 @@ class survey
 	 */
 	public function is_owner($user_id)
 	{
-		return $this->topic_poster == $user_id || $this->auth->acl_gets('f_edit', 'm_edit', $this->forum_id);
+		return $this->topic_poster == $user_id || $this->auth->acl_get('m_edit', $this->forum_id);
 	}
 
 	/**
@@ -236,17 +243,6 @@ class survey
 			}
 		}
 		return false;
-	}
-
-	/**
-	 * Checks if the user can participate in the survey
-	 *
-	 * @param int $user_id
-	 * @return boolean
-	 */
-	public function has_right_to_participate($user_id)
-	{
-		return !$this->is_closed() && ($this->auth->acl_get('f_reply', $this->forum_id) || $this->is_participating($user_id));
 	}
 
 	/**
@@ -783,6 +779,61 @@ class survey
 		);
 		$sql = 'INSERT INTO ' . $this->tables['surveys'] . ' ' . $this->db->sql_build_array('INSERT', $inserts);
 		$this->db->sql_query($sql);
+	}
+
+	/**
+	 * Checks if the survey is anonymized
+	 *
+	 * @return bool
+	 */
+	public function is_anonymized()
+	{
+		return $this->settings['hide_results'] == self::$HIDE_TYPES['ANONYMIZE'] || $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_ENTRIES'] || $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_EVERYTHING'];
+	}
+
+	/**
+	 * Checks if the entries of the survey are hidden
+	 *
+	 * @return bool
+	 */
+	public function hide_entries()
+	{
+		return $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_ENTRIES'] || $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_EVERYTHING'];
+	}
+
+	/**
+	 * Checks if the everything (entries and sums) of the survey are hidden
+	 *
+	 * @return bool
+	 */
+	public function hide_everything()
+	{
+		return $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_EVERYTHING'];
+	}
+
+	/**
+	 * Checks if the question has a cap set
+	 *
+	 * @param int $question_id
+	 * @param float $diff
+	 * @return bool
+	 */
+	public function has_cap($question_id)
+	{
+		return ($this->survey_questions[$question_id]['cap'] > 0 ? true : false);
+	}
+
+	/**
+	 * Checks if the cap of question with $question_id is exceeded
+	 * If $diff is set, it is beeing taking into consideration as change of the sum_value
+	 *
+	 * @param int $question_id
+	 * @param float $diff
+	 * @return bool
+	 */
+	public function cap_exceeded($question_id, $diff = 0)
+	{
+		return (($this->has_cap($question_id) && $this->survey_questions[$question_id]['cap'] < $this->survey_questions[$question_id]['sum_value'] + $diff) ? true: false);
 	}
 
 	/**

@@ -2,7 +2,6 @@
 * Edit Questions
 * Choice Sums
 * Input-Validation, esp. for multiple-choice
-* Cap
 * new entry placement with different show_order's
 * Owner-Edit other users
 * Owner-Add other users
@@ -25,6 +24,8 @@
 * Mobile?
 * Make forms look nice
 * Limit MC-Box Height
+* Show cap for questions together with sums
+* Mark Cap'ed reached questions with color
 
 = QA =
 * Write tests
