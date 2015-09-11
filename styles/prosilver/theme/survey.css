@@ -38,6 +38,12 @@ div.summary {
 	float: left;
 	color: black;
 }
+
+div.cap-reached {
+	float: left;
+	color: red;
+}
+
 div.set-bg, td.set-bg, select.set-bg, option.set-bg {
 	background: #FEFEFE;
 }

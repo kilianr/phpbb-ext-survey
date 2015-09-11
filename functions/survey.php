@@ -837,6 +837,17 @@ class survey
 	}
 
 	/**
+	 * Checks if the cap of question with $question_id has been reached
+	 *
+	 * @param int $question_id
+	 * @return bool
+	 */
+	public function cap_reached($question_id)
+	{
+		return (($this->has_cap($question_id) && $this->survey_questions[$question_id]['cap'] <= $this->survey_questions[$question_id]['sum_value']) ? true: false);
+	}
+
+	/**
 	 * Checks if the survey on given topic is enabled
 	 *
 	 * @param int $topic_id

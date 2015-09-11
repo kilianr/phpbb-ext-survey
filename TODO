@@ -24,8 +24,6 @@
 * Mobile?
 * Make forms look nice
 * Limit MC-Box Height
-* Show cap for questions together with sums
-* Mark Cap'ed reached questions with color
 
 = QA =
 * Write tests
@@ -34,3 +32,4 @@
 * Change some variable names and sql columns
 ** hide_results -> visibilty
 ** survey_xyz -> xyz
+** sum_by -> count_by

@@ -109,7 +109,6 @@ class viewtopic implements EventSubscriberInterface
 		$this->user->add_lang_ext('kilianr/survey', 'survey');
 
 		// Now process all submits, if any
-
 		$survey_errors = $this->process_submit($event);
 
 		// If the survey is disabled, then return now (also if we just disabled it)
@@ -136,28 +135,6 @@ class viewtopic implements EventSubscriberInterface
 			$survey_errors[] = $this->user->lang['SURVEY_NO_ENTRIES'];
 		}
 
-		$template_vars = array(
-			'S_HAS_SURVEY'					=> true,
-			'S_IS_SURVEY_OWNER'				=> $is_owner,
-			'S_IS_SURVEY_MEMBER'			=> $is_member,
-			'S_HAS_QUESTIONS'				=> empty($this->survey->survey_questions) ? false : true,
-			'S_HAS_ENTRIES'					=> empty($this->survey->survey_entries) ? false : true,
-			'S_SHOW_USERNAMES'				=> !$this->survey->is_anonymized() || $is_owner,
-			'S_HIDE_ENTRIES'				=> $this->survey->hide_entries(),
-			'S_HIDE_EVERYTHING'				=> $this->survey->hide_everything(),
-			'S_CAN_ADD_ENTRY'				=> $can_add_new_entry,
-			'S_CAN_MODIFY_OWN_ENTRY'		=> $this->survey->can_modify_entry($user_id),
-			'S_SURVEY_ACTION'				=> $viewtopic_url,
-			'S_SURVEY_ACTION_NAME'			=> $this->action_name,
-			'U_FIND_USERNAME'				=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=ucp&amp;field=usernames'),
-			'UA_FIND_USERNAME'				=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&form=ucp&field=usernames', false),
-			'SURVEY_ERRORS'					=> (count($survey_errors) > 0) ? implode('<br />', $survey_errors) : false,
-			'S_ROOT_PATH'					=> $this->phpbb_root_path,
-			'S_EXT_PATH'					=> $this->survey_path,
-			'S_IS_CLOSED'					=> $is_closed,
-			'U_CHANGE_OPEN'					=> $action_url . ($is_closed ? 'reopen' : 'close'),
-			'S_DESC'						=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),
-		);
 		if ($is_closed)
 		{
 			$this->template->assign_var('S_IS_CLOSED_DESC', $this->user->lang('SURVEY_IS_CLOSED' . ($is_owner ? '_DESC_OWNER' : ''), $this->user->format_date($this->survey->settings['stop_time'])));
@@ -166,6 +143,9 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$this->template->assign_var('S_WILL_CLOSE_DESC', $this->user->lang('SURVEY_DESC_STOP', $this->user->format_date($this->survey->settings['stop_time'])));
 		}
+
+		// Output settings
+		$template_vars = array();
 		foreach ($this->survey->settings as $key => $value)
 		{
 			if ($key == 'start_time' || ($key == 'stop_time' && $value != ''))
@@ -223,6 +203,7 @@ class viewtopic implements EventSubscriberInterface
 		// Output questions
 		$entry_count = $this->survey->get_entry_count();
 		$can_see_sums = false;
+		$some_cap_set = false;
 		foreach ($this->survey->survey_questions as $question_id => $question)
 		{
 			$template_vars = array();
@@ -236,9 +217,14 @@ class viewtopic implements EventSubscriberInterface
 			$template_vars['DELETE_LINK'] =  $action_url . 'question_deletion&amp;question_to_delete=' . $question_id;
 			$template_vars['SUM_STRING'] = $this->survey->get_sum_string($question_id);
 			$template_vars['AVERAGE_STRING'] = $this->survey->get_average_string($question_id, $entry_count);
+			$template_vars['CAP_REACHED'] = $this->survey->cap_reached($question_id);
 			if ($template_vars['SUM_STRING'] != '' || $template_vars['AVERAGE_STRING'] != '')
 			{
 				$can_see_sums = true;
+			}
+			if ($this->survey->has_cap($question_id))
+			{
+				$some_cap_set = true;
 			}
 			$this->template->assign_block_vars('questions', $template_vars);
 			foreach ($question['choices'] as $choice)
@@ -255,7 +241,6 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$can_see_sums = false;
 		}
-		$this->template->assign_var('S_CAN_SEE_SUMS', $can_see_sums);
 
 		// Fetch User details
 		$user_details = array();
@@ -322,7 +307,6 @@ class viewtopic implements EventSubscriberInterface
 			{
 				$template_vars[strtoupper($key)] = $value;
 			}
-			//$this->template->assign_block_vars('entries', $template_vars);
 			$questions_to_assign = array();
 			$is_first_question = true;
 			foreach ($this->survey->survey_questions as $question_id => $question)
@@ -362,7 +346,6 @@ class viewtopic implements EventSubscriberInterface
 				}
 				$template_vars_question['choices'] = $choices_to_assign;
 				$questions_to_assign[] = $template_vars_question;
-				//$this->template->assign_block_vars('entries.questions', $template_vars_question);
 			}
 			$template_vars['questions'] = $questions_to_assign;
 			$entries_to_assign[] = $template_vars;
@@ -420,9 +403,32 @@ class viewtopic implements EventSubscriberInterface
 				}
 			}
 		}
+
 		$this->template->assign_vars(array(
+			'S_HAS_SURVEY'						=> true,
+			'S_IS_SURVEY_OWNER'					=> $is_owner,
+			'S_IS_SURVEY_MEMBER'				=> $is_member,
+			'S_HAS_QUESTIONS'					=> empty($this->survey->survey_questions) ? false : true,
+			'S_HAS_ENTRIES'						=> empty($this->survey->survey_entries) ? false : true,
+			'S_SHOW_USERNAMES'					=> !$this->survey->is_anonymized() || $is_owner,
+			'S_HIDE_ENTRIES'					=> $this->survey->hide_entries(),
+			'S_HIDE_EVERYTHING'					=> $this->survey->hide_everything(),
+			'S_CAN_ADD_ENTRY'					=> $can_add_new_entry,
+			'S_CAN_MODIFY_OWN_ENTRY'			=> $this->survey->can_modify_entry($user_id),
+			'S_SURVEY_ACTION'					=> $viewtopic_url,
+			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
+			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=ucp&amp;field=usernames'),
+			'UA_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&form=ucp&field=usernames', false),
+			'SURVEY_ERRORS'						=> (count($survey_errors) > 0) ? implode('<br />', $survey_errors) : false,
+			'S_ROOT_PATH'						=> $this->phpbb_root_path,
+			'S_EXT_PATH'						=> $this->survey_path,
+			'S_IS_CLOSED'						=> $is_closed,
+			'U_CHANGE_OPEN'						=> $action_url . ($is_closed ? 'reopen' : 'close'),
+			'S_DESC'							=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),
 			'S_SURVEY_MODIFYABLE_ENTRIES'		=> $entries_modifyable,
 			'S_SURVEY_CAN_SEE_OR_ADD_ENTRIES'	=> $can_see_or_add_entries,
+			'S_CAN_SEE_SUMS'					=> $can_see_sums,
+			'S_SOME_CAP_SET'					=> $some_cap_set,
 		));
 		add_form_key($this->form_key);
 	}
