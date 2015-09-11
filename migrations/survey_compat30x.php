@@ -50,11 +50,11 @@ class survey_compat30x extends \phpbb\db\migration\migration
 					'COLUMNS'		=> array(
 						'q_id' 					=> array('UINT', null, 'auto_increment'),
 						's_id'					=> array('UINT', 0),
-						'label'					=> array('VCHAR_UNI', 0),
+						'label'					=> array('VCHAR_UNI', ''),
 						'type'					=> array('UINT:1', 0),
 						'sum_value'				=> array('DECIMAL:11', 0),
 						'sum_type'				=> array('UINT:1', 0),
-						'sum_by'				=> array('VCHAR_UNI', 0),
+						'sum_by'				=> array('VCHAR_UNI', ''),
 						'average'				=> array('BOOL', 0),
 						'cap'					=> array('UINT', 0),
 					),
@@ -68,7 +68,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 					'COLUMNS'		=> array(
 						'c_id' 					=> array('UINT', null, 'auto_increment'),
 						'q_id'					=> array('UINT', 0),
-						'text'					=> array('VCHAR_UNI', 0),
+						'text'					=> array('VCHAR_UNI', ''),
 						'sum'					=> array('UINT', 0),
 					),
 					'PRIMARY_KEY'	=> 'c_id',

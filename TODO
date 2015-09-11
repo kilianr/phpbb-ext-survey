@@ -1,5 +1,4 @@
 = Features =
-* Edit Questions
 * Choice Sums
 * Input-Validation, esp. for multiple-choice
 * new entry placement with different show_order's
@@ -12,6 +11,7 @@
 * Stop-Time as input=datetime(-local?)
 * Input checks for date, time, datetime, datetime-local
 * Type-Checks / Input-Validation for old answers on modify_question
+* Input checks for settings (as in questions)
 
 = Security =
 * SQL Injections
@@ -24,6 +24,7 @@
 * Mobile?
 * Make forms look nice
 * Limit MC-Box Height
+* successbox (green), warningbox (yellow), errorbox (red), infobox (blue)
 
 = QA =
 * Write tests

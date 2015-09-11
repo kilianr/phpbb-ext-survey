@@ -23,11 +23,11 @@ function toggle_survey_table() {
 
 <!-- IF S_IS_SURVEY_OWNER -->
 <div id="survey-tabs-boundary">
-<div id="tabs" class="sub-panels" role="tablist" data-show-panel="survey-overview-panel">
+<div id="tabs" class="sub-panels" role="tablist" data-show-panel="<!-- IF S_SURVEY_LOADED_QUESTION -->manage-questions-panel<!-- ELSE -->survey-overview-panel<!-- ENDIF -->">
 	<ul>
 		<li id="survey-overview-panel-tab" class="tab activetab"><a href="#tabs" aria-controls="survey-overview-panel" role="tab" data-subpanel="survey-overview-panel"><span>{L_SURVEY_OVERVIEW}</span></a></li>
 		<li id="settings-tab" class="tab"><a href="#tabs" aria-controls="settings-panel" role="tab" data-subpanel="settings-panel"><span>{L_SURVEY_SETTINGS}</span></a></li>
-		<li id="add-question-panel-tab" class="tab"><a href="#tabs" aria-controls="add-questions-panel" role="tab" data-subpanel="add-questions-panel"><span>{L_SURVEY_ADD_QUESTIONS}</span></a></li>
+		<li id="manage-question-panel-tab" class="tab"><a href="#tabs" aria-controls="manage-questions-panel" role="tab" data-subpanel="manage-questions-panel"><span>{L_SURVEY_MANAGE_QUESTIONS}</span></a></li>
 	</ul>
 </div>
 <!-- ENDIF -->
@@ -183,7 +183,7 @@ function toggle_survey_table() {
 					<dt><label for="survey_setting_show_order">{L_SURVEY_SHOW_ORDER}{L_COLON}</label></dt>
 					<dd><select id="survey_setting_show_order" name="survey_setting_show_order">
 					<!-- BEGIN show_order -->
-					<option value="{show_order.num}"<!-- IF show_order.selected --> selected="selected"<!-- ENDIF -->>{show_order.desc}</option>
+					<option value="{show_order.NUM}"<!-- IF show_order.SELECTED --> selected="selected"<!-- ENDIF -->>{show_order.DESC}</option>
 					<!-- END show_order -->
 					</select></dd>
 				</dl>
@@ -199,7 +199,7 @@ function toggle_survey_table() {
 					<dt><label for="survey_setting_hide_results">{L_SURVEY_HIDE_DESC}{L_COLON}</label></dt>
 					<dd><select id="survey_setting_hide_results" name="survey_setting_hide_results">
 					<!-- BEGIN hide_results -->
-					<option value="{hide_results.num}"<!-- IF hide_results.selected --> selected="selected"<!-- ENDIF -->>{hide_results.desc}</option>
+					<option value="{hide_results.NUM}"<!-- IF hide_results.SELECTED --> selected="selected"<!-- ENDIF -->>{hide_results.DESC}</option>
 					<!-- END hide_results -->
 					</select></dd>
 				</dl>
@@ -215,11 +215,9 @@ function toggle_survey_table() {
 
 	<hr class="dashed"/>
 
-	<p>{L_SURVEY_DELETE_EXPLAIN}</p>
+	<h3>{L_SURVEY_DELETE_EXPLAIN}</h3>
 	
 	<fieldset class="fields1">
-		<p>{L_SURVEY_DELETE_WHOLE}{L_COLON}</p>
-	
 		<form method="post" action="{S_SURVEY_ACTION}">
 			<fieldset>
 				{S_FORM_TOKEN}
@@ -252,55 +250,82 @@ function toggle_survey_table() {
 	<span class="corners-bottom"><span></span></span></div>
 </div>
 
-<div class="panel bg3" id="add-questions-panel">
+<div class="panel bg3" id="manage-questions-panel">
 	<div class="inner"><span class="corners-top"><span></span></span>
 
-	<p>{L_SURVEY_ADD_QUESTIONS_EXPLAIN}</p>
-	
 	<fieldset class="fields2">
+
+		<form method="post" action="{S_SURVEY_ACTION}">
+			<fieldset>
+				{S_FORM_TOKEN}
+				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="question_load_modify">
+				<dl>
+					<dt><label>{L_SURVEY_QUESTION_MODIFY}{L_COLON}</label></dt>
+					<dd><select id="survey_load_modify_question" name="survey_load_modify_question">
+					<option value="-1">---</option>
+					<!-- BEGIN questions -->
+					<option value="{questions.Q_ID}"<!-- IF questions.LOADED --> selected="selected"<!-- ENDIF -->>{questions.LABEL}</option>
+					<!-- END questions -->
+					</select></dd>
+					<dd>
+					<input class="button1" type="submit" name="post" value="{L_SURVEY_QUESTION_LOAD}" />
+					</dd>
+				</dl>
+			</fieldset>
+		</form>
+
+		<hr class="dashed"/>
+
+		<h3>{L_SURVEY_MANAGE_QUESTIONS_DESC}</h3>
 
 		<form method="post" action="{S_SURVEY_ACTION}" id="survey_question">
 			<fieldset>
-				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="question_addition">
+				<!-- IF S_SURVEY_LOADED_QUESTION --><input type="hidden" name="question_to_modify" value="{S_SURVEY_LOADED_QUESTION_ID}" />
+				<!-- ENDIF --><input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="question_addition_or_modification">
 				{S_FORM_TOKEN}
 				<dl>
 					<dt><label for="question_label">{L_SURVEY_LABEL}{L_COLON}</label></dt>
-					<dd><input id="question_label" type="text" name="question_label" /></dd>
+					<dd><input id="question_label" type="text" name="question_label"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_LABEL}"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_type">{L_SURVEY_TYPE}{L_COLON}</label></dt>
 					<dd><select id="question_type" name="question_type">
 					<!-- BEGIN question_type -->
-					<option value="{question_type.num}"<!-- IF question_type.selected --> selected="selected"<!-- ENDIF -->>{question_type.desc}</option>
+					<option value="{question_type.NUM}"<!-- IF question_type.SELECTED --> selected="selected"<!-- ENDIF -->>{question_type.DESC}</option>
 					<!-- END question_type -->
 					</select></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_choices" title="{L_SURVEY_CHOICES_DESC}">{L_SURVEY_CHOICES}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CHOICES_DESC}"></label></dt>
-					<dd><input id="question_choices" type="text" name="question_choices" /></dd>
+					<dd><input id="question_choices" type="text" name="question_choices"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_CHOICES}"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_sum_type">{L_SURVEY_SUM_TYPE}{L_COLON}</label></dt>
 					<dd><select id="question_sum_type" name="question_sum_type">
 					<!-- BEGIN question_sum_type -->
-					<option value="{question_sum_type.num}"<!-- IF question_sum_type.selected --> selected="selected"<!-- ENDIF -->>{question_sum_type.desc}</option>
+					<option value="{question_sum_type.NUM}"<!-- IF question_sum_type.SELECTED --> selected="selected"<!-- ENDIF -->>{question_sum_type.DESC}</option>
 					<!-- END question_sum_type -->
 					</select></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_sum_by" title="{L_SURVEY_SUM_BY_DESC}">{L_SURVEY_SUM_BY}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_SUM_BY_DESC}"></label></dt>
-					<dd><input id="question_sum_by" type="text" name="question_sum_by" /></dd>
+					<dd><input id="question_sum_by" type="text" name="question_sum_by"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_SUM_BY}"<!-- ENDIF -->/></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_average" title="{L_SURVEY_AVERAGE_DESC}">{L_SURVEY_AVERAGE}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_AVERAGE_DESC}"></label></dt>
-					<dd><input id="question_average" type="checkbox" value="1" name="question_average" /></dd>
+					<dd><input id="question_average" type="checkbox" value="1" name="question_average"<!-- IF S_SURVEY_LOADED_QUESTION and S_SURVEY_LOADED_QUESTION_AVERAGE --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_cap" title="{L_SURVEY_CAP_DESC}">{L_SURVEY_CAP}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CAP_DESC}"></label></dt>
-					<dd><input id="question_cap" type="number" name="question_cap" /></dd>
+					<dd><input id="question_cap" type="number" name="question_cap"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_CAP}"<!-- ENDIF -->/></dd>
 				</dl>
 
+				<!-- IF S_SURVEY_LOADED_QUESTION -->
+				<input class="button1" type="submit" name="survey-submit-question-modify" value="{L_SURVEY_QUESTION_MODIFY}" />
+				<input class="button1" type="submit" name="post" value="{L_SURVEY_QUESTION_ADD_AS_NEW}" />
+				<!-- ELSE -->
 				<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
+				<!-- ENDIF -->
 			</fieldset>
 		</form>
 	</fieldset>

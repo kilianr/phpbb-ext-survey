@@ -464,13 +464,14 @@ class survey
 	 */
 	public function modify_question($question_id, $question, $choices)
 	{
-		$this->compute_sum($question_id);
-		$question['sum_value'] = $this->survey_questions[$question_id]['sum_value'];
-		$sql = 'UPDATE ' . $this->tables['questions'] . ' SET ' . $this->db->sql_build_array('UPDATE', $question) . ' WHERE q_id = ' .$question_id;
-		$this->db->sql_query($sql);
-		$question['q_id'] = $question_id;
 		$this->survey_questions[$question_id] = $question;
-		$sql = 'DELETE FROM ' . $this->tables['question_choices'] . ' WHERE q_id=' . $qid;
+		$this->compute_sum($question_id);
+		$this->survey_questions[$question_id]['sum_value'] = $this->survey_questions[$question_id]['sum_value'];
+		$sql = 'UPDATE ' . $this->tables['questions'] . ' SET ' . $this->db->sql_build_array('UPDATE', $this->survey_questions[$question_id]) . ' WHERE q_id = ' .$question_id;
+		$this->db->sql_query($sql);
+		$this->survey_questions[$question_id]['q_id'] = $question_id;
+		$sql = 'DELETE FROM ' . $this->tables['question_choices'] . ' WHERE q_id=' . $question_id;
+		$this->db->sql_query($sql);
 		$this->survey_questions[$question_id]['choices'] = array();
 		foreach ($choices as $choice)
 		{

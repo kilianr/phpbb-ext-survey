@@ -55,9 +55,13 @@ class viewtopic implements EventSubscriberInterface
 	/** @var string */
 	protected $action_name;
 
+	/** @var string */
+	protected $question_to_load;
+
 	var $topic_id;
 
 	const NEW_ENTRY_ID = -1;
+	const NEW_QUESTION_ID = -1;
 
 	/**
 	 * Constructor
@@ -83,6 +87,7 @@ class viewtopic implements EventSubscriberInterface
 		$this->survey_path		= $survey_path;
 		$this->action_name		= 'survey_action';
 		$this->form_key			= 'survey_form_key';
+		$this->question_to_load	= false;
 	}
 
 	/**
@@ -160,9 +165,9 @@ class viewtopic implements EventSubscriberInterface
 		foreach (survey::$SHOW_ORDER_TYPES as $type)
 		{
 			$template_vars = array(
-				'num'		=> $type,
-				'selected'	=> ($this->survey->settings['show_order'] == $type) ? true : false,
-				'desc'		=> $this->user->lang('SURVEY_SHOW_ORDER_DESC_' . $type),
+				'NUM'		=> $type,
+				'SELECTED'	=> ($this->survey->settings['show_order'] == $type) ? true : false,
+				'DESC'		=> $this->user->lang('SURVEY_SHOW_ORDER_DESC_' . $type),
 			);
 			$this->template->assign_block_vars('show_order', $template_vars);
 		}
@@ -171,9 +176,9 @@ class viewtopic implements EventSubscriberInterface
 		foreach (survey::$HIDE_TYPES as $type)
 		{
 			$template_vars = array(
-				'num'		=> $type,
-				'selected'	=> ($this->survey->settings['hide_results'] == $type) ? true : false,
-				'desc'		=> $this->user->lang('SURVEY_HIDE_DESC_' . $type),
+				'NUM'		=> $type,
+				'SELECTED'	=> ($this->survey->settings['hide_results'] == $type) ? true : false,
+				'DESC'		=> $this->user->lang('SURVEY_HIDE_DESC_' . $type),
 			);
 			$this->template->assign_block_vars('hide_results', $template_vars);
 		}
@@ -182,9 +187,9 @@ class viewtopic implements EventSubscriberInterface
 		foreach (survey::$QUESTION_TYPES as $type)
 		{
 			$template_vars = array(
-				'num'		=> $type,
-				'selected'	=> false,
-				'desc'		=> $this->user->lang('SURVEY_QUESTION_TYPE_DESC_' . $type),
+				'NUM'		=> $type,
+				'SELECTED'	=> ($this->question_to_load !== false && $this->survey->survey_questions[$this->question_to_load]['type'] == $type ? true : false),
+				'DESC'		=> $this->user->lang('SURVEY_QUESTION_TYPE_DESC_' . $type),
 			);
 			$this->template->assign_block_vars('question_type', $template_vars);
 		}
@@ -193,9 +198,9 @@ class viewtopic implements EventSubscriberInterface
 		foreach (survey::$QUESTION_SUM_TYPES as $type)
 		{
 			$template_vars = array(
-				'num'		=> $type,
-				'selected'	=> false,
-				'desc'		=> $this->user->lang('SURVEY_QUESTION_SUM_TYPE_DESC_' . $type),
+				'NUM'		=> $type,
+				'SELECTED'	=> ($this->question_to_load !== false && $this->survey->survey_questions[$this->question_to_load]['sum_type'] == $type ? true : false),
+				'DESC'		=> $this->user->lang('SURVEY_QUESTION_SUM_TYPE_DESC_' . $type),
 			);
 			$this->template->assign_block_vars('question_sum_type', $template_vars);
 		}
@@ -214,6 +219,7 @@ class viewtopic implements EventSubscriberInterface
 					$template_vars[strtoupper($key)] = $value;
 				}
 			}
+			$template_vars['LOADED'] = ($this->question_to_load !== false && $this->question_to_load == $question_id ? true : false);
 			$template_vars['DELETE_LINK'] =  $action_url . 'question_deletion&amp;question_to_delete=' . $question_id;
 			$template_vars['SUM_STRING'] = $this->survey->get_sum_string($question_id);
 			$template_vars['AVERAGE_STRING'] = $this->survey->get_average_string($question_id, $entry_count);
@@ -404,6 +410,29 @@ class viewtopic implements EventSubscriberInterface
 			}
 		}
 
+		if ($this->question_to_load !== false)
+		{
+			$template_vars = array();
+			foreach ($this->survey->survey_questions[$this->question_to_load] as $key => $value)
+			{
+				if ($key == 'cap')
+				{
+					$template_vars['S_SURVEY_LOADED_QUESTION_' . strtoupper($key)] = ($value != 0 ? $value : '');
+				}
+				else if ($key != 'choices')
+				{
+					$template_vars['S_SURVEY_LOADED_QUESTION_' . strtoupper($key)] = $value;
+				}
+			}
+			$choices_to_load = array();
+			foreach ($this->survey->survey_questions[$this->question_to_load]['choices'] as $choice)
+			{
+				$choices_to_load[] = $choice['text'];
+			}
+			$template_vars['S_SURVEY_LOADED_QUESTION_CHOICES'] = implode(",", $choices_to_load);
+			$this->template->assign_vars($template_vars);
+		}
+
 		$this->template->assign_vars(array(
 			'S_HAS_SURVEY'						=> true,
 			'S_IS_SURVEY_OWNER'					=> $is_owner,
@@ -429,6 +458,8 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_CAN_SEE_OR_ADD_ENTRIES'	=> $can_see_or_add_entries,
 			'S_CAN_SEE_SUMS'					=> $can_see_sums,
 			'S_SOME_CAP_SET'					=> $some_cap_set,
+			'S_SURVEY_LOADED_QUESTION'			=> ($this->question_to_load !== false ? true : false),
+			'S_SURVEY_LOADED_QUESTION_ID'		=> $this->question_to_load,
 		));
 		add_form_key($this->form_key);
 	}
@@ -582,7 +613,7 @@ class viewtopic implements EventSubscriberInterface
 			$entry_id = (int) $entry_id;
 			if ($entry_id == self::NEW_ENTRY_ID && !$this->survey->can_add_new_entry($user_id))
 			{
-				$errors = array_merge($errors, array($this->user->lang('NO_AUTH_OPERATION')));
+				$errors[] = $this->user->lang('NO_AUTH_OPERATION');
 				continue;
 			}
 			else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->entry_exists($entry_id))
@@ -591,7 +622,7 @@ class viewtopic implements EventSubscriberInterface
 			}
 			else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->survey_entries[$entry_id]['user_id']))
 			{
-				$errors = array_merge($errors, array($this->user->lang('NO_AUTH_OPERATION')));
+				$errors[] = $this->user->lang('NO_AUTH_OPERATION');
 				continue;
 			}
 			$answers = array();
@@ -632,7 +663,7 @@ class viewtopic implements EventSubscriberInterface
 						$diff = $this->survey->modify_sum_entry($question_id, true, $answers[$question_id], $old_exists, $old_value);
 						if ($diff != 0 && $this->survey->cap_exceeded($question_id, $diff))
 						{
-							$errors = array_merge($errors, array($this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->survey_questions[$question_id]['label'])));
+							$errors[] = $this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->survey_questions[$question_id]['label']);
 							$abort = true;
 						}
 					}
@@ -689,18 +720,27 @@ class viewtopic implements EventSubscriberInterface
 	}
 
 	/**
-	 * Process addition of question
+	 * Process addition or modification of question
 	 *
 	 * @return array errors
 	 */
-	protected function process_question_addition()
+	protected function process_question_addition_or_modification()
 	{
 		if (!check_form_key($this->form_key))
 		{
 			return array($this->user->lang('FORM_INVALID'));
 		}
+		$question_id = self::NEW_QUESTION_ID;
+		if ($this->request->is_set_post('survey-submit-question-modify'))
+		{
+			$question_id = (int) $this->request->variable('question_to_modify', '');
+			if (!$this->survey->question_exists($question_id))
+			{
+				return array();
+			}
+		}
 		$question = array(
-			'label'		=> null,
+			'label'		=> '',
 			'type'		=> 0,
 			'sum_type'	=> 0,
 			'sum_by'	=> '',
@@ -709,30 +749,59 @@ class viewtopic implements EventSubscriberInterface
 		);
 		foreach ($question as $key => $value)
 		{
-			$question[$key] = $this->request->variable('question_'. $key, '');
-			if ($question[$key] == '')
-			{
-				unset($question[$key]);
-			}
+			$question[$key] = $this->request->variable('question_'. $key, $question[$key]);
 		}
 		$question = array_map('trim', $question);
-		if (!isset($question['label']) || $question['label'] == '')
+		if ($question['label'] == '')
 		{
-			return array($this->user->lang('SURVEY_INVALID_QUESTION'));
+			return array($this->user->lang('SURVEY_INVALID_QUESTION_NO_LABEL'));
 		}
-		if ($this->survey->get_question_id_from_label($question['label'], -1) != -1)
+		if ($this->survey->get_question_id_from_label($question['label'], $question_id) != $question_id)
 		{
-			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED'));
+			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED', $question['label']));
 		}
-		$question['average'] = (isset($question['average']) ? 1 : 0);
+		$question['average'] = ($question['average'] ? 1 : 0);
+		$question['cap'] = ($question['cap'] != '' ? $question['cap'] : 0);
+		if (array_search($question['type'], survey::$QUESTION_TYPES) === false)
+		{
+			return array($this->user->lang('SURVEY_INVALID_QUESTION_TYPE'));
+		}
+		if (array_search($question['sum_type'], survey::$QUESTION_SUM_TYPES) === false)
+		{
+			return array($this->user->lang('SURVEY_INVALID_QUESTION_SUM_TYPE'));
+		}
+		if ($question['sum_type'] == survey::$QUESTION_SUM_TYPES['MATCHING_TEXT'] && $question['sum_by'] == '')
+		{
+			return array($this->user->lang('SURVEY_INVALID_QUESTION_SUM_BY'));
+		}
+		if ($question['sum_type'] != survey::$QUESTION_SUM_TYPES['MATCHING_TEXT'])
+		{
+			$question['sum_by'] = '';
+		}
+		if ($question['sum_type'] == survey::$QUESTION_SUM_TYPES['NO_SUM'])
+		{
+			$question['average'] = 0;
+			$question['cap'] = 0;
+		}
 		$choices_input = $this->request->variable('question_choices', '');
 		$choices = array();
-		if ($choices_input != '')
+		if ($question['type'] == survey::$QUESTION_TYPES['DROP_DOWN_MENU'] || $question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 		{
+			if ($choices_input == '')
+			{
+				return array($this->user->lang('SURVEY_INVALID_QUESTION_CHOICES'));
+			}
 			$choices = array_unique(explode(",", $choices_input));
 		}
 		$choices = array_map('trim', $choices);
-		$this->survey->add_question($question, $choices);
+		if ($question_id == self::NEW_QUESTION_ID)
+		{
+			$this->survey->add_question($question, $choices);
+		}
+		else
+		{
+			$this->survey->modify_question($question_id, $question, $choices);
+		}
 		return array();
 	}
 
@@ -766,52 +835,21 @@ class viewtopic implements EventSubscriberInterface
 	}
 
 	/**
-	 * Process modification of question
+	 * Process loading of a question for modification
 	 *
 	 * @return array errors
 	 */
-	protected function process_question_modification()
+	protected function process_question_load_modify()
 	{
 		if (!check_form_key($this->form_key))
 		{
 			return array($this->user->lang('FORM_INVALID'));
 		}
-		$question_id = (int) $this->request->variable('question_to_modify', '');
-		if (!$this->survey->question_exists($question_id))
+		$question_id = (int) $this->request->variable('survey_load_modify_question', '');
+		if ($this->survey->question_exists($question_id))
 		{
-			return array();
+			$this->question_to_load = $question_id;
 		}
-		$question = array(
-			'label'		=> null,
-			'type'		=> 0,
-			'sum_type'	=> 0,
-			'sum_by'	=> '',
-			'average'	=> 0,
-			'cap'		=> 0,
-		);
-		if (!$this->request->is_set_post('question_label'))
-		{
-			return array($this->user->lang('SURVEY_INVALID_QUESTION'));
-		}
-		foreach ($question as $key => $value)
-		{
-			$question[$key] = $this->request->is_set_post('question_'. $key) ? $this->request->variable('question_'. $key, '') : 0;
-		}
-		$question = array_map('trim', $question);
-		if ($question['label'] == '')
-		{
-			return array($this->user->lang('SURVEY_INVALID_QUESTION'));
-		}
-		if ($question_id != $this->survey->get_question_id_from_label($question['label'], $question_id))
-		{
-			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED'));
-		}
-		if ($this->request->is_set_post('question_choices'))
-		{
-			$choices = array_unique(explode(",", $this->request->variable('question_choices', '')));
-		}
-		$choices = array_map('trim', $choices);
-		$this->survey->modifiy_question($question_id, $question, $choices);
 		return array();
 	}
 
@@ -881,7 +919,7 @@ class viewtopic implements EventSubscriberInterface
 
 		$is_owner = $this->survey->is_owner($this->user->data['user_id']);
 
-		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_modification|question_addition|question_deletion|question_modification|delete|disable)$/", $action))
+		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_modification|question_addition_or_modification|question_deletion|question_load_modify|delete|disable)$/", $action))
 		{
 			return array($this->user->lang('NO_AUTH_OPERATION'));
 		}
@@ -935,9 +973,9 @@ class viewtopic implements EventSubscriberInterface
 			return $this->process_other_entry_modification();
 		}
 
-		if ($action == "question_addition")
+		if ($action == "question_addition_or_modification")
 		{
-			return $this->process_question_addition();
+			return $this->process_question_addition_or_modification();
 		}
 
 		if ($action == "question_deletion")
@@ -945,9 +983,9 @@ class viewtopic implements EventSubscriberInterface
 			return $this->process_question_deletion();
 		}
 
-		if ($action == "question_modification")
+		if ($action == "question_load_modify")
 		{
-			return $this->process_question_modification();
+			return $this->process_question_load_modify();
 		}
 
 		if ($action == "disable")
