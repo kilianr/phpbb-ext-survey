@@ -65,6 +65,7 @@ $lang = array_merge($lang, array(
 	'SURVEY_HIDE_DESC_' . survey::$HIDE_TYPES['HIDE_EVERYTHING']	=> 'Alles verstecken',
 	'SURVEY_HIDE_RESULTS_DESC_OWNER'	=> 'Die Antworten des Fragebogens sind versteckt, als Topicstarter oder aufgrund deiner Rechte kannst du dennoch alle Einträge sehen.',
 	'SURVEY_HIDE_RESULTS_DESC_USER'		=> 'Die Antworten des Fragebogens sind versteckt, daher kannst du nur deine eigenen Einträge sehen.',
+	'SURVEY_HIDDEN'						=> 'versteckt',
 	'SURVEY_INVALID_QUESTION'			=> 'Frage ungültig.',
 	'SURVEY_INVALID_STOPDATE'			=> 'Ungültiges Stop-Datum %s. Bitte gib das Datum im Format YYYY-MM-DD ss:mm ein, z.B. 2042-07-01 13:37. Das Datum darf nicht in der Vergangenheit liegen.',
 	'SURVEY_IS_CLOSED'					=> 'Der Fragebogen ist seit %s geschlossen.',

@@ -65,6 +65,7 @@ $lang = array_merge($lang, array(
 	'SURVEY_HIDE_DESC_' . survey::$HIDE_TYPES['HIDE_EVERYTHING']	=> 'Hide everything',
 	'SURVEY_HIDE_RESULTS_DESC_OWNER'	=> 'The answers of this survey are hidden, as topic-starter or due to your permissions you can still see all entries.',
 	'SURVEY_HIDE_RESULTS_DESC_USER'		=> 'Because the answers of this survey are hidden, you can only see your own entries.',
+	'SURVEY_HIDDEN'						=> 'hidden',
 	'SURVEY_INVALID_QUESTION'			=> 'Invalid question.',
 	'SURVEY_INVALID_STOPDATE'			=> 'Invalid stop date %s. Please enter date in YYYY-MM-DD hh:mm format, e.g. 2042-07-01 13:37. The date cannot be in the past.',
 	'SURVEY_IS_CLOSED'					=> 'The survey is closed since %s.',

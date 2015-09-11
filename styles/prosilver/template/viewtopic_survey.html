@@ -62,7 +62,7 @@ function toggle_survey_table() {
 		<!-- IF S_SURVEY_CAN_SEE_OR_ADD_ENTRIES -->
 			<!-- BEGIN entries -->
 			<tr <!-- IF !entries.IS_SELF -->class="survey_hidemobile"<!-- ENDIF -->>
-				<td><!-- IF S_SHOW_USERNAMES or entries.IS_SELF -->{entries.USERNAME_FULL}<!-- ELSE --><i>hidden</i><!-- ENDIF --><!-- IF not entries.IS_NEW and ( S_IS_SURVEY_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) --> <a href="{entries.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a><!-- ENDIF --></td>
+				<td><!-- IF S_SHOW_USERNAMES or entries.IS_SELF -->{entries.USERNAME_FULL}<!-- ELSE --><i>{L_SURVEY_HIDDEN}</i><!-- ENDIF --><!-- IF not entries.IS_NEW and ( S_IS_SURVEY_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) --> <a href="{entries.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a><!-- ENDIF --></td>
 				<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (not entries.IS_NEW) or S_CAN_ADD_ENTRY -->				
 					<!-- BEGIN questions -->
 						<!-- IF entries.questions.IS_SET -->
