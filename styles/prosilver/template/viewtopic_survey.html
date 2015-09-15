@@ -129,9 +129,9 @@ function toggle_survey_table() {
 			<tr>
 				<td>{L_SURVEY_SUM}<!-- IF S_SOME_CAP_SET --> ({L_SURVEY_CAP})<!-- ENDIF -->{L_COLON}</td>
 				<!-- BEGIN questions -->
-					<td>
+					<td<!-- IF questions.HAS_CHOICES --> title="<!-- BEGIN choices -->{questions.choices.TEXT}{L_COLON}&nbsp;{questions.choices.SUM}&#013;<!-- END choices -->"<!-- ENDIF -->>
 					<div class="summary-box">
-						<div class="<!-- IF questions.CAP_REACHED -->cap-reached<!-- ELSE -->summary<!-- ENDIF -->" >{questions.SUM_STRING}<!-- IF questions.CAP > 0 --> ({questions.CAP})<!-- ENDIF --></div>
+						<div class="<!-- IF questions.CAP_REACHED -->cap-reached<!-- ELSE -->summary<!-- ENDIF -->" ><!-- IF questions.HAS_CHOICES --><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_topic_poll.gif" alt="{L_SURVEY_CHOICES}">&nbsp;<!-- ENDIF -->{questions.SUM_STRING}<!-- IF questions.CAP > 0 --> ({questions.CAP})<!-- ENDIF --></div>
 					</div>
 					</td>
 				<!-- END questions -->

@@ -1,5 +1,4 @@
 = Features =
-* Choice Sums
 * Input-Validation, esp. for multiple-choice
 * new entry placement with different show_order's
 * Owner-Edit other users
@@ -10,6 +9,8 @@
 * Stop-Time as input=datetime(-local?)
 * Input checks for date, time, datetime, datetime-local
 * Type-Checks / Input-Validation for old answers on modify_question
+* Access to survey by group
+* Option to de-owner the topic_poster
 
 = Security =
 * SQL Injections
@@ -17,12 +18,12 @@
 * HTMLSpecialchars
 
 = Style =
-* fill <td title=""> in Sum-Row
 * Hide button
 * Mobile?
 * Make forms look nice
 * Limit MC-Box Height
 * successbox (green), warningbox (yellow), errorbox (red), infobox (blue)
+* Only display average row if necessary
 
 = QA =
 * Write tests

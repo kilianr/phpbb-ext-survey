@@ -475,10 +475,15 @@ class survey
 		$this->survey_questions[$question_id]['choices'] = array();
 		foreach ($choices as $choice)
 		{
+			$count = 0;
+			foreach ($this->survey_entries as $entry)
+			{
+				$count += (isset($entry['answers'][$question_id]) ? $this->get_sum_diff_for_answer($question_id, $entry['answers'][$question_id], $choice) : 0);
+			}
 			$insert_choice = array(
 				'q_id'	=> $question_id,
 				'text'	=> $choice,
-				'sum'	=> 0,
+				'sum'	=> $count,
 			);
 			$sql = 'INSERT INTO ' . $this->tables['question_choices'] . ' ' . $this->db->sql_build_array('INSERT', $insert_choice);
 			$this->db->sql_query($sql);
@@ -486,7 +491,6 @@ class survey
 			unset($insert_choice['q_id']);
 			$insert_choice['c_id'] = $choice_id;
 			$this->survey_questions[$question_id]['choices'][$choice_id] = $insert_choice;
-			//TODO: Sums
 		}
 		//TODO: If type is choices, iterate through answers of this question and delete thoise with now inexistent choice
 	}
@@ -531,11 +535,10 @@ class survey
 		{
 			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
 			{
-				$this->modify_sum_entry($question_id, false, 0, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
+				$this->modify_sum_entry($question_id, true, false, 0, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
 			}
 		}
 		unset($this->survey_entries[$entry_id]);
-		//TODO: Sums
 	}
 
 	/**
@@ -550,12 +553,11 @@ class survey
 		foreach ($answers as $question_id => $answer)
 		{
 			//TODO: Choices, Type checks
-			//TODO: Sums
 			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
 			{
 				$sql = 'UPDATE ' . $this->tables['answers'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('answer' => $answer)) . ' WHERE q_id=' . $question_id . ' AND entry_id=' . $entry_id;
 				$this->db->sql_query($sql);
-				$this->modify_sum_entry($question_id, true, $answer, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
+				$this->modify_sum_entry($question_id, true, true, $answer, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
 				$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
 			}
 			else
@@ -576,7 +578,6 @@ class survey
 	public function add_answer($question_id, $entry_id, $answer)
 	{
 		//TODO: Choices, Type checks
-		//TODO: Sums
 		$insert_answer = array(
 			'q_id'		=> $question_id,
 			'entry_id'	=> $entry_id,
@@ -585,7 +586,7 @@ class survey
 		$sql = 'INSERT INTO ' . $this->tables['answers'] . ' ' . $this->db->sql_build_array('INSERT', $insert_answer);
 		$this->db->sql_query($sql);
 		$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
-		$this->modify_sum_entry($question_id, true, $answer, false, 0, true);
+		$this->modify_sum_entry($question_id, true, true, $answer, false, 0, true);
 	}
 
 	/**
@@ -606,7 +607,7 @@ class survey
 		{
 			if (isset($entry['answers'][$question_id]))
 			{
-				$sum += $this->modify_sum_entry($question_id, true, $entry['answers'][$question_id]);
+				$sum += $this->modify_sum_entry($question_id, false, true, $entry['answers'][$question_id]);
 			}
 		}
 		$this->update_sum($question_id, $sum, $do_sql_update);
@@ -616,6 +617,7 @@ class survey
 	 * Determine the diff for the sum of a question by changing the answer of a given entry
 	 *
 	 * @param int $question_id
+	 * @param bool $do_choice_sum
 	 * @param bool $new_exists
 	 * @param mixed $new_value
 	 * @param bool $old_exists
@@ -623,7 +625,7 @@ class survey
 	 * @param bool $do_update
 	 * @return int
 	 */
-	public function modify_sum_entry($question_id, $new_exists, $new_value, $old_exists = false, $old_value = 0, $do_update = false)
+	public function modify_sum_entry($question_id, $do_choice_sum, $new_exists, $new_value, $old_exists = false, $old_value = 0, $do_update = false)
 	{
 		$type = $this->survey_questions[$question_id]['sum_type'];
 		$diff = 0;
@@ -645,31 +647,38 @@ class survey
 		}
 		else if ($type == self::$QUESTION_SUM_TYPES['MATCHING_TEXT'])
 		{
-			$sum_by = mb_strtolower($this->survey_questions[$question_id]['sum_by']);
 			if ($new_exists)
 			{
-				if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
-				{
-					$exploded_answers = explode(",", $new_value);
-					$exploded_answers = array_map('mb_strtolower', $exploded_answers);
-					$diff = (array_search($sum_by, $exploded_answers) !== false ? 1 : 0);
-				}
-				else
-				{
-					$diff = ($sum_by == mb_strtolower($new_value) ? 1 : 0);
-				}
+				$diff = $this->get_sum_diff_for_answer($question_id, $new_value, $this->survey_questions[$question_id]['sum_by']);
 			}
 			if ($old_exists)
 			{
-				if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+				$diff -= $this->get_sum_diff_for_answer($question_id, $old_value, $this->survey_questions[$question_id]['sum_by']);
+			}
+		}
+		if ($do_choice_sum && ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['DROP_DOWN_MENU'] || $this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE']))
+		{
+			$cdiff = array();
+			$choice_ids = array_keys($this->survey_questions[$question_id]['choices']);
+			foreach ($choice_ids as $choice_id)
+			{
+				$cdiff[$choice_id] = 0;
+			}
+			if ($new_exists)
+			{
+				$this->get_choice_sum_diff_for_answer($question_id, $new_value, 1, $cdiff);
+			}
+			if ($old_exists)
+			{
+				$this->get_choice_sum_diff_for_answer($question_id, $old_value, -1, $cdiff);
+			}
+			foreach ($choice_ids as $choice_id)
+			{
+				if ($cdiff[$choice_id] != 0)
 				{
-					$exploded_answers = explode(",", $old_value);
-					$exploded_answers = array_map('mb_strtolower', $exploded_answers);
-					$diff -= (array_search($sum_by, $exploded_answers) !== false ? 1 : 0);
-				}
-				else
-				{
-					$diff -= ($sum_by == mb_strtolower($old_value) ? 1 : 0);
+					$this->survey_questions[$question_id]['choices'][$choice_id]['sum'] += $cdiff[$choice_id];
+					$sql = 'UPDATE ' . $this->tables['question_choices'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('sum' => $this->survey_questions[$question_id]['choices'][$choice_id]['sum'])) . ' WHERE c_id=' . $choice_id;
+					$this->db->sql_query($sql);
 				}
 			}
 		}
@@ -679,6 +688,57 @@ class survey
 			$this->update_sum($question_id, $sum, true);
 		}
 		return $diff;
+	}
+
+	/**
+	 * Get the diff for the sum of a question of a specific text
+	 *
+	 * @param int $question_id
+	 * @param string $value
+	 * @param string $sum_by
+	 */
+	public function get_sum_diff_for_answer($question_id, $value, $sum_by)
+	{
+		$diff = 0;
+		$sum_by = mb_strtolower($sum_by);
+		if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+		{
+			$exploded_answers = explode(",", mb_strtolower($value));
+			$diff = (array_search($sum_by, $exploded_answers) !== false ? 1 : 0);
+		}
+		else
+		{
+			$diff = ($sum_by == mb_strtolower($value) ? 1 : 0);
+		}
+		return $diff;
+	}
+
+	/**
+	 * Get the diff for the sum of a question for all choices of a specific text
+	 * $sign is either 1 or -1
+	 *
+	 * @param int $question_id
+	 * @param string $sign
+	 * @param string $value
+	 */
+	public function get_choice_sum_diff_for_answer($question_id, $value, $sign, &$cdiff)
+	{
+		$exploded_answers = '';
+		if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+		{
+			$exploded_answers = explode(",", mb_strtolower($value));
+		}
+		foreach ($this->survey_questions[$question_id]['choices'] as $choice_id => $choice)
+		{
+			if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+			{
+				$cdiff[$choice_id] += (in_array(mb_strtolower($choice['text']), $exploded_answers) ? $sign : 0);
+			}
+			else
+			{
+				$cdiff[$choice_id] += (mb_strtolower($choice['text']) == mb_strtolower($value) ? $sign : 0);
+			}
+		}
 	}
 
 	/**

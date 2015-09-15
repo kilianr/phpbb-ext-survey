@@ -224,6 +224,7 @@ class viewtopic implements EventSubscriberInterface
 			$template_vars['SUM_STRING'] = $this->survey->get_sum_string($question_id);
 			$template_vars['AVERAGE_STRING'] = $this->survey->get_average_string($question_id, $entry_count);
 			$template_vars['CAP_REACHED'] = $this->survey->cap_reached($question_id);
+			$template_vars['HAS_CHOICES'] = !empty($question['choices']);
 			if ($template_vars['SUM_STRING'] != '' || $template_vars['AVERAGE_STRING'] != '')
 			{
 				$can_see_sums = true;
@@ -235,6 +236,7 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('questions', $template_vars);
 			foreach ($question['choices'] as $choice)
 			{
+				$can_see_sums = true;
 				$template_vars = array();
 				foreach ($choice as $key => $value)
 				{
