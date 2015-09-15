@@ -475,12 +475,33 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('FORM_INVALID'));
 		}
-		$new_settings = array();
-		foreach (array_diff_key($this->survey->settings, array('s_id' => 0, 'topic_id' => 0, 'start_time' => 0)) as $setting => $entry)
+		$new_settings = array(
+			'caption'				=> '',
+			'show_order'			=> 0,
+			'allow_change_answer'	=> 0,
+			'allow_multiple_answer'	=> 0,
+			'hide_results'			=> 0,
+			'stop_time'				=> '',
+		);
+		foreach ($new_settings as $setting => $default)
 		{
-			$new_settings[$setting] = $this->request->is_set_post('survey_setting_'. $setting) ? $this->request->variable('survey_setting_'. $setting, '') : 0;
+			$new_settings[$setting] = $this->request->variable('survey_setting_'. $setting, $default, true);
 		}
-		if (isset($new_settings['stop_time']) && $new_settings['stop_time'] != '')
+		if ($new_settings['caption'] == '')
+		{
+			return array($this->user->lang('SURVEY_INVALID_CAPTION'));
+		}
+		if (array_search($new_settings['show_order'], survey::$SHOW_ORDER_TYPES) === false)
+		{
+			return array($this->user->lang('SURVEY_INVALID_SHOW_ORDER_TYPE'));
+		}
+		$new_settings['allow_change_answer'] = ($new_settings['allow_change_answer'] ? 1 : 0);
+		$new_settings['allow_multiple_answer'] = ($new_settings['allow_multiple_answer'] ? 1 : 0);
+		if (array_search($new_settings['hide_results'], survey::$HIDE_TYPES) === false)
+		{
+			return array($this->user->lang('SURVEY_INVALID_HIDE_TYPE'));
+		}
+		if ($new_settings['stop_time'] != '')
 		{
 			$orig_input = $new_settings['stop_time'];
 			$new_settings['stop_time'] = $this->user->get_timestamp_from_format('Y-m-d H:i', $new_settings['stop_time']);
@@ -489,25 +510,9 @@ class viewtopic implements EventSubscriberInterface
 				return array($this->user->lang('SURVEY_INVALID_STOPDATE', $orig_input));
 			}
 		}
-		foreach ($new_settings as $new_setting => $new_value)
+		else
 		{
-			$right_type = gettype($this->survey->settings[$new_setting]);
-			if ($new_setting == 'stop_time' && $right_type == "NULL" && $new_value != '' && gettype($new_value) != "NULL")
-			{
-				$right_type = "integer";
-			}
-			else if ($new_setting == 'stop_time' && $right_type != "NULL" && ($new_value == '' || gettype($new_value) == "NULL"))
-			{
-				$right_type = "NULL";
-				$new_settings[$new_setting] = null;
-			}
-			if ($right_type != gettype($new_value))
-			{
-				if (!settype($new_settings[$new_setting], $right_type))
-				{
-					return array($this->user->lang('FORM_INVALID'));
-				}
-			}
+			$new_settings['stop_time'] = null;
 		}
 		$this->survey->change_config($new_settings);
 		return array();
@@ -630,7 +635,7 @@ class viewtopic implements EventSubscriberInterface
 			$abort = false;
 			foreach ($this->survey->survey_questions as $question_id => $question)
 			{
-				$answers[$question_id] = $this->request->is_set_post('answer_' . $entry_id . '_'. $question_id) ? $this->request->variable('answer_' . $entry_id . '_'. $question_id, '') : '';
+				$answers[$question_id] = $this->request->is_set_post('answer_' . $entry_id . '_'. $question_id) ? $this->request->variable('answer_' . $entry_id . '_'. $question_id, '', true) : '';
 				if ($question['type'] == survey::$QUESTION_TYPES['DROP_DOWN_MENU'])
 				{
 					if (isset($question['choices'][$answers[$question_id]]))
@@ -749,7 +754,7 @@ class viewtopic implements EventSubscriberInterface
 		);
 		foreach ($question as $key => $value)
 		{
-			$question[$key] = $this->request->variable('question_'. $key, $question[$key]);
+			$question[$key] = $this->request->variable('question_'. $key, $question[$key], true);
 		}
 		$question = array_map('trim', $question);
 		if ($question['label'] == '')
@@ -783,7 +788,7 @@ class viewtopic implements EventSubscriberInterface
 			$question['average'] = 0;
 			$question['cap'] = 0;
 		}
-		$choices_input = $this->request->variable('question_choices', '');
+		$choices_input = $this->request->variable('question_choices', '', true);
 		$choices = array();
 		if ($question['type'] == survey::$QUESTION_TYPES['DROP_DOWN_MENU'] || $question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 		{
