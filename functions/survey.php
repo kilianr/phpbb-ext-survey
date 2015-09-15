@@ -720,6 +720,7 @@ class survey
 	 * @param int $question_id
 	 * @param string $sign
 	 * @param string $value
+	 * @param array $cdiff
 	 */
 	public function get_choice_sum_diff_for_answer($question_id, $value, $sign, &$cdiff)
 	{
