@@ -60,6 +60,7 @@ class viewtopic implements EventSubscriberInterface
 
 	var $topic_id;
 
+	const ADDUSER_ENTRY_ID = "adduser";
 	const NEW_ENTRY_ID = -1;
 	const NEW_QUESTION_ID = -1;
 
@@ -266,16 +267,31 @@ class viewtopic implements EventSubscriberInterface
 		}
 
 		// Output entries
-		$entries_modifyable = '';
+		$entries_modifyable = array();
 		$can_see_or_add_entries = false;
 		$entries_to_assign = array();
-		foreach (array_merge($this->survey->survey_entries, $can_add_new_entry ? array("new_entry") : array()) as $entry)
+		$extra_rows = array();
+		$adduser_entry_template_vars = array();
+		if ($can_add_new_entry)
+		{
+			$extra_rows[] = self::NEW_ENTRY_ID;
+		}
+		if ($is_owner)
+		{
+			$extra_rows[] = self::ADDUSER_ENTRY_ID;
+		}
+		foreach (array_merge($this->survey->survey_entries, $extra_rows) as $entry)
 		{
 			$template_vars = array();
-			$last = false;
-			if ($entry == "new_entry")
+			if ($entry == self::ADDUSER_ENTRY_ID)
 			{
-				$last = true;
+				$entry = array(
+					'entry_id'	=> self::ADDUSER_ENTRY_ID,
+					'answers'	=> array(),
+				);
+			}
+			else if ($entry == self::NEW_ENTRY_ID)
+			{
 				$entry = array(
 					'entry_id'	=> self::NEW_ENTRY_ID,
 					'user_id'	=> $user_id,
@@ -295,25 +311,30 @@ class viewtopic implements EventSubscriberInterface
 				}
 				if ($key == 'entry_id')
 				{
+					$template_vars['IS_ADDUSER'] = ($value == self::ADDUSER_ENTRY_ID) ? true : false;
 					$template_vars['IS_NEW'] = ($value == self::NEW_ENTRY_ID) ? true : false;
-					$template_vars['DELETE_LINK'] =  $action_url . 'own_entry_deletion&amp;entry_to_delete=' . $value;
+					$template_vars['DELETE_LINK'] =  $action_url . 'entry_deletion&amp;entry_to_delete=' . $value;
 				}
 			}
-			$uid = $entry['user_id'];
-			$user_detail = $user_details[$uid];
-			$user_detail['is_self'] = ($uid == $user_id);
-			if ($uid == $user_id)
+			if ($entry['entry_id'] != self::ADDUSER_ENTRY_ID)
 			{
-				if ($entries_modifyable != '')
+				$uid = $entry['user_id'];
+				$user_detail = $user_details[$uid];
+				$user_detail['is_self'] = ($uid == $user_id);
+				if ($uid == $user_id)
 				{
-					$entries_modifyable .= ',';
+					$entries_modifyable[] = $entry['entry_id'];
 				}
-				$entries_modifyable .= $entry['entry_id'];
+				$user_detail['username_full'] = get_username_string('full', $uid, $user_detail['username'], $user_detail['user_colour']);
+				foreach ($user_detail as $key => $value)
+				{
+					$template_vars[strtoupper($key)] = $value;
+				}
 			}
-			$user_detail['username_full'] = get_username_string('full', $uid, $user_detail['username'], $user_detail['user_colour']);
-			foreach ($user_detail as $key => $value)
+			else
 			{
-				$template_vars[strtoupper($key)] = $value;
+				$template_vars['IS_SELF'] = false;
+				$entries_modifyable[] = $entry['entry_id'];
 			}
 			$questions_to_assign = array();
 			$is_first_question = true;
@@ -356,7 +377,14 @@ class viewtopic implements EventSubscriberInterface
 				$questions_to_assign[] = $template_vars_question;
 			}
 			$template_vars['questions'] = $questions_to_assign;
-			$entries_to_assign[] = $template_vars;
+			if ($entry['entry_id'] != self::ADDUSER_ENTRY_ID)
+			{
+				$entries_to_assign[] = $template_vars;
+			}
+			else
+			{
+				$adduser_entry_template_vars = $template_vars;
+			}
 		}
 		$sort_order = SORT_ASC;
 		switch ($this->survey->settings['show_order'])
@@ -382,6 +410,10 @@ class viewtopic implements EventSubscriberInterface
 				$only_sorting_row[$key] = $row[$sort_by];
 			}
 			array_multisort($only_sorting_row, $sort_order, $entries_to_assign);
+		}
+		if (!empty($adduser_entry_template_vars))
+		{
+			$entries_to_assign[] = $adduser_entry_template_vars;
 		}
 		foreach ($entries_to_assign as $entry_to_assign)
 		{
@@ -448,15 +480,14 @@ class viewtopic implements EventSubscriberInterface
 			'S_CAN_MODIFY_OWN_ENTRY'			=> $this->survey->can_modify_entry($user_id),
 			'S_SURVEY_ACTION'					=> $viewtopic_url,
 			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
-			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=ucp&amp;field=usernames'),
-			'UA_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&form=ucp&field=usernames', false),
+			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
 			'SURVEY_ERRORS'						=> (count($survey_errors) > 0) ? implode('<br />', $survey_errors) : false,
 			'S_ROOT_PATH'						=> $this->phpbb_root_path,
 			'S_EXT_PATH'						=> $this->survey_path,
 			'S_IS_CLOSED'						=> $is_closed,
 			'U_CHANGE_OPEN'						=> $action_url . ($is_closed ? 'reopen' : 'close'),
 			'S_DESC'							=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),
-			'S_SURVEY_MODIFYABLE_ENTRIES'		=> $entries_modifyable,
+			'S_SURVEY_MODIFYABLE_ENTRIES'		=> implode(",", $entries_modifyable),
 			'S_SURVEY_CAN_SEE_OR_ADD_ENTRIES'	=> $can_see_or_add_entries,
 			'S_CAN_SEE_SUMS'					=> $can_see_sums,
 			'S_SOME_CAP_SET'					=> $some_cap_set,
@@ -569,7 +600,7 @@ class viewtopic implements EventSubscriberInterface
 	 *
 	 * @return array errors
 	 */
-	protected function process_own_entry_deletion()
+	protected function process_entry_deletion()
 	{
 		$entry_id = (int) $this->request->variable('entry_to_delete', '');
 		if (!$this->survey->entry_exists($entry_id))
@@ -602,7 +633,7 @@ class viewtopic implements EventSubscriberInterface
 	 *
 	 * @return array errors
 	 */
-	protected function process_own_entry_modification()
+	protected function process_entry_modification()
 	{
 		if (!check_form_key($this->form_key))
 		{
@@ -613,27 +644,49 @@ class viewtopic implements EventSubscriberInterface
 			return array();
 		}
 		$entry_ids = array_unique(explode(",", $this->request->variable('entries_to_modify', '')));
-		$user_id = $this->user->data['user_id'];
+		$entry_user_id = $real_user_id = $this->user->data['user_id'];
 		$errors = array();
 		foreach ($entry_ids as $entry_id)
 		{
-			$entry_id = (int) $entry_id;
-			if ($entry_id == self::NEW_ENTRY_ID && !$this->survey->can_add_new_entry($user_id))
+			$filled_out = false;
+			if ($entry_id == self::ADDUSER_ENTRY_ID)
 			{
-				$errors[] = $this->user->lang('NO_AUTH_OPERATION');
-				continue;
+				$username = utf8_normalize_nfc(request_var('answer_adduser_username', '', true));
+				if ($username == '')
+				{
+					continue;
+				}
+				$adduser_id = array();
+				if (user_get_id_name($adduser_id, $username) == 'NO_USERS')
+				{
+					return array($this->user->lang('NO_USER'));
+				}
+				$entry_user_id = $adduser_id[0];
+				if (!$this->survey->can_add_new_entry($real_user_id, $entry_user_id))
+				{
+					return array($this->user->lang('NO_AUTH_OPERATION'));
+				}
+				$filled_out = true;
 			}
-			else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->entry_exists($entry_id))
+			else
 			{
-				continue;
-			}
-			else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->survey_entries[$entry_id]['user_id']))
-			{
-				$errors[] = $this->user->lang('NO_AUTH_OPERATION');
-				continue;
+				$entry_id = (int) $entry_id;
+				if ($entry_id == self::NEW_ENTRY_ID && !$this->survey->can_add_new_entry($real_user_id))
+				{
+					$errors[] = $this->user->lang('NO_AUTH_OPERATION');
+					continue;
+				}
+				else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->entry_exists($entry_id))
+				{
+					continue;
+				}
+				else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->can_modify_entry($real_user_id, $this->survey->survey_entries[$entry_id]['user_id']))
+				{
+					$errors[] = $this->user->lang('NO_AUTH_OPERATION');
+					continue;
+				}
 			}
 			$answers = array();
-			$filled_out = false;
 			$abort = false;
 			foreach ($this->survey->survey_questions as $question_id => $question)
 			{
@@ -651,7 +704,7 @@ class viewtopic implements EventSubscriberInterface
 				}
 				else if ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] && isset($this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id]))
 				{
-					$answers_choice_array = $this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id];
+					$answers_choice_array = array_unique($this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id]);
 					$answers[$question_id] = '';
 					$first = true;
 					foreach ($answers_choice_array as $choice_id)
@@ -663,9 +716,9 @@ class viewtopic implements EventSubscriberInterface
 				if ($answers[$question_id] != '')
 				{
 					$filled_out = true;
-					if ($this->survey->has_cap($question_id) && !$this->survey->is_owner($user_id))
+					if ($this->survey->has_cap($question_id) && !$this->survey->is_owner($real_user_id))
 					{
-						$old_exists = $entry_id != self::NEW_ENTRY_ID && isset($this->survey->survey_entries[$entry_id]['answers'][$question_id]);
+						$old_exists = $entry_id != self::ADDUSER_ENTRY_ID && $entry_id != self::NEW_ENTRY_ID && isset($this->survey->survey_entries[$entry_id]['answers'][$question_id]);
 						$old_value = ($old_exists ? $this->survey->survey_entries[$entry_id]['answers'][$question_id] : 0);
 						$diff = $this->survey->modify_sum_entry($question_id, true, $answers[$question_id], $old_exists, $old_value);
 						if ($diff != 0 && $this->survey->cap_exceeded($question_id, $diff))
@@ -680,50 +733,23 @@ class viewtopic implements EventSubscriberInterface
 			{
 				return $errors;
 			}
-			if ($entry_id == self::NEW_ENTRY_ID && $filled_out)
+			if ($filled_out)
 			{
-				$this->survey->add_entry($user_id, $answers);
+				if ($entry_id == self::ADDUSER_ENTRY_ID || $entry_id == self::NEW_ENTRY_ID)
+				{
+					$this->survey->add_entry($entry_user_id, $answers);
+				}
+				else
+				{
+					$this->survey->modify_entry($entry_id, $answers);
+				}
 			}
-			else if ($entry_id != self::NEW_ENTRY_ID && $filled_out)
-			{
-				$this->survey->modify_entry($entry_id, $answers);
-			}
-			else if ($entry_id != self::NEW_ENTRY_ID)
+			else if ($entry_id != self::ADDUSER_ENTRY_ID && $entry_id != self::NEW_ENTRY_ID)
 			{
 				$this->survey->delete_entry($entry_id);
 			}
 		}
 		return $errors;
-	}
-
-	/**
-	 * Process addition of other entry
-	 *
-	 * @return array errors
-	 */
-	protected function process_other_entry_addition()
-	{
-		if (!check_form_key($this->form_key))
-		{
-			return array($this->user->lang('FORM_INVALID'));
-		}
-		$this->survey->add_entry();
-		return array();
-	}
-
-	/**
-	 * Process modification of other entry
-	 *
-	 * @return array errors
-	 */
-	protected function process_other_entry_modification()
-	{
-		if (!check_form_key($this->form_key))
-		{
-			return array($this->user->lang('FORM_INVALID'));
-		}
-		$this->survey->modify_entry();
-		return array();
 	}
 
 	/**
@@ -926,7 +952,7 @@ class viewtopic implements EventSubscriberInterface
 
 		$is_owner = $this->survey->is_owner($this->user->data['user_id']);
 
-		if (!$is_owner && preg_match("/^(config_change|close|reopen|other_entry_addition|other_entry_modification|question_addition_or_modification|question_deletion|question_load_modify|delete|disable)$/", $action))
+		if (!$is_owner && preg_match("/^(config_change|close|reopen|question_addition_or_modification|question_deletion|question_load_modify|delete|disable)$/", $action))
 		{
 			return array($this->user->lang('NO_AUTH_OPERATION'));
 		}
@@ -960,24 +986,14 @@ class viewtopic implements EventSubscriberInterface
 			return $this->process_close();
 		}
 
-		if ($action == "own_entry_deletion")
+		if ($action == "entry_deletion")
 		{
-			return $this->process_own_entry_deletion();
+			return $this->process_entry_deletion();
 		}
 
-		if ($action == "own_entry_modification")
+		if ($action == "entry_modification")
 		{
-			return $this->process_own_entry_modification();
-		}
-
-		if ($action == "other_entry_addition")
-		{
-			return $this->process_other_entry_addition();
-		}
-
-		if ($action == "other_entry_modification")
-		{
-			return $this->process_other_entry_modification();
+			return $this->process_entry_modification();
 		}
 
 		if ($action == "question_addition_or_modification")

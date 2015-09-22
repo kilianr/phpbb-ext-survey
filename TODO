@@ -2,7 +2,6 @@
 * Input-Validation, esp. for multiple-choice
 * new entry placement with different show_order's
 * Owner-Edit other users
-* Owner-Add other users
 * Redirect after Confirm-Box
 * handle topic merge
 * handle locked topics
