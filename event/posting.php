@@ -21,7 +21,7 @@ class posting implements EventSubscriberInterface
 	{
 		return array(
 			'core.submit_post_modify_sql_data'	=> 'submit_post_modify_sql_data',
-			'core.submit_post_end'			=> 'submit_post_end',
+			'core.submit_post_end'				=> 'submit_post_end',
 			'core.posting_modify_template_vars'	=> 'posting_display_template',
 		);
 	}

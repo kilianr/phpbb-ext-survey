@@ -3,13 +3,20 @@
 * new entry placement with different show_order's
 * Owner-Edit other users
 * Redirect after Confirm-Box
-* handle topic merge
 * handle locked topics
 * Stop-Time as input=datetime(-local?)
 * Input checks for date, time, datetime, datetime-local
 * Type-Checks / Input-Validation for old answers on modify_question
 * Access to survey by group
 * Option to de-owner the topic_poster
+
+= Missing Events =
+* User Deletion -> core.delete_user_after
+* Group Deletion -> core.delete_group_after
+* Topic Merge -> NOT AVAILABLE!
+* Topic Split -> NOT AVAILABLE!
+* Topic Copy -> NOT AVAILABLE!
+* Move Post -> NOT AVAILABLE!
 
 = Security =
 * SQL Injections
