@@ -109,7 +109,8 @@ class viewtopic implements EventSubscriberInterface
 		}
 
 		$this->topic_id = $event['topic_id'];
-		if (!$this->survey->load_survey($this->topic_id, $forum_id, $event['topic_data']['topic_poster']))
+		$this->survey->set_env($forum_id, $event['topic_data']['topic_poster'], $event['topic_data']['topic_status'], $event['topic_data']['forum_status']);
+		if (!$this->survey->load_survey($this->topic_id))
 		{
 			// No survey for this topic
 			return;
@@ -129,7 +130,8 @@ class viewtopic implements EventSubscriberInterface
 
 		// Some frequently used data:
 		$user_id = $this->user->data['user_id'];
-		$is_owner  = $this->survey->is_owner($user_id);
+		$is_read_owner  = $this->survey->is_read_owner($user_id);
+		$is_write_owner  = $this->survey->is_write_owner($user_id);
 		$is_member = $this->survey->is_participating($user_id);
 		$is_closed = $this->survey->is_closed();
 		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t=" . $this->topic_id);
@@ -147,7 +149,7 @@ class viewtopic implements EventSubscriberInterface
 
 		if ($is_closed)
 		{
-			$this->template->assign_var('S_IS_CLOSED_DESC', $this->user->lang('SURVEY_IS_CLOSED' . ($is_owner ? '_DESC_OWNER' : ''), $this->user->format_date($this->survey->settings['stop_time'])));
+			$this->template->assign_var('S_IS_CLOSED_DESC', $this->user->lang('SURVEY_IS_CLOSED' . ($is_write_owner ? '_DESC_OWNER' : ''), $this->user->format_date($this->survey->settings['stop_time'])));
 		}
 		else if ($this->survey->settings['stop_time'])
 		{
@@ -250,7 +252,7 @@ class viewtopic implements EventSubscriberInterface
 				$this->template->assign_block_vars('questions.choices', $template_vars);
 			}
 		}
-		if ($entry_count == 0 || ($this->survey->hide_everything() && !$is_owner))
+		if ($entry_count == 0 || ($this->survey->hide_everything() && !$is_read_owner))
 		{
 			$can_see_sums = false;
 		}
@@ -288,7 +290,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$extra_rows[] = self::NEW_ENTRY_ID;
 		}
-		if ($is_owner)
+		if ($is_write_owner)
 		{
 			$extra_rows[] = self::ADDUSER_ENTRY_ID;
 		}
@@ -310,7 +312,7 @@ class viewtopic implements EventSubscriberInterface
 					'answers'	=> array(),
 				);
 			}
-			else if ($entry['user_id'] != $user_id && $this->survey->hide_entries() && !$is_owner)
+			else if ($entry['user_id'] != $user_id && $this->survey->hide_entries() && !$is_read_owner)
 			{
 				continue;
 			}
@@ -336,7 +338,7 @@ class viewtopic implements EventSubscriberInterface
 				{
 					$user_detail = $user_details[$uid];
 					$user_detail['is_self'] = ($uid == $user_id);
-					if ($uid == $user_id || $is_owner)
+					if ($uid == $user_id || $is_write_owner)
 					{
 						$entries_modifyable[] = $entry['entry_id'];
 					}
@@ -345,7 +347,7 @@ class viewtopic implements EventSubscriberInterface
 				else
 				{
 					$user_detail['is_self'] = false;
-					if ($is_owner)
+					if ($is_write_owner)
 					{
 						$entries_modifyable[] = $entry['entry_id'];
 					}
@@ -494,11 +496,12 @@ class viewtopic implements EventSubscriberInterface
 
 		$this->template->assign_vars(array(
 			'S_HAS_SURVEY'						=> true,
-			'S_IS_SURVEY_OWNER'					=> $is_owner,
+			'S_SURVEY_IS_READ_OWNER'			=> $is_read_owner,
+			'S_SURVEY_IS_WRITE_OWNER'			=> $is_write_owner,
 			'S_IS_SURVEY_MEMBER'				=> $is_member,
 			'S_HAS_QUESTIONS'					=> empty($this->survey->survey_questions) ? false : true,
 			'S_HAS_ENTRIES'						=> empty($this->survey->survey_entries) ? false : true,
-			'S_SHOW_USERNAMES'					=> !$this->survey->is_anonymized() || $is_owner,
+			'S_SHOW_USERNAMES'					=> !$this->survey->is_anonymized() || $is_read_owner,
 			'S_HIDE_ENTRIES'					=> $this->survey->hide_entries(),
 			'S_HIDE_EVERYTHING'					=> $this->survey->hide_everything(),
 			'S_CAN_ADD_ENTRY'					=> $can_add_new_entry,
@@ -746,7 +749,7 @@ class viewtopic implements EventSubscriberInterface
 				if ($answers[$question_id] != '')
 				{
 					$filled_out = true;
-					if ($this->survey->has_cap($question_id) && !$this->survey->is_owner($real_user_id))
+					if ($this->survey->has_cap($question_id) && !$this->survey->is_write_owner($real_user_id))
 					{
 						$old_exists = $entry_id != self::ADDUSER_ENTRY_ID && $entry_id != self::NEW_ENTRY_ID && isset($this->survey->survey_entries[$entry_id]['answers'][$question_id]);
 						$old_value = ($old_exists ? $this->survey->survey_entries[$entry_id]['answers'][$question_id] : 0);
@@ -981,14 +984,14 @@ class viewtopic implements EventSubscriberInterface
 			return array($this->user->lang('SURVEY_IS_DISABLED'));
 		}
 
-		$is_owner = $this->survey->is_owner($this->user->data['user_id']);
+		$is_write_owner = $this->survey->is_write_owner($this->user->data['user_id']);
 
-		if (!$is_owner && preg_match("/^(config_change|close|reopen|question_addition_or_modification|question_deletion|question_load_modify|delete|disable)$/", $action))
+		if (!$is_write_owner && preg_match("/^(config_change|close|reopen|question_addition_or_modification|question_deletion|question_load_modify|delete|disable)$/", $action))
 		{
 			return array($this->user->lang('NO_AUTH_OPERATION'));
 		}
 
-		if ($this->survey->is_closed() && !$is_owner)
+		if ($this->survey->is_closed() && !$is_write_owner)
 		{
 			return array($this->user->lang('SURVEY_IS_CLOSED'));
 		}

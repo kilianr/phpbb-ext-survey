@@ -110,11 +110,10 @@ class posting implements EventSubscriberInterface
 
 		if (isset($event['topic_id']) && $event['topic_id'])
 		{
-			$this->survey->load_survey($event['topic_id'], $event['forum_id'], $event['post_data']['topic_poster']);
+			$this->survey->load_survey($event['topic_id']);
 		}
 
-		$is_inactive = !empty($this->survey->survey_entries) || !empty($this->survey->survey_questions);
-		$is_inactive = $is_inactive && $this->survey->survey_enabled == false;
+		$is_inactive = !((empty($this->survey->survey_entries) && empty($this->survey->survey_questions)) || $this->survey->survey_enabled);
 
 		$this->template->assign_vars(array(
 			'S_SURVEY_ALLOWED'				=> true,

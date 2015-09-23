@@ -70,6 +70,8 @@ class survey
 	var $topic_id;
 	var $forum_id;
 	var $topic_poster;
+	var $topic_status;
+	var $forum_status;
 	var $survey_enabled = 0;
 	var $settings;
 	var $survey_questions;
@@ -106,21 +108,34 @@ class survey
 	}
 
 	/**
+	 * Set some environment variables
+	 *
+	 * @param int $forum_id
+	 * @param int $topic_poster
+	 * @param int $topic_status
+	 * @param int $forum_status
+	 * @return bool success
+	 */
+	public function set_env($forum_id, $topic_poster, $topic_status, $forum_status)
+	{
+		$this->forum_id = $forum_id;
+		$this->topic_poster = $topic_poster;
+		$this->topic_status = $topic_status;
+		$this->forum_status = $forum_status;
+	}
+
+	/**
 	 * Loads all available data on a survey from the database. Returns false if the topic does not exist.
 	 *
 	 * @param int $topic_id
-	 * @param int $forum_id
-	 * @param int $topic_poster
 	 * @param bool $use_survey_id
 	 * @return bool success
 	 */
-	public function load_survey($topic_id, $forum_id, $topic_poster, $use_survey_id = false)
+	public function load_survey($topic_id, $use_survey_id = false)
 	{
 		$db = $this->db;
 
 		$this->topic_id = $topic_id;
-		$this->forum_id = $forum_id;
-		$this->topic_poster = $topic_poster;
 		$this->survey_questions = array();
 		$this->survey_entries = array();
 
@@ -226,14 +241,36 @@ class survey
 	}
 
 	/**
-	 * Checks if the user is owner of the survey
+	 * Checks if the user is owner of the survey in terms of writing
 	 *
 	 * @param int $user_id
 	 * @return boolean
 	 */
-	public function is_owner($user_id)
+	public function is_write_owner($user_id)
+	{
+		return !$this->is_locked($user_id) && ($this->topic_poster == $user_id || $this->auth->acl_get('m_edit', $this->forum_id));
+	}
+
+	/**
+	 * Checks if the user is owner of the survey in terms of viewing
+	 *
+	 * @param int $user_id
+	 * @return boolean
+	 */
+	public function is_read_owner($user_id)
 	{
 		return $this->topic_poster == $user_id || $this->auth->acl_get('m_edit', $this->forum_id);
+	}
+
+	/**
+	 * Checks if the survey is locked via forum or topic lock
+	 *
+	 * @param int $user_id
+	 * @return boolean
+	 */
+	public function is_locked($user_id)
+	{
+		return ($this->forum_status == ITEM_LOCKED || $this->topic_status == ITEM_LOCKED) && !$this->auth->acl_get('m_edit', $this->forum_id);
 	}
 
 	/**
@@ -267,12 +304,16 @@ class survey
 		{
 			$entry_user_id = $real_user_id;
 		}
-		//TODO: $user->data['is_registered'], !$locked
+		if ($this->is_locked($real_user_id))
+		{
+			return false;
+		}
+		//TODO: $user->data['is_registered']
 		if (!$this->settings['allow_multiple_answer'] && $this->is_participating($entry_user_id))
 		{
 			return false;
 		}
-		if ($this->is_owner($real_user_id))
+		if ($this->is_write_owner($real_user_id))
 		{
 			return true;
 		}
@@ -304,12 +345,16 @@ class survey
 		{
 			$entry_user_id = $real_user_id;
 		}
-		//TODO: $user->data['is_registered'], !$locked
+		if ($this->is_locked($real_user_id))
+		{
+			return false;
+		}
+		//TODO: $user->data['is_registered']
 		if (!$this->is_participating($entry_user_id))
 		{
 			return false;
 		}
-		if ($this->is_owner($real_user_id))
+		if ($this->is_write_owner($real_user_id))
 		{
 			return true;
 		}
@@ -1106,7 +1151,7 @@ class survey
 			$this->db->sql_freeresult($result);
 			foreach (array_unique($surveys) as $survey_id)
 			{
-				$this->load_survey($survey_id, 0, 0, true);
+				$this->load_survey($survey_id, true);
 				foreach ($this->survey_entries as $entry_id => $entry)
 				{
 					if (in_array($entry['user_id'], $user_ids))
