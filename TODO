@@ -1,7 +1,6 @@
 = Features =
 * Input-Validation, esp. for multiple-choice
 * new entry placement with different show_order's
-* Redirect after Confirm-Box
 * handle locked topics
 * Stop-Time as input=datetime(-local?)
 * Input checks for date, time, datetime, datetime-local

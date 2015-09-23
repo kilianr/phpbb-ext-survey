@@ -58,6 +58,9 @@ class viewtopic implements EventSubscriberInterface
 	/** @var string */
 	protected $question_to_load;
 
+	/** @var string */
+	protected $base_url;
+
 	var $topic_id;
 
 	const ADDUSER_ENTRY_ID = "adduser";
@@ -99,6 +102,7 @@ class viewtopic implements EventSubscriberInterface
 	public function show_survey_viewtopic($event)
 	{
 		$forum_id = $event['forum_id'];
+		$this->base_url = $event['base_url'];
 		if (!$this->survey->can_access($forum_id))
 		{
 			return;
@@ -582,6 +586,7 @@ class viewtopic implements EventSubscriberInterface
 		if (confirm_box(true))
 		{
 			$this->survey->close();
+			redirect($this->base_url);
 		}
 		else
 		{
@@ -604,6 +609,7 @@ class viewtopic implements EventSubscriberInterface
 		if (confirm_box(true))
 		{
 			$this->survey->reopen();
+			redirect($this->base_url);
 		}
 		else
 		{
@@ -636,6 +642,7 @@ class viewtopic implements EventSubscriberInterface
 		if (confirm_box(true))
 		{
 			$this->survey->delete_entry($entry_id);
+			redirect($this->base_url);
 		}
 		else
 		{
@@ -877,6 +884,7 @@ class viewtopic implements EventSubscriberInterface
 		if (confirm_box(true))
 		{
 			$this->survey->delete_question($question_id);
+			redirect($this->base_url);
 		}
 		else
 		{
@@ -919,6 +927,7 @@ class viewtopic implements EventSubscriberInterface
 		if (confirm_box(true))
 		{
 			$this->survey->disable();
+			redirect($this->base_url);
 		}
 		else
 		{
@@ -928,7 +937,6 @@ class viewtopic implements EventSubscriberInterface
 			));
 			confirm_box(false, $this->user->lang['SURVEY_DISABLE_CONFIRM'], $s_hidden_fields);
 		}
-
 		return array();
 	}
 
@@ -942,6 +950,7 @@ class viewtopic implements EventSubscriberInterface
 		if (confirm_box(true))
 		{
 			$this->survey->delete($this->topic_id);
+			redirect($this->base_url);
 		}
 		else
 		{
@@ -951,7 +960,6 @@ class viewtopic implements EventSubscriberInterface
 			));
 			confirm_box(false, $this->user->lang['SURVEY_DELETE_ALL_CONFIRM'], $s_hidden_fields);
 		}
-
 		return array();
 	}
 
