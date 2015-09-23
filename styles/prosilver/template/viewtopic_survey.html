@@ -86,7 +86,7 @@ function toggle_survey_table() {
 						<!-- ENDIF -->
 						<!-- DEFINE $ALWAYS_SAME = 'name="{entries.questions.S_INPUT_NAME}" {$CLASS}' -->
 						<td {$CLASS} style="color: black;">
-							<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) or entries.IS_ADDUSER -->
+							<!-- IF S_IS_SURVEY_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) or entries.IS_ADDUSER -->
 								<!-- IF entries.questions.TYPE_STRING == 'NORMAL_TEXT_BOX' -->
 									<input {$ALWAYS_SAME} type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'LARGE_TEXT_BOX' -->

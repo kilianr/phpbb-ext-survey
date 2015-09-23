@@ -332,7 +332,7 @@ class viewtopic implements EventSubscriberInterface
 				{
 					$user_detail = $user_details[$uid];
 					$user_detail['is_self'] = ($uid == $user_id);
-					if ($uid == $user_id)
+					if ($uid == $user_id || $is_owner)
 					{
 						$entries_modifyable[] = $entry['entry_id'];
 					}
@@ -340,8 +340,12 @@ class viewtopic implements EventSubscriberInterface
 				}
 				else
 				{
-					$user_detail['username'] = $user_detail['username_full'] = ($entry['entry_username'] != '' ? $entry['entry_username'] : $this->user->lang['GUEST']);
 					$user_detail['is_self'] = false;
+					if ($is_owner)
+					{
+						$entries_modifyable[] = $entry['entry_id'];
+					}
+					$user_detail['username'] = $user_detail['username_full'] = ($entry['entry_username'] != '' ? $entry['entry_username'] : $this->user->lang['GUEST']);
 				}
 				foreach ($user_detail as $key => $value)
 				{
