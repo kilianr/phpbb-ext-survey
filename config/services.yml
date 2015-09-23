@@ -46,3 +46,9 @@ services:
         class: kilianr\survey\event\acp_events
         tags:
             - { name: event.listener }
+    kilianr.survey.events.user:
+        class: kilianr\survey\event\user
+        arguments:
+            - @kilianr.survey.functions.survey
+        tags:
+            - { name: event.listener }

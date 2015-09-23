@@ -11,7 +11,6 @@
 * Option to de-owner the topic_poster
 
 = Missing Events =
-* User Deletion -> core.delete_user_after
 * Group Deletion -> core.delete_group_after
 * Topic Merge -> NOT AVAILABLE!
 * Topic Split -> NOT AVAILABLE!

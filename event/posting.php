@@ -16,7 +16,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class posting implements EventSubscriberInterface
 {
-
 	static public function getSubscribedEvents()
 	{
 		return array(

@@ -132,11 +132,11 @@ class viewtopic implements EventSubscriberInterface
 		$action_url = $viewtopic_url . '&amp;' . $this->action_name . '=';
 		$can_add_new_entry = $this->survey->can_add_new_entry($user_id);
 
-		if (count($this->survey->survey_questions) == 0)
+		if (empty($this->survey->survey_questions))
 		{
 			$survey_errors[] = $this->user->lang['SURVEY_NO_QUESTIONS'];
 		}
-		if (count($this->survey->survey_entries) == 0)
+		if (empty($this->survey->survey_entries))
 		{
 			$survey_errors[] = $this->user->lang['SURVEY_NO_ENTRIES'];
 		}
@@ -253,18 +253,26 @@ class viewtopic implements EventSubscriberInterface
 
 		// Fetch User details
 		$user_details = array();
+		$anonymous = false;
 		foreach ($this->survey->survey_entries as $entry)
 		{
-			$user_details[$entry['user_id']] = true;
+			if ($entry['user_id'] != ANONYMOUS)
+			{
+				$user_details[$entry['user_id']] = true;
+			}
+			else
+			{
+				$anonymous = true;
+			}
 		}
 		$user_details[$user_id] = true;
-		$sql = 'SELECT user_id, username, user_colour FROM ' . USERS_TABLE .
-			' WHERE ' . $this->db->sql_in_set('user_id', array_keys($user_details));
+		$sql = 'SELECT user_id, username, user_colour FROM ' . USERS_TABLE . ' WHERE ' . $this->db->sql_in_set('user_id', array_keys($user_details));
 		$result = $this->db->sql_query($sql);
 		while ($row = $this->db->sql_fetchrow($result))
 		{
 			$user_details[$row['user_id']] = $row;
 		}
+		$this->db->sql_freeresult($result);
 
 		// Output entries
 		$entries_modifyable = array();
@@ -319,13 +327,22 @@ class viewtopic implements EventSubscriberInterface
 			if ($entry['entry_id'] != self::ADDUSER_ENTRY_ID)
 			{
 				$uid = $entry['user_id'];
-				$user_detail = $user_details[$uid];
-				$user_detail['is_self'] = ($uid == $user_id);
-				if ($uid == $user_id)
+				$user_detail = array();
+				if ($uid != ANONYMOUS)
 				{
-					$entries_modifyable[] = $entry['entry_id'];
+					$user_detail = $user_details[$uid];
+					$user_detail['is_self'] = ($uid == $user_id);
+					if ($uid == $user_id)
+					{
+						$entries_modifyable[] = $entry['entry_id'];
+					}
+					$user_detail['username_full'] = get_username_string('full', $uid, $user_detail['username'], $user_detail['user_colour']);
 				}
-				$user_detail['username_full'] = get_username_string('full', $uid, $user_detail['username'], $user_detail['user_colour']);
+				else
+				{
+					$user_detail['username'] = $user_detail['username_full'] = ($entry['entry_username'] != '' ? $entry['entry_username'] : $this->user->lang['GUEST']);
+					$user_detail['is_self'] = false;
+				}
 				foreach ($user_detail as $key => $value)
 				{
 					$template_vars[strtoupper($key)] = $value;
@@ -370,7 +387,7 @@ class viewtopic implements EventSubscriberInterface
 					{
 						$template_vars_choices[strtoupper($key)] = $value;
 					}
-					$template_vars_choices['SELECTED'] = (isset($entry['answers'][$question_id]) && (array_search($choice['text'], $exploded_answers) !== false) ? ' selected="selected"' : '');
+					$template_vars_choices['SELECTED'] = (isset($entry['answers'][$question_id]) && in_array($choice['text'], $exploded_answers) ? ' selected="selected"' : '');
 					$choices_to_assign[] = $template_vars_choices;
 				}
 				$template_vars_question['choices'] = $choices_to_assign;
@@ -481,7 +498,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_ACTION'					=> $viewtopic_url,
 			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
 			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
-			'SURVEY_ERRORS'						=> (count($survey_errors) > 0) ? implode('<br />', $survey_errors) : false,
+			'SURVEY_ERRORS'						=> (!empty($survey_errors)) ? implode('<br />', $survey_errors) : false,
 			'S_ROOT_PATH'						=> $this->phpbb_root_path,
 			'S_EXT_PATH'						=> $this->survey_path,
 			'S_IS_CLOSED'						=> $is_closed,
@@ -524,13 +541,13 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('SURVEY_INVALID_CAPTION'));
 		}
-		if (array_search($new_settings['show_order'], survey::$SHOW_ORDER_TYPES) === false)
+		if (!in_array($new_settings['show_order'], survey::$SHOW_ORDER_TYPES))
 		{
 			return array($this->user->lang('SURVEY_INVALID_SHOW_ORDER_TYPE'));
 		}
 		$new_settings['allow_change_answer'] = ($new_settings['allow_change_answer'] ? 1 : 0);
 		$new_settings['allow_multiple_answer'] = ($new_settings['allow_multiple_answer'] ? 1 : 0);
-		if (array_search($new_settings['hide_results'], survey::$HIDE_TYPES) === false)
+		if (!in_array($new_settings['hide_results'], survey::$HIDE_TYPES))
 		{
 			return array($this->user->lang('SURVEY_INVALID_HIDE_TYPE'));
 		}
@@ -659,12 +676,14 @@ class viewtopic implements EventSubscriberInterface
 				$adduser_id = array();
 				if (user_get_id_name($adduser_id, $username) == 'NO_USERS')
 				{
-					return array($this->user->lang('NO_USER'));
+					$errors[] = $this->user->lang('NO_USER');
+					continue;
 				}
 				$entry_user_id = $adduser_id[0];
 				if (!$this->survey->can_add_new_entry($real_user_id, $entry_user_id))
 				{
-					return array($this->user->lang('NO_AUTH_OPERATION'));
+					$errors[] = $this->user->lang('NO_AUTH_OPERATION');
+					continue;
 				}
 				$filled_out = true;
 			}
@@ -731,7 +750,7 @@ class viewtopic implements EventSubscriberInterface
 			}
 			if ($abort)
 			{
-				return $errors;
+				continue;
 			}
 			if ($filled_out)
 			{
@@ -795,11 +814,11 @@ class viewtopic implements EventSubscriberInterface
 		}
 		$question['average'] = ($question['average'] ? 1 : 0);
 		$question['cap'] = ($question['cap'] != '' ? $question['cap'] : 0);
-		if (array_search($question['type'], survey::$QUESTION_TYPES) === false)
+		if (!in_array($question['type'], survey::$QUESTION_TYPES))
 		{
 			return array($this->user->lang('SURVEY_INVALID_QUESTION_TYPE'));
 		}
-		if (array_search($question['sum_type'], survey::$QUESTION_SUM_TYPES) === false)
+		if (!in_array($question['sum_type'], survey::$QUESTION_SUM_TYPES))
 		{
 			return array($this->user->lang('SURVEY_INVALID_QUESTION_SUM_TYPE'));
 		}

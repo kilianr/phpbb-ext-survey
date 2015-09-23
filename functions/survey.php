@@ -111,9 +111,10 @@ class survey
 	 * @param int $topic_id
 	 * @param int $forum_id
 	 * @param int $topic_poster
+	 * @param bool $use_survey_id
 	 * @return bool success
 	 */
-	public function load_survey($topic_id, $forum_id, $topic_poster)
+	public function load_survey($topic_id, $forum_id, $topic_poster, $use_survey_id = false)
 	{
 		$db = $this->db;
 
@@ -123,14 +124,18 @@ class survey
 		$this->survey_questions = array();
 		$this->survey_entries = array();
 
-		$sql = 'SELECT survey_enabled FROM ' . TOPICS_TABLE . ' WHERE topic_id = ' . $topic_id;
-		$result = $db->sql_query($sql);
-		if (!$row = $db->sql_fetchrow($result))
+		if (!$use_survey_id)
 		{
-			// topic doesn't exist
-			return false;
+			$sql = 'SELECT survey_enabled FROM ' . TOPICS_TABLE . ' WHERE topic_id = ' . $topic_id;
+			$result = $db->sql_query($sql);
+			if (!$row = $db->sql_fetchrow($result))
+			{
+				// topic doesn't exist
+				return false;
+			}
+			$this->survey_enabled = $row['survey_enabled'];
+			$db->sql_freeresult($result);
 		}
-		$this->survey_enabled = $row['survey_enabled'];
 
 		// load survey settings
 		$sql = 'SELECT ';
@@ -143,8 +148,7 @@ class survey
 			}
 			$sql .= $setting;
 		}
-		$sql .= ' FROM ' . $this->tables['surveys'] . '
-				WHERE topic_id = ' . $topic_id;
+		$sql .= ' FROM ' . $this->tables['surveys'] . ' WHERE ' . ($use_survey_id ? 's_id' : 'topic_id') . ' = ' . $topic_id;
 		$result = $db->sql_query($sql);
 		if (!$row = $db->sql_fetchrow($result))
 		{
@@ -155,6 +159,7 @@ class survey
 		{
 			$this->settings[$setting] = $row[$setting];
 		}
+		$db->sql_freeresult($result);
 
 		// load questions for this survey
 		$sql = 'SELECT q_id, label, type, sum_value, sum_type, sum_by, average, cap
@@ -177,10 +182,12 @@ class survey
 			{
 				$this->survey_questions[$row['q_id']]['choices'][$row2['c_id']] = $row2;
 			}
+			$db->sql_freeresult($result2);
 		}
+		$db->sql_freeresult($result);
 
 		// load entries
-		$sql = 'SELECT entry_id, user_id
+		$sql = 'SELECT entry_id, user_id, entry_username
 				FROM ' . $this->tables['entries'] . '
 				WHERE s_id=' . $this->settings['s_id'] . '
 				ORDER BY entry_id';
@@ -199,7 +206,9 @@ class survey
 			{
 				$this->survey_entries[$row['entry_id']]['answers'][$row2['q_id']] = $row2['answer'];
 			}
+			$db->sql_freeresult($result2);
 		}
+		$db->sql_freeresult($result);
 
 		return true;
 	}
@@ -512,6 +521,7 @@ class survey
 		$this->db->sql_query($sql);
 		$entry_id = $this->db->sql_nextid();
 		$entry['entry_id'] = $entry_id;
+		$entry['entry_username'] = '';
 		$this->survey_entries[$entry_id] = $entry;
 		foreach ($answers as $question_id => $answer)
 		{
@@ -700,15 +710,15 @@ class survey
 	public function get_sum_diff_for_answer($question_id, $value, $sum_by)
 	{
 		$diff = 0;
-		$sum_by = mb_strtolower($sum_by);
+		$sum_by = utf8_strtolower($sum_by);
 		if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 		{
-			$exploded_answers = explode(",", mb_strtolower($value));
-			$diff = (array_search($sum_by, $exploded_answers) !== false ? 1 : 0);
+			$exploded_answers = explode(",", utf8_strtolower($value));
+			$diff = (in_array($sum_by, $exploded_answers) ? 1 : 0);
 		}
 		else
 		{
-			$diff = ($sum_by == mb_strtolower($value) ? 1 : 0);
+			$diff = ($sum_by == utf8_strtolower($value) ? 1 : 0);
 		}
 		return $diff;
 	}
@@ -727,17 +737,17 @@ class survey
 		$exploded_answers = '';
 		if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 		{
-			$exploded_answers = explode(",", mb_strtolower($value));
+			$exploded_answers = explode(",", utf8_strtolower($value));
 		}
 		foreach ($this->survey_questions[$question_id]['choices'] as $choice_id => $choice)
 		{
 			if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 			{
-				$cdiff[$choice_id] += (in_array(mb_strtolower($choice['text']), $exploded_answers) ? $sign : 0);
+				$cdiff[$choice_id] += (in_array(utf8_strtolower($choice['text']), $exploded_answers) ? $sign : 0);
 			}
 			else
 			{
-				$cdiff[$choice_id] += (mb_strtolower($choice['text']) == mb_strtolower($value) ? $sign : 0);
+				$cdiff[$choice_id] += (utf8_strtolower($choice['text']) == utf8_strtolower($value) ? $sign : 0);
 			}
 		}
 	}
@@ -924,6 +934,7 @@ class survey
 			// topic doesn't exist
 			return false;
 		}
+		$this->db->sql_freeresult($result);
 		return $row['survey_enabled'] == true;
 	}
 
@@ -1025,11 +1036,13 @@ class survey
 					$sql = 'DELETE FROM ' . $this->tables['answers'] . ' WHERE q_id=' . $qid;
 					$this->db->sql_query($sql);
 				}
+				$this->db->sql_freeresult($result2);
 				$sql = 'DELETE FROM ' . $this->tables['questions'] . ' WHERE s_id=' . $sid;
 				$this->db->sql_query($sql);
 				$sql = 'DELETE FROM ' . $this->tables['entries'] . ' WHERE s_id=' . $sid;
 				$this->db->sql_query($sql);
 			}
+			$this->db->sql_freeresult($result);
 			$sql = 'DELETE FROM ' . $this->tables['surveys'] . ' WHERE topic_id=' . $tid;
 			$this->db->sql_query($sql);
 
@@ -1045,6 +1058,63 @@ class survey
 			unset($this->settings);
 			unset($this->survey_questions);
 			unset($this->survey_entries);
+		}
+	}
+
+	/**
+	 * Handle the deletion of one or multiple users
+	 *
+	 * @param int $mode
+	 * @param array $user_ids
+	 * @param bool $retain_username
+	 */
+	public function delete_user($mode, $user_ids, $retain_username)
+	{
+		if ($mode == 'retain')
+		{
+			$usernames = array();
+			if ($retain_username !== false)
+			{
+				$sql = 'SELECT user_id, username FROM ' . USERS_TABLE . ' WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
+				$result = $this->db->sql_query($sql);
+				while ($row = $this->db->sql_fetchrow($result))
+				{
+					$usernames[(int) $row['user_id']] = $row['username'];
+				}
+				$this->db->sql_freeresult($result);
+			}
+			foreach ($user_ids as $uid)
+			{
+				$update_array = array('user_id' => ANONYMOUS);
+				if ($retain_username !== false)
+				{
+					$update_array['entry_username'] = $usernames[$uid];
+				}
+				$sql = 'UPDATE ' . $this->tables['entries'] . ' SET ' . $this->db->sql_build_array('UPDATE', $update_array) . ' WHERE user_id = ' . $uid;
+				$this->db->sql_query($sql);
+			}
+		}
+		else if ($mode == 'remove')
+		{
+			$surveys = array();
+			$sql = 'SELECT s_id FROM ' . $this->tables['entries'] . ' WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
+			$result = $this->db->sql_query($sql);
+			while ($row = $this->db->sql_fetchrow($result))
+			{
+				$surveys[] = $row['s_id'];
+			}
+			$this->db->sql_freeresult($result);
+			foreach (array_unique($surveys) as $survey_id)
+			{
+				$this->load_survey($survey_id, 0, 0, true);
+				foreach ($this->survey_entries as $entry_id => $entry)
+				{
+					if (in_array($entry['user_id'], $user_ids))
+					{
+						$this->delete_entry($entry_id);
+					}
+				}
+			}
 		}
 	}
 }

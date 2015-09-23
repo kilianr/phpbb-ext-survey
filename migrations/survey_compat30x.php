@@ -83,6 +83,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						'entry_id'				=> array('UINT', null, 'auto_increment'),
 						's_id'					=> array('UINT', 0),
 						'user_id'				=> array('UINT', 0),
+						'entry_username'		=> array('VCHAR_UNI', ''),
 					),
 					'PRIMARY_KEY'	=> 'entry_id',
 					'KEYS'			=> array(
