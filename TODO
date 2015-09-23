@@ -6,6 +6,9 @@
 * Type-Checks / Input-Validation for old answers on modify_question
 * Access to survey by group
 * Option to de-owner the topic_poster
+* Example field for questions
+* Migration routine for old phpBB3.0 survey data
+* Check for is_registered
 
 = Missing Events =
 * Group Deletion -> core.delete_group_after
@@ -23,7 +26,7 @@
 * Hide button
 * Mobile?
 * Make forms look nice
-* Limit MC-Box Height
+* Limit MC-Box Height (max. height: 4)
 * successbox (green), warningbox (yellow), errorbox (red), infobox (blue)
 * Only display average row if necessary
 * Switch from "edit-mode" to "view-mode" for owners
