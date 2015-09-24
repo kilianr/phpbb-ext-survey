@@ -8,7 +8,6 @@
 * Option to de-owner the topic_poster
 * Example field for questions
 * Migration routine for old phpBB3.0 survey data
-* Check for is_registered
 
 = Missing Events =
 * Group Deletion -> core.delete_group_after

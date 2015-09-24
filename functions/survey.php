@@ -252,7 +252,7 @@ class survey
 	}
 
 	/**
-	 * Checks if the user is owner of the survey in terms of viewing
+	 * Checks if the user is owner of the survey in terms of reading
 	 *
 	 * @param int $user_id
 	 * @return boolean
@@ -308,7 +308,10 @@ class survey
 		{
 			return false;
 		}
-		//TODO: $user->data['is_registered']
+		if (!$this->user->data['is_registered'])
+		{
+			return false;
+		}
 		if (!$this->settings['allow_multiple_answer'] && $this->is_participating($entry_user_id))
 		{
 			return false;
@@ -349,7 +352,10 @@ class survey
 		{
 			return false;
 		}
-		//TODO: $user->data['is_registered']
+		if (!$this->user->data['is_registered'])
+		{
+			return false;
+		}
 		if (!$this->is_participating($entry_user_id))
 		{
 			return false;
