@@ -738,16 +738,24 @@ class viewtopic implements EventSubscriberInterface
 				else if ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] && isset($this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id]))
 				{
 					$answers_choice_array = array_unique($this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id]);
-					$answers[$question_id] = '';
-					$first = true;
+					$answers[$question_id] = array();
 					foreach ($answers_choice_array as $choice_id)
 					{
-						$answers[$question_id] .= ($first ? '' : ',') . $question['choices'][$choice_id]['text'];
-						$first = false;
+						if (isset($question['choices'][$choice_id]))
+						{
+							$answers[$question_id][] = $question['choices'][$choice_id]['text'];
+						}
 					}
+					$answers[$question_id] = implode(",", $answers[$question_id]);
 				}
 				if ($answers[$question_id] != '')
 				{
+					if (!$this->survey->check_answer($answers[$question_id], $question_id))
+					{
+						$errors[] = $this->user->lang('SURVEY_INVALID_ANSWER');
+						$abort = true;
+						continue;
+					}
 					$filled_out = true;
 					if ($this->survey->has_cap($question_id) && !$this->survey->is_write_owner($real_user_id))
 					{
@@ -758,6 +766,7 @@ class viewtopic implements EventSubscriberInterface
 						{
 							$errors[] = $this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->survey_questions[$question_id]['label']);
 							$abort = true;
+							continue;
 						}
 					}
 				}

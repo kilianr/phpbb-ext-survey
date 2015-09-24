@@ -67,6 +67,7 @@ $lang = array_merge($lang, array(
 	'SURVEY_HIDE_RESULTS_DESC_OWNER'	=> 'The answers of this survey are hidden, as topic-starter or due to your permissions you can still see all entries.',
 	'SURVEY_HIDE_RESULTS_DESC_USER'		=> 'Because the answers of this survey are hidden, you can only see your own entries.',
 	'SURVEY_HIDDEN'						=> 'hidden',
+	'SURVEY_INVALID_ANSWER'				=> 'Invalid answer.',
 	'SURVEY_INVALID_CAPTION'			=> 'Invalid caption.',
 	'SURVEY_INVALID_HIDE_TYPE'			=> 'Invalid visibilty type.',
 	'SURVEY_INVALID_QUESTION_CHOICES'	=> 'Invalid question: No choices set.',

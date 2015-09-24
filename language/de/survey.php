@@ -67,6 +67,7 @@ $lang = array_merge($lang, array(
 	'SURVEY_HIDE_RESULTS_DESC_OWNER'	=> 'Die Antworten des Fragebogens sind versteckt, als Topicstarter oder aufgrund deiner Rechte kannst du dennoch alle Einträge sehen.',
 	'SURVEY_HIDE_RESULTS_DESC_USER'		=> 'Die Antworten des Fragebogens sind versteckt, daher kannst du nur deine eigenen Einträge sehen.',
 	'SURVEY_HIDDEN'						=> 'versteckt',
+	'SURVEY_INVALID_ANSWER'				=> 'Ungültige Antwort.',
 	'SURVEY_INVALID_CAPTION'			=> 'Ungültige Überschrift.',
 	'SURVEY_INVALID_HIDE_TYPE'			=> 'Ungültiger Sichtbarkeits-Typ.',
 	'SURVEY_INVALID_QUESTION_CHOICES'	=> 'Frage ungültig: Keine Wahlmöglichkeiten gesetzt.',

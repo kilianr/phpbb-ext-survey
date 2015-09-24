@@ -613,7 +613,6 @@ class survey
 	{
 		foreach ($answers as $question_id => $answer)
 		{
-			//TODO: Choices, Type checks
 			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
 			{
 				$sql = 'UPDATE ' . $this->tables['answers'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('answer' => $answer)) . ' WHERE q_id=' . $question_id . ' AND entry_id=' . $entry_id;
@@ -638,7 +637,6 @@ class survey
 	 */
 	public function add_answer($question_id, $entry_id, $answer)
 	{
-		//TODO: Choices, Type checks
 		$insert_answer = array(
 			'q_id'		=> $question_id,
 			'entry_id'	=> $entry_id,
@@ -648,6 +646,146 @@ class survey
 		$this->db->sql_query($sql);
 		$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
 		$this->modify_sum_entry($question_id, true, true, $answer, false, 0, true);
+	}
+
+	/**
+	 * Check if the answer is conform with the type of the question
+	 *
+	 * @param string $answer
+	 * @param int $question_id
+	 * @return bool
+	 */
+	public function check_answer($answer, $question_id)
+	{
+		if (strlen($answer) > 3000)
+		{
+			return false;
+		}
+		$question_type = $this->survey_questions[$question_id]['type'];
+		switch ($question_type)
+		{
+			case self::$QUESTION_TYPES['NUMBER']:
+				return preg_match('/^-?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?$/', $answer) ? true : false;
+				break;
+			case self::$QUESTION_TYPES['CHECKBOX']:
+				return preg_match('/^[01]$/', $answer) ? true : false;
+				break;
+			case self::$QUESTION_TYPES['DROP_DOWN_MENU']:
+				return $this->check_choice($answer, $question_id, false);
+				break;
+			case self::$QUESTION_TYPES['MULTIPLE_CHOICE']:
+				return $this->check_choice($answer, $question_id, true);
+				break;
+			case self::$QUESTION_TYPES['DATE']:
+				return $this->check_full_date($answer);
+				break;
+			case self::$QUESTION_TYPES['TIME']:
+				return $this->check_partial_time($answer);
+				break;
+			case self::$QUESTION_TYPES['DATETIME']:
+				$matches = array();
+				if (preg_match('/^(.+)T(.+)(Z|[+-][0-9]{2}:[0-9]{2})$/', $answer, $matches) === 1)
+				{
+					return $this->check_full_date($matches[1]) && $this->check_partial_time($matches[2]) && $this->check_time_offset($matches[3]);
+				}
+				return false;
+				break;
+			case self::$QUESTION_TYPES['DATETIME_LOCAL']:
+				$matches = array();
+				if (preg_match('/^(.+)T(.+)$/', $answer, $matches) === 1)
+				{
+					return $this->check_full_date($matches[1]) && $this->check_partial_time($matches[2]);
+				}
+				return false;
+				break;
+		}
+		return true;
+	}
+
+	/**
+	 * Check if the answer is a valid choice for the question
+	 *
+	 * @param string $answer
+	 * @param int $question_id
+	 * @param bool $is_multiple_choice
+	 * @return bool
+	 */
+	public function check_choice($answer, $question_id, $is_multiple_choice)
+	{
+		$answer = utf8_strtolower($answer);
+		$valid_choices = array();
+		$given_choices = array($answer);
+		foreach ($this->survey_questions[$question_id]['choices'] as $choice)
+		{
+			$valid_choices[] = utf8_strtolower($choices['text']);
+		}
+		if ($is_multiple_choice)
+		{
+			$given_choices = explode(",", $answer);
+		}
+		return empty(array_diff($given_choices, $valid_choices));
+	}
+
+	/**
+	 * Check if the answer is a valid HTML5 date dataype,
+	 * meaning that it is conform to full-date as defined in RFC 3339
+	 * but the year can have more than 4 digits
+	 *
+	 * @param string $answer
+	 * @return bool
+	 */
+	public function check_full_date($answer)
+	{
+		$matches = array();
+		if (preg_match('/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/', $answer, $matches) === 1)
+		{
+			return checkdate($matches[2], $matches[3], $matches[1]);
+		}
+		return false;
+	}
+
+	/**
+	 * Check if the answer is a valid HTML5 time datatype,
+	 * meaning that it is conform to partial-time as defined in RFC 3339
+	 *
+	 * @param string $answer
+	 * @return bool
+	 */
+	public function check_partial_time($answer)
+	{
+		$matches = array();
+		if (preg_match('/^([0-9]{2}):([0-9]{2}):([0-9]{2})(\.[0-9]+)?$/', $answer, $matches) === 1)
+		{
+			if ($matches[1] <= 24 && $matches[2] <= 59 && $matches[3] <= 59)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check if the answer is conform to time-offset as defined in RFC 3339
+	 *
+	 * @param string $answer
+	 * @return bool
+	 */
+	public function check_time_offset($answer)
+	{
+		if ($answer == "Z")
+		{
+			return true;
+		}
+		// test for time-numoffset
+		$matches = array();
+		if (preg_match('/^[+-]([0-9]{2}):([0-9]{2})$/', $answer, $matches) === 1)
+		{
+			if ($matches[1] <= 24 && $matches[2] <= 59)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
