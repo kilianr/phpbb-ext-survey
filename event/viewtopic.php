@@ -216,6 +216,7 @@ class viewtopic implements EventSubscriberInterface
 		// Output questions
 		$entry_count = $this->survey->get_entry_count();
 		$can_see_sums = false;
+		$can_see_averages = false;
 		$some_cap_set = false;
 		foreach ($this->survey->questions as $question_id => $question)
 		{
@@ -233,9 +234,13 @@ class viewtopic implements EventSubscriberInterface
 			$template_vars['AVERAGE_STRING'] = $this->survey->get_average_string($question_id, $entry_count);
 			$template_vars['CAP_REACHED'] = $this->survey->cap_reached($question_id);
 			$template_vars['HAS_CHOICES'] = !empty($question['choices']);
-			if ($template_vars['SUM_STRING'] != '' || $template_vars['AVERAGE_STRING'] != '')
+			if ($template_vars['SUM_STRING'] != '')
 			{
 				$can_see_sums = true;
+			}
+			if ($template_vars['AVERAGE_STRING'] != '')
+			{
+				$can_see_averages = true;
 			}
 			if ($this->survey->has_cap($question_id))
 			{
@@ -255,7 +260,7 @@ class viewtopic implements EventSubscriberInterface
 		}
 		if ($entry_count == 0 || ($this->survey->hide_everything() && !$is_read_owner))
 		{
-			$can_see_sums = false;
+			$can_see_sums = $can_see_averages = false;
 		}
 
 		// Fetch User details
@@ -521,6 +526,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_MODIFYABLE_ENTRIES'		=> implode(",", $entries_modifyable),
 			'S_SURVEY_CAN_SEE_OR_ADD_ENTRIES'	=> $can_see_or_add_entries,
 			'S_CAN_SEE_SUMS'					=> $can_see_sums,
+			'S_CAN_SEE_AVERAGES'				=> $can_see_averages,
 			'S_SOME_CAP_SET'					=> $some_cap_set,
 			'S_SURVEY_LOADED_QUESTION'			=> ($this->question_to_load !== false ? true : false),
 			'S_SURVEY_LOADED_QUESTION_ID'		=> $this->question_to_load,

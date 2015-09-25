@@ -25,7 +25,6 @@
 * Mobile?
 * Make forms look nice
 * successbox (green), warningbox (yellow), errorbox (red), infobox (blue)
-* Only display average row if necessary
 * Switch from "edit-mode" to "view-mode" for owners
 
 = QA =

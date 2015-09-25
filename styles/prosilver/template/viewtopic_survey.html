@@ -59,8 +59,10 @@ function toggle_survey_table() {
 			</tr>
 		</thead>
 		<tbody>
+		<!-- DEFINE $SPACEROW = 0 -->
 		<!-- IF S_SURVEY_CAN_SEE_OR_ADD_ENTRIES -->
 			<!-- BEGIN entries -->
+			<!-- DEFINE $SPACEROW = 1 -->
 			<tr <!-- IF !entries.IS_SELF -->class="survey_hidemobile"<!-- ENDIF -->>
 				<td>
 				<!-- IF entries.IS_ADDUSER -->
@@ -130,37 +132,39 @@ function toggle_survey_table() {
 			</tr>
 			<!-- END entries -->
 		<!-- ENDIF -->
-		<!-- IF S_SURVEY_CAN_SEE_OR_ADD_ENTRIES and S_CAN_SEE_SUMS and (S_SURVEY_IS_READ_OWNER or not S_HIDE_EVERYTHING) -->
-			<tr style="border-bottom: 3px double black;">
-				<td class="spacerow"></td>
-				
-				<!-- BEGIN questions -->
-				<td class="spacerow"></td>
-				<!-- END questions -->
-			</tr>
-		<!-- ENDIF -->
-		<!-- IF S_CAN_SEE_SUMS and (S_SURVEY_IS_READ_OWNER or not S_HIDE_EVERYTHING) -->
-			<tr>
-				<td>{L_SURVEY_SUM}<!-- IF S_SOME_CAP_SET --> ({L_SURVEY_CAP})<!-- ENDIF -->{L_COLON}</td>
-				<!-- BEGIN questions -->
-					<td<!-- IF questions.HAS_CHOICES --> title="<!-- BEGIN choices -->{questions.choices.TEXT}{L_COLON}&nbsp;{questions.choices.SUM}&#013;<!-- END choices -->"<!-- ENDIF -->>
-					<div class="summary-box">
-						<div class="<!-- IF questions.CAP_REACHED -->cap-reached<!-- ELSE -->summary<!-- ENDIF -->" ><!-- IF questions.HAS_CHOICES --><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_topic_poll.gif" alt="{L_SURVEY_CHOICES}">&nbsp;<!-- ENDIF -->{questions.SUM_STRING}<!-- IF questions.CAP > 0 --> ({questions.CAP})<!-- ENDIF --></div>
-					</div>
-					</td>
-				<!-- END questions -->
-			</tr>
-			
-			<tr>
-				<td>{L_SURVEY_AVERAGE}{L_COLON}</td>
-				<!-- BEGIN questions -->
-					<td>
-					<div class="summary-box">
-						<div class="summary" >{questions.AVERAGE_STRING}</div>
-					</div>
-					</td>
-				<!-- END questions -->
-			</tr>
+		<!-- IF (S_CAN_SEE_SUMS or S_CAN_SEE_AVERAGES) and (S_SURVEY_IS_READ_OWNER or not S_HIDE_EVERYTHING) -->
+			<!-- IF $SPACEROW == 1 -->
+				<tr style="border-bottom: 3px double black;">
+					<td class="spacerow"></td>
+					<!-- BEGIN questions -->
+					<td class="spacerow"></td>
+					<!-- END questions -->
+				</tr>
+			<!-- ENDIF -->
+			<!-- IF S_CAN_SEE_SUMS -->
+				<tr>
+					<td>{L_SURVEY_SUM}<!-- IF S_SOME_CAP_SET --> ({L_SURVEY_CAP})<!-- ENDIF -->{L_COLON}</td>
+					<!-- BEGIN questions -->
+						<td<!-- IF questions.HAS_CHOICES --> title="<!-- BEGIN choices -->{questions.choices.TEXT}{L_COLON}&nbsp;{questions.choices.SUM}&#013;<!-- END choices -->"<!-- ENDIF -->>
+						<div class="summary-box">
+							<div class="<!-- IF questions.CAP_REACHED -->cap-reached<!-- ELSE -->summary<!-- ENDIF -->" ><!-- IF questions.HAS_CHOICES --><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_topic_poll.gif" alt="{L_SURVEY_CHOICES}">&nbsp;<!-- ENDIF -->{questions.SUM_STRING}<!-- IF questions.CAP > 0 --> ({questions.CAP})<!-- ENDIF --></div>
+						</div>
+						</td>
+					<!-- END questions -->
+				</tr>
+			<!-- ENDIF -->
+			<!-- IF S_CAN_SEE_AVERAGES -->
+				<tr>
+					<td>{L_SURVEY_AVERAGE}{L_COLON}</td>
+					<!-- BEGIN questions -->
+						<td>
+						<div class="summary-box">
+							<div class="summary" >{questions.AVERAGE_STRING}</div>
+						</div>
+						</td>
+					<!-- END questions -->
+				</tr>
+			<!-- ENDIF -->
 		<!-- ENDIF -->
 		</tbody>
 	</table>
