@@ -36,7 +36,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						'show_order'			=> array('UINT:1', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']),
 						'allow_change_answer'	=> array('BOOL', 1),
 						'allow_multiple_answer'	=> array('BOOL', 0),
-						'hide_results'			=> array('UINT:1', survey::$HIDE_TYPES['NO_HIDE']),
+						'visibility'			=> array('UINT:1', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING']),
 						'start_time'			=> array('TIMESTAMP', 0),
 						'stop_time'				=> array('TIMESTAMP', null),
 					),
@@ -137,7 +137,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 				array('config.add', array('kilianr_survey_default_show_order', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME'])),
 				array('config.add', array('kilianr_survey_default_allow_change_answer', true)),
 				array('config.add', array('kilianr_survey_default_allow_multiple_answer', false)),
-				array('config.add', array('kilianr_survey_default_hide_results', survey::$HIDE_TYPES['NO_HIDE'])),
+				array('config.add', array('kilianr_survey_default_visibility', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING'])),
 		);
 	}
 }

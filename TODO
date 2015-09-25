@@ -32,7 +32,3 @@
 * Write tests
 * Documentation
 * version-check json in repository, link to github raw
-* Change some variable names and sql columns
-** hide_results -> visibilty
-** survey_xyz -> xyz
-** sum_by -> count_by

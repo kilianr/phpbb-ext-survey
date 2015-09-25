@@ -15,14 +15,14 @@ namespace kilianr\survey\functions;
  */
 class survey
 {
-	public static $SHOW_ORDER_TYPES = array(
+	static public $SHOW_ORDER_TYPES = array(
 		'ALPHABETICAL_USERNAME'				=> 0,
 		'RESPONSE_TIME'						=> 1,
 		'ALPHABETICAL_FIRST_ANSWER'			=> 2,
 		'ALPHABETICAL_FIRST_ANSWER_REVERSE'	=> 3,
 	);
 
-	public static $QUESTION_TYPES = array(
+	static public $QUESTION_TYPES = array(
 		'NORMAL_TEXT_BOX'	=> 0,
 		'LARGE_TEXT_BOX'	=> 1,
 		'NUMBER'			=> 2,
@@ -35,18 +35,18 @@ class survey
 		'DATETIME_LOCAL'	=> 9,
 	);
 
-	public static $QUESTION_SUM_TYPES = array(
+	static public $QUESTION_SUM_TYPES = array(
 		'NO_SUM'				=> 0,
 		'NUMBER_OF_RESPONSES'	=> 1,
 		'SUM_OF_NUMBERS'		=> 2,
 		'MATCHING_TEXT'			=> 3,
 	);
 
-	public static $HIDE_TYPES = array(
-		'NO_HIDE'				=> 0,
-		'ANONYMIZE'				=> 1,
-		'HIDE_ENTRIES'			=> 2,
-		'HIDE_EVERYTHING'		=> 3,
+	static public $VISIBILITY_TYPES = array(
+		'SHOW_EVERYTHING'	=> 0,
+		'ANONYMIZE'			=> 1,
+		'HIDE_ENTRIES'		=> 2,
+		'HIDE_EVERYTHING'	=> 3,
 	);
 
 	/** @var \phpbb\db\driver\driver_interface */
@@ -67,16 +67,46 @@ class survey
 	/** @var int */
 	protected $time_called;
 
-	var $topic_id;
-	var $forum_id;
-	var $topic_poster;
-	var $topic_status;
-	var $forum_status;
-	var $survey_enabled = 0;
-	var $settings;
-	var $survey_questions;
-	var $survey_entries;
+	/** @var int */
+	protected $topic_id;
 
+	/** @var int */
+	protected $forum_id;
+
+	/** @var int */
+	protected $topic_poster;
+
+	/** @var int */
+	protected $topic_status;
+
+	/** @var int */
+	protected $forum_status;
+
+	/** @var int */
+	public $enabled = 0;
+
+	/** @var array */
+	public $settings;
+
+	/** @var array */
+	public $questions;
+
+	/** @var array */
+	public $entries;
+
+	/**
+	 * Constructor
+	 *
+	 * @param \phpbb\db\driver\driver_interface $db
+	 * @param \phpbb\config\config $config
+	 * @param \phpbb\user $user
+	 * @param \phpbb\auth\auth $auth
+	 * @param string $surveys_table
+	 * @param string $questions_table
+	 * @param string $question_choices_table
+	 * @param string $entries_table
+	 * @param string $answers_table
+	 */
 	public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\config\config $config, \phpbb\user $user, \phpbb\auth\auth $auth, $surveys_table, $questions_table, $question_choices_table, $entries_table, $answers_table)
 	{
 		$this->settings = array(
@@ -85,13 +115,13 @@ class survey
 			'show_order'			=> 0,
 			'allow_change_answer'	=> 0,
 			'allow_multiple_answer'	=> 0,
-			'hide_results'			=> 0,
+			'visibility'			=> 0,
 			'start_time'			=> 0,
 			'stop_time'				=> null,
 		);
 
-		$this->survey_questions = array();
-		$this->survey_entries = array();
+		$this->questions = array();
+		$this->entries = array();
 
 		$this->db = $db;
 		$this->config = $config;
@@ -136,8 +166,8 @@ class survey
 		$db = $this->db;
 
 		$this->topic_id = $topic_id;
-		$this->survey_questions = array();
-		$this->survey_entries = array();
+		$this->questions = array();
+		$this->entries = array();
 
 		if (!$use_survey_id)
 		{
@@ -148,7 +178,7 @@ class survey
 				// topic doesn't exist
 				return false;
 			}
-			$this->survey_enabled = $row['survey_enabled'];
+			$this->enabled = $row['survey_enabled'];
 			$db->sql_freeresult($result);
 		}
 
@@ -163,7 +193,7 @@ class survey
 			}
 			$sql .= $setting;
 		}
-		$sql .= ' FROM ' . $this->tables['surveys'] . ' WHERE ' . ($use_survey_id ? 's_id' : 'topic_id') . ' = ' . $topic_id;
+		$sql .= " FROM {$this->tables['surveys']} WHERE " . ($use_survey_id ? 's_id' : 'topic_id') . " = $topic_id";
 		$result = $db->sql_query($sql);
 		if (!$row = $db->sql_fetchrow($result))
 		{
@@ -177,49 +207,38 @@ class survey
 		$db->sql_freeresult($result);
 
 		// load questions for this survey
-		$sql = 'SELECT q_id, label, type, sum_value, sum_type, sum_by, average, cap
-				FROM ' . $this->tables['questions'] . '
-				WHERE s_id=' . $this->settings['s_id'] . '
-				ORDER BY q_id ASC';
+		$sql = "SELECT q_id, label, type, sum_value, sum_type, sum_by, average, cap FROM {$this->tables['questions']} WHERE s_id = {$this->settings['s_id']}";
 		$result = $db->sql_query($sql);
-		$this->survey_questions = array();
+		$this->questions = array();
 		while ($row = $db->sql_fetchrow($result))
 		{
-			$this->survey_questions[$row['q_id']] = $row;
+			$this->questions[$row['q_id']] = $row;
 			// load question choices
-			$sql = 'SELECT c_id, text, sum
-					FROM ' . $this->tables['question_choices'] . '
-					WHERE q_id=' . $row['q_id'] . '
-					ORDER BY c_id ASC';
+			$sql = "SELECT c_id, text, sum FROM {$this->tables['question_choices']} WHERE q_id = {$row['q_id']}";
 			$result2 = $db->sql_query($sql);
-			$this->survey_questions[$row['q_id']]['choices'] = array();
+			$this->questions[$row['q_id']]['choices'] = array();
 			while ($row2 = $db->sql_fetchrow($result2))
 			{
-				$this->survey_questions[$row['q_id']]['choices'][$row2['c_id']] = $row2;
+				$this->questions[$row['q_id']]['choices'][$row2['c_id']] = $row2;
 			}
 			$db->sql_freeresult($result2);
 		}
 		$db->sql_freeresult($result);
 
 		// load entries
-		$sql = 'SELECT entry_id, user_id, entry_username
-				FROM ' . $this->tables['entries'] . '
-				WHERE s_id=' . $this->settings['s_id'] . '
-				ORDER BY entry_id';
+		$sql = "SELECT entry_id, user_id, entry_username FROM {$this->tables['entries']} WHERE s_id = {$this->settings['s_id']}";
 		$result = $db->sql_query($sql);
-		$this->survey_entries = array();
+		$this->entries = array();
 		while ($row = $db->sql_fetchrow($result))
 		{
-			$this->survey_entries[$row['entry_id']] = $row;
+			$this->entries[$row['entry_id']] = $row;
 			// load answers
-			$sql = 'SELECT q_id, answer
-					FROM ' . $this->tables['answers'] . '
-					WHERE entry_id=' . $row['entry_id'];
+			$sql = "SELECT q_id, answer FROM {$this->tables['answers']} WHERE entry_id = {$row['entry_id']}";
 			$result2 = $db->sql_query($sql);
-			$this->survey_entries[$row['entry_id']]['answers'] = array();
+			$this->entries[$row['entry_id']]['answers'] = array();
 			while ($row2 = $db->sql_fetchrow($result2))
 			{
-				$this->survey_entries[$row['entry_id']]['answers'][$row2['q_id']] = $row2['answer'];
+				$this->entries[$row['entry_id']]['answers'][$row2['q_id']] = $row2['answer'];
 			}
 			$db->sql_freeresult($result2);
 		}
@@ -281,7 +300,7 @@ class survey
 	 */
 	public function is_participating($user_id)
 	{
-		foreach ($this->survey_entries as $entry)
+		foreach ($this->entries as $entry)
 		{
 			if ($entry['user_id'] == $user_id)
 			{
@@ -387,7 +406,7 @@ class survey
 	 */
 	public function entry_exists($entry_id)
 	{
-		if ($entry_id != '' && isset($this->survey_entries[$entry_id]))
+		if ($entry_id != '' && isset($this->entries[$entry_id]))
 		{
 			return true;
 		}
@@ -402,7 +421,7 @@ class survey
 	 */
 	public function question_exists($question_id)
 	{
-		if ($question_id != '' && isset($this->survey_questions[$question_id]))
+		if ($question_id != '' && isset($this->questions[$question_id]))
 		{
 			return true;
 		}
@@ -418,7 +437,7 @@ class survey
 	 */
 	public function get_question_id_from_label($question_label, $default_value)
 	{
-		foreach ($this->survey_questions as $question_id => $question)
+		foreach ($this->questions as $question_id => $question)
 		{
 			if ($question['label'] == $question_label)
 			{
@@ -430,14 +449,14 @@ class survey
 
 	/**
 	 * Change config
-	 * The $new_settings can contain caption, show_order, allow_change_answer, allow_multiple_answer, hide_results and stop_time
+	 * The $new_settings can contain caption, show_order, allow_change_answer, allow_multiple_answer, visibility and stop_time
 	 * It MUST NOT contain s_id, topic_id, and start_time
 	 *
 	 * @param array $new_settings
 	 */
 	public function change_config($new_settings)
 	{
-		$sql = 'UPDATE ' . $this->tables['surveys'] . ' SET ' . $this->db->sql_build_array('UPDATE', $new_settings) . ' WHERE s_id = ' . $this->settings['s_id'];
+		$sql = "UPDATE {$this->tables['surveys']} SET " . $this->db->sql_build_array('UPDATE', $new_settings) . " WHERE s_id = {$this->settings['s_id']}";
 		$this->db->sql_query($sql);
 		$this->settings = array_merge($this->settings, $new_settings);
 	}
@@ -452,11 +471,11 @@ class survey
 	{
 		$question['s_id'] = $this->settings['s_id'];
 		$question['sum_value'] = 0;
-		$sql = 'INSERT INTO ' . $this->tables['questions'] . ' ' . $this->db->sql_build_array('INSERT', $question);
+		$sql = "INSERT INTO {$this->tables['questions']} " . $this->db->sql_build_array('INSERT', $question);
 		$this->db->sql_query($sql);
 		$question_id = $this->db->sql_nextid();
 		$question['choices'] = array();
-		$this->survey_questions[$question_id] = $question;
+		$this->questions[$question_id] = $question;
 		foreach ($choices as $choice)
 		{
 			$insert_choice = array(
@@ -464,12 +483,12 @@ class survey
 				'text'	=> $choice,
 				'sum'	=> 0,
 			);
-			$sql = 'INSERT INTO ' . $this->tables['question_choices'] . ' ' . $this->db->sql_build_array('INSERT', $insert_choice);
+			$sql = "INSERT INTO {$this->tables['question_choices']} " . $this->db->sql_build_array('INSERT', $insert_choice);
 			$this->db->sql_query($sql);
 			$choice_id = $this->db->sql_nextid();
 			unset($insert_choice['q_id']);
 			$insert_choice['c_id'] = $choice_id;
-			$this->survey_questions[$question_id]['choices'][$choice_id] = $insert_choice;
+			$this->questions[$question_id]['choices'][$choice_id] = $insert_choice;
 		}
 	}
 
@@ -481,21 +500,21 @@ class survey
 	 */
 	public function delete_question($question_id)
 	{
-		$sql = 'DELETE FROM ' . $this->tables['answers'] . ' WHERE q_id=' . $question_id;
+		$sql = "DELETE FROM {$this->tables['answers']} WHERE q_id = $question_id";
 		$this->db->sql_query($sql);
-		foreach ($this->survey_entries as $entry_id => $entry)
+		foreach ($this->entries as $entry_id => $entry)
 		{
-			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
+			if (isset($this->entries[$entry_id]['answers'][$question_id]))
 			{
-				unset($this->survey_entries[$entry_id]['answers'][$question_id]);
+				unset($this->entries[$entry_id]['answers'][$question_id]);
 			}
 		}
-		$sql = 'DELETE FROM ' . $this->tables['question_choices'] . ' WHERE q_id=' . $question_id;
+		$sql = "DELETE FROM {$this->tables['question_choices']} WHERE q_id = $question_id";
 		$this->db->sql_query($sql);
-		$sql = 'DELETE FROM ' . $this->tables['questions'] . ' WHERE q_id=' . $question_id;
+		$sql = "DELETE FROM {$this->tables['questions']} WHERE q_id = $question_id";
 		$this->db->sql_query($sql);
-		unset($this->survey_questions[$question_id]);
-		foreach ($this->survey_entries as $entry_id => $entry)
+		unset($this->questions[$question_id]);
+		foreach ($this->entries as $entry_id => $entry)
 		{
 			$is_filled = false;
 			foreach ($entry['answers'] as $answer)
@@ -524,19 +543,19 @@ class survey
 	 */
 	public function modify_question($question_id, $question, $choices)
 	{
-		$this->survey_questions[$question_id] = $question;
+		$this->questions[$question_id] = $question;
 		$this->compute_sum($question_id);
-		$this->survey_questions[$question_id]['sum_value'] = $this->survey_questions[$question_id]['sum_value'];
-		$sql = 'UPDATE ' . $this->tables['questions'] . ' SET ' . $this->db->sql_build_array('UPDATE', $this->survey_questions[$question_id]) . ' WHERE q_id = ' .$question_id;
+		$this->questions[$question_id]['sum_value'] = $this->questions[$question_id]['sum_value'];
+		$sql = "UPDATE {$this->tables['questions']} SET " . $this->db->sql_build_array('UPDATE', $this->questions[$question_id]) . " WHERE q_id = $question_id";
 		$this->db->sql_query($sql);
-		$this->survey_questions[$question_id]['q_id'] = $question_id;
-		$sql = 'DELETE FROM ' . $this->tables['question_choices'] . ' WHERE q_id=' . $question_id;
+		$this->questions[$question_id]['q_id'] = $question_id;
+		$sql = "DELETE FROM {$this->tables['question_choices']} WHERE q_id = $question_id";
 		$this->db->sql_query($sql);
-		$this->survey_questions[$question_id]['choices'] = array();
+		$this->questions[$question_id]['choices'] = array();
 		foreach ($choices as $choice)
 		{
 			$count = 0;
-			foreach ($this->survey_entries as $entry)
+			foreach ($this->entries as $entry)
 			{
 				$count += (isset($entry['answers'][$question_id]) ? $this->get_sum_diff_for_answer($question_id, $entry['answers'][$question_id], $choice) : 0);
 			}
@@ -545,12 +564,12 @@ class survey
 				'text'	=> $choice,
 				'sum'	=> $count,
 			);
-			$sql = 'INSERT INTO ' . $this->tables['question_choices'] . ' ' . $this->db->sql_build_array('INSERT', $insert_choice);
+			$sql = "INSERT INTO {$this->tables['question_choices']} " . $this->db->sql_build_array('INSERT', $insert_choice);
 			$this->db->sql_query($sql);
 			$choice_id = $this->db->sql_nextid();
 			unset($insert_choice['q_id']);
 			$insert_choice['c_id'] = $choice_id;
-			$this->survey_questions[$question_id]['choices'][$choice_id] = $insert_choice;
+			$this->questions[$question_id]['choices'][$choice_id] = $insert_choice;
 		}
 		//TODO: If type is choices, iterate through answers of this question and delete thoise with now inexistent choice
 	}
@@ -568,12 +587,12 @@ class survey
 			's_id'		=> $this->settings['s_id'],
 			'user_id'	=> $user_id,
 		);
-		$sql = 'INSERT INTO ' . $this->tables['entries'] . ' ' . $this->db->sql_build_array('INSERT', $entry);
+		$sql = "INSERT INTO {$this->tables['entries']} " . $this->db->sql_build_array('INSERT', $entry);
 		$this->db->sql_query($sql);
 		$entry_id = $this->db->sql_nextid();
 		$entry['entry_id'] = $entry_id;
 		$entry['entry_username'] = '';
-		$this->survey_entries[$entry_id] = $entry;
+		$this->entries[$entry_id] = $entry;
 		foreach ($answers as $question_id => $answer)
 		{
 			$this->add_answer($question_id, $entry_id, $answer);
@@ -588,18 +607,18 @@ class survey
 	 */
 	public function delete_entry($entry_id)
 	{
-		$sql = 'DELETE FROM ' . $this->tables['answers'] . ' WHERE entry_id=' . $entry_id;
+		$sql = "DELETE FROM {$this->tables['answers']} WHERE entry_id = $entry_id";
 		$this->db->sql_query($sql);
-		$sql = 'DELETE FROM ' . $this->tables['entries'] . ' WHERE entry_id=' . $entry_id;
+		$sql = "DELETE FROM {$this->tables['entries']} WHERE entry_id = $entry_id";
 		$this->db->sql_query($sql);
-		foreach ($this->survey_questions as $question_id => $question)
+		foreach ($this->questions as $question_id => $question)
 		{
-			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
+			if (isset($this->entries[$entry_id]['answers'][$question_id]))
 			{
-				$this->modify_sum_entry($question_id, true, false, 0, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
+				$this->modify_sum_entry($question_id, true, false, 0, true, $this->entries[$entry_id]['answers'][$question_id], true);
 			}
 		}
-		unset($this->survey_entries[$entry_id]);
+		unset($this->entries[$entry_id]);
 	}
 
 	/**
@@ -613,12 +632,12 @@ class survey
 	{
 		foreach ($answers as $question_id => $answer)
 		{
-			if (isset($this->survey_entries[$entry_id]['answers'][$question_id]))
+			if (isset($this->entries[$entry_id]['answers'][$question_id]))
 			{
-				$sql = 'UPDATE ' . $this->tables['answers'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('answer' => $answer)) . ' WHERE q_id=' . $question_id . ' AND entry_id=' . $entry_id;
+				$sql = "UPDATE {$this->tables['answers']} SET " . $this->db->sql_build_array('UPDATE', array('answer' => $answer)) . " WHERE q_id = $question_id AND entry_id = $entry_id";
 				$this->db->sql_query($sql);
-				$this->modify_sum_entry($question_id, true, true, $answer, true, $this->survey_entries[$entry_id]['answers'][$question_id], true);
-				$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
+				$this->modify_sum_entry($question_id, true, true, $answer, true, $this->entries[$entry_id]['answers'][$question_id], true);
+				$this->entries[$entry_id]['answers'][$question_id] = $answer;
 			}
 			else
 			{
@@ -635,16 +654,16 @@ class survey
 	 * @param int $entry_id
 	 * @param string $answer
 	 */
-	public function add_answer($question_id, $entry_id, $answer)
+	protected function add_answer($question_id, $entry_id, $answer)
 	{
 		$insert_answer = array(
 			'q_id'		=> $question_id,
 			'entry_id'	=> $entry_id,
 			'answer'	=> $answer,
 		);
-		$sql = 'INSERT INTO ' . $this->tables['answers'] . ' ' . $this->db->sql_build_array('INSERT', $insert_answer);
+		$sql = "INSERT INTO {$this->tables['answers']} " . $this->db->sql_build_array('INSERT', $insert_answer);
 		$this->db->sql_query($sql);
-		$this->survey_entries[$entry_id]['answers'][$question_id] = $answer;
+		$this->entries[$entry_id]['answers'][$question_id] = $answer;
 		$this->modify_sum_entry($question_id, true, true, $answer, false, 0, true);
 	}
 
@@ -661,27 +680,27 @@ class survey
 		{
 			return false;
 		}
-		$question_type = $this->survey_questions[$question_id]['type'];
+		$question_type = $this->questions[$question_id]['type'];
 		switch ($question_type)
 		{
 			case self::$QUESTION_TYPES['NUMBER']:
 				return preg_match('/^-?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?$/', $answer) ? true : false;
-				break;
+			break;
 			case self::$QUESTION_TYPES['CHECKBOX']:
 				return preg_match('/^[01]$/', $answer) ? true : false;
-				break;
+			break;
 			case self::$QUESTION_TYPES['DROP_DOWN_MENU']:
 				return $this->check_choice($answer, $question_id, false);
-				break;
+			break;
 			case self::$QUESTION_TYPES['MULTIPLE_CHOICE']:
 				return $this->check_choice($answer, $question_id, true);
-				break;
+			break;
 			case self::$QUESTION_TYPES['DATE']:
 				return $this->check_full_date($answer);
-				break;
+			break;
 			case self::$QUESTION_TYPES['TIME']:
 				return $this->check_partial_time($answer);
-				break;
+			break;
 			case self::$QUESTION_TYPES['DATETIME']:
 				$matches = array();
 				if (preg_match('/^(.+)T(.+)(Z|[+-][0-9]{2}:[0-9]{2})$/', $answer, $matches) === 1)
@@ -689,7 +708,7 @@ class survey
 					return $this->check_full_date($matches[1]) && $this->check_partial_time($matches[2]) && $this->check_time_offset($matches[3]);
 				}
 				return false;
-				break;
+			break;
 			case self::$QUESTION_TYPES['DATETIME_LOCAL']:
 				$matches = array();
 				if (preg_match('/^(.+)T(.+)$/', $answer, $matches) === 1)
@@ -697,7 +716,7 @@ class survey
 					return $this->check_full_date($matches[1]) && $this->check_partial_time($matches[2]);
 				}
 				return false;
-				break;
+			break;
 		}
 		return true;
 	}
@@ -710,14 +729,14 @@ class survey
 	 * @param bool $is_multiple_choice
 	 * @return bool
 	 */
-	public function check_choice($answer, $question_id, $is_multiple_choice)
+	protected function check_choice($answer, $question_id, $is_multiple_choice)
 	{
-		$answer = utf8_strtolower($answer);
+		$answer = utf8_case_fold_nfc($answer);
 		$valid_choices = array();
 		$given_choices = array($answer);
-		foreach ($this->survey_questions[$question_id]['choices'] as $choice)
+		foreach ($this->questions[$question_id]['choices'] as $choice)
 		{
-			$valid_choices[] = utf8_strtolower($choices['text']);
+			$valid_choices[] = utf8_case_fold_nfc($choice['text']);
 		}
 		if ($is_multiple_choice)
 		{
@@ -734,7 +753,7 @@ class survey
 	 * @param string $answer
 	 * @return bool
 	 */
-	public function check_full_date($answer)
+	protected function check_full_date($answer)
 	{
 		$matches = array();
 		if (preg_match('/^([0-9]{4,})-([0-9]{2})-([0-9]{2})$/', $answer, $matches) === 1)
@@ -751,7 +770,7 @@ class survey
 	 * @param string $answer
 	 * @return bool
 	 */
-	public function check_partial_time($answer)
+	protected function check_partial_time($answer)
 	{
 		$matches = array();
 		if (preg_match('/^([0-9]{2}):([0-9]{2}):([0-9]{2})(\.[0-9]+)?$/', $answer, $matches) === 1)
@@ -770,7 +789,7 @@ class survey
 	 * @param string $answer
 	 * @return bool
 	 */
-	public function check_time_offset($answer)
+	protected function check_time_offset($answer)
 	{
 		if ($answer == "Z")
 		{
@@ -793,16 +812,16 @@ class survey
 	 *
 	 * @param int $question_id
 	 */
-	public function compute_sum($question_id, $do_sql_update = false)
+	protected function compute_sum($question_id, $do_sql_update = false)
 	{
-		$type = $this->survey_questions[$question_id]['sum_type'];
+		$type = $this->questions[$question_id]['sum_type'];
 		$sum = 0;
 		if ($type == self::$QUESTION_SUM_TYPES['NO_SUM'])
 		{
 			$this->update_sum($question_id, $sum, $do_sql_update);
 			return;
 		}
-		foreach ($this->survey_entries as $entry_id => $entry)
+		foreach ($this->entries as $entry_id => $entry)
 		{
 			if (isset($entry['answers'][$question_id]))
 			{
@@ -826,7 +845,7 @@ class survey
 	 */
 	public function modify_sum_entry($question_id, $do_choice_sum, $new_exists, $new_value, $old_exists = false, $old_value = 0, $do_update = false)
 	{
-		$type = $this->survey_questions[$question_id]['sum_type'];
+		$type = $this->questions[$question_id]['sum_type'];
 		$diff = 0;
 		if ($type == self::$QUESTION_SUM_TYPES['NUMBER_OF_RESPONSES'] && $new_exists != $old_exists)
 		{
@@ -834,31 +853,47 @@ class survey
 		}
 		else if ($type == self::$QUESTION_SUM_TYPES['SUM_OF_NUMBERS'])
 		{
-			if (!is_numeric($new_value))
+			if ($this->questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 			{
-				$new_value = 0;
+				$exploded_values = explode(",", $new_value);
+				foreach ($exploded_values as $value)
+				{
+					$diff += is_numeric($value) ? (float) $value : 0;
+				}
+				$exploded_values = explode(",", $old_value);
+				foreach ($exploded_values as $value)
+				{
+					$diff -= is_numeric($value) ? (float) $value : 0;
+				}
 			}
-			if (!is_numeric($old_value))
+			else
 			{
-				$old_value = 0;
+				if (!is_numeric($new_value))
+				{
+					$new_value = 0;
+				}
+				if (!is_numeric($old_value))
+				{
+					$old_value = 0;
+				}
+				$diff = (float) $new_value - (float) $old_value;
 			}
-			$diff = (float) $new_value - (float) $old_value;
 		}
 		else if ($type == self::$QUESTION_SUM_TYPES['MATCHING_TEXT'])
 		{
 			if ($new_exists)
 			{
-				$diff = $this->get_sum_diff_for_answer($question_id, $new_value, $this->survey_questions[$question_id]['sum_by']);
+				$diff = $this->get_sum_diff_for_answer($question_id, $new_value, $this->questions[$question_id]['sum_by']);
 			}
 			if ($old_exists)
 			{
-				$diff -= $this->get_sum_diff_for_answer($question_id, $old_value, $this->survey_questions[$question_id]['sum_by']);
+				$diff -= $this->get_sum_diff_for_answer($question_id, $old_value, $this->questions[$question_id]['sum_by']);
 			}
 		}
-		if ($do_choice_sum && ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['DROP_DOWN_MENU'] || $this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE']))
+		if ($do_choice_sum && ($this->questions[$question_id]['type'] == self::$QUESTION_TYPES['DROP_DOWN_MENU'] || $this->questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE']))
 		{
 			$cdiff = array();
-			$choice_ids = array_keys($this->survey_questions[$question_id]['choices']);
+			$choice_ids = array_keys($this->questions[$question_id]['choices']);
 			foreach ($choice_ids as $choice_id)
 			{
 				$cdiff[$choice_id] = 0;
@@ -875,15 +910,15 @@ class survey
 			{
 				if ($cdiff[$choice_id] != 0)
 				{
-					$this->survey_questions[$question_id]['choices'][$choice_id]['sum'] += $cdiff[$choice_id];
-					$sql = 'UPDATE ' . $this->tables['question_choices'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('sum' => $this->survey_questions[$question_id]['choices'][$choice_id]['sum'])) . ' WHERE c_id=' . $choice_id;
+					$this->questions[$question_id]['choices'][$choice_id]['sum'] += $cdiff[$choice_id];
+					$sql = "UPDATE {$this->tables['question_choices']} SET " . $this->db->sql_build_array('UPDATE', array('sum' => $this->questions[$question_id]['choices'][$choice_id]['sum'])) . " WHERE c_id = $choice_id";
 					$this->db->sql_query($sql);
 				}
 			}
 		}
 		if ($do_update)
 		{
-			$sum = $this->survey_questions[$question_id]['sum_value'] + $diff;
+			$sum = $this->questions[$question_id]['sum_value'] + $diff;
 			$this->update_sum($question_id, $sum, true);
 		}
 		return $diff;
@@ -896,18 +931,18 @@ class survey
 	 * @param string $value
 	 * @param string $sum_by
 	 */
-	public function get_sum_diff_for_answer($question_id, $value, $sum_by)
+	protected function get_sum_diff_for_answer($question_id, $value, $sum_by)
 	{
 		$diff = 0;
-		$sum_by = utf8_strtolower($sum_by);
-		if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+		$sum_by = utf8_case_fold_nfc($sum_by);
+		if ($this->questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 		{
-			$exploded_answers = explode(",", utf8_strtolower($value));
+			$exploded_answers = explode(",", utf8_case_fold_nfc($value));
 			$diff = (in_array($sum_by, $exploded_answers) ? 1 : 0);
 		}
 		else
 		{
-			$diff = ($sum_by == utf8_strtolower($value) ? 1 : 0);
+			$diff = ($sum_by == utf8_case_fold_nfc($value) ? 1 : 0);
 		}
 		return $diff;
 	}
@@ -921,22 +956,22 @@ class survey
 	 * @param string $value
 	 * @param array $cdiff
 	 */
-	public function get_choice_sum_diff_for_answer($question_id, $value, $sign, &$cdiff)
+	protected function get_choice_sum_diff_for_answer($question_id, $value, $sign, &$cdiff)
 	{
 		$exploded_answers = '';
-		if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+		if ($this->questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 		{
-			$exploded_answers = explode(",", utf8_strtolower($value));
+			$exploded_answers = explode(",", utf8_case_fold_nfc($value));
 		}
-		foreach ($this->survey_questions[$question_id]['choices'] as $choice_id => $choice)
+		foreach ($this->questions[$question_id]['choices'] as $choice_id => $choice)
 		{
-			if ($this->survey_questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
+			if ($this->questions[$question_id]['type'] == self::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 			{
-				$cdiff[$choice_id] += (in_array(utf8_strtolower($choice['text']), $exploded_answers) ? $sign : 0);
+				$cdiff[$choice_id] += (in_array(utf8_case_fold_nfc($choice['text']), $exploded_answers) ? $sign : 0);
 			}
 			else
 			{
-				$cdiff[$choice_id] += (utf8_strtolower($choice['text']) == utf8_strtolower($value) ? $sign : 0);
+				$cdiff[$choice_id] += (utf8_case_fold_nfc($choice['text']) == utf8_case_fold_nfc($value) ? $sign : 0);
 			}
 		}
 	}
@@ -949,12 +984,12 @@ class survey
 	 * @param mixed $sum
 	 * @param bool $do_sql_update
 	 */
-	public function update_sum($question_id, $sum, $do_sql_update)
+	protected function update_sum($question_id, $sum, $do_sql_update)
 	{
-		$this->survey_questions[$question_id]['sum_value'] = $sum;
+		$this->questions[$question_id]['sum_value'] = $sum;
 		if ($do_sql_update)
 		{
-			$sql = 'UPDATE ' . $this->tables['questions'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('sum_value' => $sum)) . ' WHERE q_id=' . $question_id;
+			$sql = "UPDATE {$this->tables['questions']} SET " . $this->db->sql_build_array('UPDATE', array('sum_value' => $sum)) . " WHERE q_id = $question_id";
 			$this->db->sql_query($sql);
 		}
 	}
@@ -966,7 +1001,7 @@ class survey
 	 */
 	public function get_entry_count()
 	{
-		return count($this->survey_entries);
+		return sizeof($this->entries);
 	}
 
 	/**
@@ -977,11 +1012,11 @@ class survey
 	 */
 	public function get_sum_string($question_id)
 	{
-		if ($this->survey_questions[$question_id]['sum_type'] == self::$QUESTION_SUM_TYPES['NO_SUM'])
+		if ($this->questions[$question_id]['sum_type'] == self::$QUESTION_SUM_TYPES['NO_SUM'])
 		{
 			return '';
 		}
-		$sum = $this->survey_questions[$question_id]['sum_value'];
+		$sum = $this->questions[$question_id]['sum_value'];
 		if ($sum == round($sum))
 		{
 			return strval((int) $sum);
@@ -999,7 +1034,7 @@ class survey
 	 */
 	public function get_average_string($question_id, $count)
 	{
-		if (!$this->survey_questions[$question_id]['average'])
+		if (!$this->questions[$question_id]['average'])
 		{
 			return '';
 		}
@@ -1007,8 +1042,8 @@ class survey
 		{
 			return '0';
 		}
-		$type = $this->survey_questions[$question_id]['sum_type'];
-		$sum = $this->survey_questions[$question_id]['sum_value'];
+		$type = $this->questions[$question_id]['sum_type'];
+		$sum = $this->questions[$question_id]['sum_value'];
 		$diff = 0;
 		if ($type == self::$QUESTION_SUM_TYPES['MATCHING_TEXT'])
 		{
@@ -1035,7 +1070,7 @@ class survey
 			'show_order'			=> $this->config['kilianr_survey_default_show_order'],
 			'allow_change_answer'	=> $this->config['kilianr_survey_default_allow_change_answer'],
 			'allow_multiple_answer'	=> $this->config['kilianr_survey_default_allow_multiple_answer'],
-			'hide_results'			=> $this->config['kilianr_survey_default_hide_results'],
+			'visibility'			=> $this->config['kilianr_survey_default_visibility'],
 			'start_time'			=> $this->fixed_time(),
 		);
 		$sql = 'INSERT INTO ' . $this->tables['surveys'] . ' ' . $this->db->sql_build_array('INSERT', $inserts);
@@ -1049,7 +1084,7 @@ class survey
 	 */
 	public function is_anonymized()
 	{
-		return $this->settings['hide_results'] == self::$HIDE_TYPES['ANONYMIZE'] || $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_ENTRIES'] || $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_EVERYTHING'];
+		return $this->settings['visibility'] == self::$VISIBILITY_TYPES['ANONYMIZE'] || $this->settings['visibility'] == self::$VISIBILITY_TYPES['HIDE_ENTRIES'] || $this->settings['visibility'] == self::$VISIBILITY_TYPES['HIDE_EVERYTHING'];
 	}
 
 	/**
@@ -1059,7 +1094,7 @@ class survey
 	 */
 	public function hide_entries()
 	{
-		return $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_ENTRIES'] || $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_EVERYTHING'];
+		return $this->settings['visibility'] == self::$VISIBILITY_TYPES['HIDE_ENTRIES'] || $this->settings['visibility'] == self::$VISIBILITY_TYPES['HIDE_EVERYTHING'];
 	}
 
 	/**
@@ -1069,7 +1104,7 @@ class survey
 	 */
 	public function hide_everything()
 	{
-		return $this->settings['hide_results'] == self::$HIDE_TYPES['HIDE_EVERYTHING'];
+		return $this->settings['visibility'] == self::$VISIBILITY_TYPES['HIDE_EVERYTHING'];
 	}
 
 	/**
@@ -1081,7 +1116,7 @@ class survey
 	 */
 	public function has_cap($question_id)
 	{
-		return ($this->survey_questions[$question_id]['cap'] > 0 ? true : false);
+		return ($this->questions[$question_id]['cap'] > 0 ? true : false);
 	}
 
 	/**
@@ -1094,7 +1129,7 @@ class survey
 	 */
 	public function cap_exceeded($question_id, $diff = 0)
 	{
-		return (($this->has_cap($question_id) && $this->survey_questions[$question_id]['cap'] < $this->survey_questions[$question_id]['sum_value'] + $diff) ? true: false);
+		return (($this->has_cap($question_id) && $this->questions[$question_id]['cap'] < $this->questions[$question_id]['sum_value'] + $diff) ? true: false);
 	}
 
 	/**
@@ -1105,7 +1140,7 @@ class survey
 	 */
 	public function cap_reached($question_id)
 	{
-		return (($this->has_cap($question_id) && $this->survey_questions[$question_id]['cap'] <= $this->survey_questions[$question_id]['sum_value']) ? true: false);
+		return (($this->has_cap($question_id) && $this->questions[$question_id]['cap'] <= $this->questions[$question_id]['sum_value']) ? true: false);
 	}
 
 	/**
@@ -1116,7 +1151,7 @@ class survey
 	 */
 	public function is_enabled($topic_id)
 	{
-		$sql = 'SELECT survey_enabled FROM ' . TOPICS_TABLE . ' WHERE topic_id = ' . $topic_id;
+		$sql = 'SELECT survey_enabled FROM ' . TOPICS_TABLE . " WHERE topic_id = $topic_id";
 		$result = $this->db->sql_query($sql);
 		if (!$row = $this->db->sql_fetchrow($result))
 		{
@@ -1132,8 +1167,8 @@ class survey
 	 */
 	public function enable()
 	{
-		$this->survey_enabled = true;
-		$sql = 'UPDATE ' . TOPICS_TABLE . ' SET survey_enabled = 1 WHERE topic_id=' . $this->topic_id;
+		$this->enabled = true;
+		$sql = 'UPDATE ' . TOPICS_TABLE . " SET survey_enabled = 1 WHERE topic_id = {$this->topic_id}";
 		$this->db->sql_query($sql);
 	}
 
@@ -1142,8 +1177,8 @@ class survey
 	 */
 	public function disable()
 	{
-		$this->survey_enabled = false;
-		$sql = 'UPDATE ' . TOPICS_TABLE . ' SET survey_enabled = 0 WHERE topic_id=' . $this->topic_id;
+		$this->enabled = false;
+		$sql = 'UPDATE ' . TOPICS_TABLE . " SET survey_enabled = 0 WHERE topic_id = {$this->topic_id}";
 		$this->db->sql_query($sql);
 	}
 
@@ -1153,7 +1188,7 @@ class survey
 	public function close()
 	{
 		$this->settings['stop_time'] = $this->fixed_time();
-		$sql = 'UPDATE ' . $this->tables['surveys'] . ' SET ' . $this->db->sql_build_array('UPDATE', array('stop_time' => $this->settings['stop_time'])) . ' WHERE s_id=' . $this->settings['s_id'];
+		$sql = "UPDATE {$this->tables['surveys']} SET " . $this->db->sql_build_array('UPDATE', array('stop_time' => $this->settings['stop_time'])) . " WHERE s_id = {$this->settings['s_id']}";
 		$this->db->sql_query($sql);
 	}
 
@@ -1163,7 +1198,7 @@ class survey
 	public function reopen()
 	{
 		$this->settings['stop_time'] = null;
-		$sql = 'UPDATE ' . $this->tables['surveys'] . ' SET stop_time = null WHERE s_id=' . $this->settings['s_id'];
+		$sql = "UPDATE {$this->tables['surveys']} SET stop_time = null WHERE s_id = {$this->settings['s_id']}";
 		$this->db->sql_query($sql);
 	}
 
@@ -1210,43 +1245,43 @@ class survey
 
 		foreach ($topic_ids as $tid)
 		{
-			$sql = 'SELECT s_id FROM ' . $this->tables['surveys'] . ' WHERE topic_id=' . $tid;
+			$sql = "SELECT s_id FROM {$this->tables['surveys']} WHERE topic_id = $tid";
 			$result = $this->db->sql_query($sql);
 			while ($row = $this->db->sql_fetchrow($result))
 			{
 				$sid = $row['s_id'];
-				$sql = 'SELECT q_id FROM ' . $this->tables['questions'] . ' WHERE s_id=' . $sid;
+				$sql = "SELECT q_id FROM {$this->tables['questions']} WHERE s_id = $sid";
 				$result2 = $this->db->sql_query($sql);
 				while ($row2 = $this->db->sql_fetchrow($result2))
 				{
 					$qid = $row2['q_id'];
-					$sql = 'DELETE FROM ' . $this->tables['question_choices'] . ' WHERE q_id=' . $qid;
+					$sql = "DELETE FROM {$this->tables['question_choices']} WHERE q_id = $qid";
 					$this->db->sql_query($sql);
-					$sql = 'DELETE FROM ' . $this->tables['answers'] . ' WHERE q_id=' . $qid;
+					$sql = "DELETE FROM {$this->tables['answers']} WHERE q_id = $qid";
 					$this->db->sql_query($sql);
 				}
 				$this->db->sql_freeresult($result2);
-				$sql = 'DELETE FROM ' . $this->tables['questions'] . ' WHERE s_id=' . $sid;
+				$sql = "DELETE FROM {$this->tables['questions']} WHERE s_id = $sid";
 				$this->db->sql_query($sql);
-				$sql = 'DELETE FROM ' . $this->tables['entries'] . ' WHERE s_id=' . $sid;
+				$sql = "DELETE FROM {$this->tables['entries']} WHERE s_id = $sid";
 				$this->db->sql_query($sql);
 			}
 			$this->db->sql_freeresult($result);
-			$sql = 'DELETE FROM ' . $this->tables['surveys'] . ' WHERE topic_id=' . $tid;
+			$sql = "DELETE FROM {$this->tables['surveys']} WHERE topic_id = $tid";
 			$this->db->sql_query($sql);
 
 			if (!$from_topic_delete)
 			{
-				$sql = 'UPDATE ' . TOPICS_TABLE . ' SET survey_enabled = 0 WHERE topic_id=' . $tid;
+				$sql = 'UPDATE ' . TOPICS_TABLE . " SET survey_enabled = 0 WHERE topic_id = $tid";
 				$this->db->sql_query($sql);
 			}
 		}
 		if (!$from_topic_delete)
 		{
-			$this->survey_enabled = 0;
+			$this->enabled = 0;
 			unset($this->settings);
-			unset($this->survey_questions);
-			unset($this->survey_entries);
+			unset($this->questions);
+			unset($this->entries);
 		}
 	}
 
@@ -1279,14 +1314,14 @@ class survey
 				{
 					$update_array['entry_username'] = $usernames[$uid];
 				}
-				$sql = 'UPDATE ' . $this->tables['entries'] . ' SET ' . $this->db->sql_build_array('UPDATE', $update_array) . ' WHERE user_id = ' . $uid;
+				$sql = "UPDATE {$this->tables['entries']} SET " . $this->db->sql_build_array('UPDATE', $update_array) . " WHERE user_id = $uid";
 				$this->db->sql_query($sql);
 			}
 		}
 		else if ($mode == 'remove')
 		{
 			$surveys = array();
-			$sql = 'SELECT s_id FROM ' . $this->tables['entries'] . ' WHERE ' . $this->db->sql_in_set('user_id', $user_ids);
+			$sql = "SELECT s_id FROM {$this->tables['entries']} WHERE " . $this->db->sql_in_set('user_id', $user_ids);
 			$result = $this->db->sql_query($sql);
 			while ($row = $this->db->sql_fetchrow($result))
 			{
@@ -1296,7 +1331,7 @@ class survey
 			foreach (array_unique($surveys) as $survey_id)
 			{
 				$this->load_survey($survey_id, true);
-				foreach ($this->survey_entries as $entry_id => $entry)
+				foreach ($this->entries as $entry_id => $entry)
 				{
 					if (in_array($entry['user_id'], $user_ids))
 					{

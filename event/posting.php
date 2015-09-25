@@ -37,7 +37,7 @@ class posting implements EventSubscriberInterface
 	/** @var \phpbb\request\request_interface */
 	protected $request;
 
-	function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\user $user, \phpbb\request\request_interface $request)
+	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\user $user, \phpbb\request\request_interface $request)
 	{
 		$this->survey = $survey;
 		$this->template = $template;
@@ -113,13 +113,13 @@ class posting implements EventSubscriberInterface
 			$this->survey->load_survey($event['topic_id']);
 		}
 
-		$is_inactive = !((empty($this->survey->survey_entries) && empty($this->survey->survey_questions)) || $this->survey->survey_enabled);
+		$is_inactive = !((empty($this->survey->entries) && empty($this->survey->questions)) || $this->survey->enabled);
 
 		$this->template->assign_vars(array(
 			'S_SURVEY_ALLOWED'				=> true,
-			'S_TOPIC_HAS_SURVEY'			=> $this->survey->survey_enabled,
+			'S_TOPIC_HAS_SURVEY'			=> $this->survey->enabled,
 			'S_TOPIC_HAS_INACTIVE_SURVEY'	=> $is_inactive,
-			'S_SURVEY_CHECKED'				=> $this->survey->survey_enabled ? "checked='checked'" : '',
+			'S_SURVEY_CHECKED'				=> $this->survey->enabled ? "checked='checked'" : '',
 		));
 	}
 }

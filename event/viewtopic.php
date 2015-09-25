@@ -61,7 +61,8 @@ class viewtopic implements EventSubscriberInterface
 	/** @var string */
 	protected $base_url;
 
-	var $topic_id;
+	/** @var int */
+	protected $topic_id;
 
 	const ADDUSER_ENTRY_ID = "adduser";
 	const NEW_ENTRY_ID = -1;
@@ -79,7 +80,7 @@ class viewtopic implements EventSubscriberInterface
 	 * @param string $phpEx
 	 * @param string $survey_path
 	 */
-	function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $survey_path)
+	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $survey_path)
 	{
 		$this->survey			= $survey;
 		$this->template			= $template;
@@ -123,7 +124,7 @@ class viewtopic implements EventSubscriberInterface
 		$survey_errors = $this->process_submit($event);
 
 		// If the survey is disabled, then return now (also if we just disabled it)
-		if (!$this->survey->survey_enabled)
+		if (!$this->survey->enabled)
 		{
 			return;
 		}
@@ -134,15 +135,15 @@ class viewtopic implements EventSubscriberInterface
 		$is_write_owner  = $this->survey->is_write_owner($user_id);
 		$is_member = $this->survey->is_participating($user_id);
 		$is_closed = $this->survey->is_closed();
-		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t=" . $this->topic_id);
-		$action_url = $viewtopic_url . '&amp;' . $this->action_name . '=';
+		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t={$this->topic_id}");
+		$action_url = "{$viewtopic_url}&amp;{$this->action_name}=";
 		$can_add_new_entry = $this->survey->can_add_new_entry($user_id);
 
-		if (empty($this->survey->survey_questions))
+		if (empty($this->survey->questions))
 		{
 			$survey_errors[] = $this->user->lang['SURVEY_NO_QUESTIONS'];
 		}
-		if (empty($this->survey->survey_entries))
+		if (empty($this->survey->entries))
 		{
 			$survey_errors[] = $this->user->lang['SURVEY_NO_ENTRIES'];
 		}
@@ -179,15 +180,15 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('show_order', $template_vars);
 		}
 
-		// Output hide types
-		foreach (survey::$HIDE_TYPES as $type)
+		// Output visibility types
+		foreach (survey::$VISIBILITY_TYPES as $type)
 		{
 			$template_vars = array(
 				'NUM'		=> $type,
-				'SELECTED'	=> ($this->survey->settings['hide_results'] == $type) ? true : false,
-				'DESC'		=> $this->user->lang('SURVEY_HIDE_DESC_' . $type),
+				'SELECTED'	=> ($this->survey->settings['visibility'] == $type) ? true : false,
+				'DESC'		=> $this->user->lang('SURVEY_VISIBILITY_DESC_' . $type),
 			);
-			$this->template->assign_block_vars('hide_results', $template_vars);
+			$this->template->assign_block_vars('visibility', $template_vars);
 		}
 
 		// Output question types
@@ -195,7 +196,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$template_vars = array(
 				'NUM'		=> $type,
-				'SELECTED'	=> ($this->question_to_load !== false && $this->survey->survey_questions[$this->question_to_load]['type'] == $type ? true : false),
+				'SELECTED'	=> ($this->question_to_load !== false && $this->survey->questions[$this->question_to_load]['type'] == $type ? true : false),
 				'DESC'		=> $this->user->lang('SURVEY_QUESTION_TYPE_DESC_' . $type),
 			);
 			$this->template->assign_block_vars('question_type', $template_vars);
@@ -206,7 +207,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$template_vars = array(
 				'NUM'		=> $type,
-				'SELECTED'	=> ($this->question_to_load !== false && $this->survey->survey_questions[$this->question_to_load]['sum_type'] == $type ? true : false),
+				'SELECTED'	=> ($this->question_to_load !== false && $this->survey->questions[$this->question_to_load]['sum_type'] == $type ? true : false),
 				'DESC'		=> $this->user->lang('SURVEY_QUESTION_SUM_TYPE_DESC_' . $type),
 			);
 			$this->template->assign_block_vars('question_sum_type', $template_vars);
@@ -216,7 +217,7 @@ class viewtopic implements EventSubscriberInterface
 		$entry_count = $this->survey->get_entry_count();
 		$can_see_sums = false;
 		$some_cap_set = false;
-		foreach ($this->survey->survey_questions as $question_id => $question)
+		foreach ($this->survey->questions as $question_id => $question)
 		{
 			$template_vars = array();
 			foreach ($question as $key => $value)
@@ -260,7 +261,7 @@ class viewtopic implements EventSubscriberInterface
 		// Fetch User details
 		$user_details = array();
 		$anonymous = false;
-		foreach ($this->survey->survey_entries as $entry)
+		foreach ($this->survey->entries as $entry)
 		{
 			if ($entry['user_id'] != ANONYMOUS)
 			{
@@ -294,7 +295,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$extra_rows[] = self::ADDUSER_ENTRY_ID;
 		}
-		foreach (array_merge($this->survey->survey_entries, $extra_rows) as $entry)
+		foreach (array_merge($this->survey->entries, $extra_rows) as $entry)
 		{
 			$template_vars = array();
 			if ($entry == self::ADDUSER_ENTRY_ID)
@@ -327,7 +328,7 @@ class viewtopic implements EventSubscriberInterface
 				{
 					$template_vars['IS_ADDUSER'] = ($value == self::ADDUSER_ENTRY_ID) ? true : false;
 					$template_vars['IS_NEW'] = ($value == self::NEW_ENTRY_ID) ? true : false;
-					$template_vars['DELETE_LINK'] =  $action_url . 'entry_deletion&amp;entry_to_delete=' . $value;
+					$template_vars['DELETE_LINK'] =  "{$action_url}entry_deletion&amp;entry_to_delete=$value";
 				}
 			}
 			if ($entry['entry_id'] != self::ADDUSER_ENTRY_ID)
@@ -365,7 +366,7 @@ class viewtopic implements EventSubscriberInterface
 			}
 			$questions_to_assign = array();
 			$is_first_question = true;
-			foreach ($this->survey->survey_questions as $question_id => $question)
+			foreach ($this->survey->questions as $question_id => $question)
 			{
 				$template_vars_question = array();
 				if (isset($entry['answers'][$question_id]))
@@ -382,7 +383,7 @@ class viewtopic implements EventSubscriberInterface
 					$is_first_question = false;
 					$template_vars['first_answer_text'] = isset($entry['answers'][$question_id]) ? $entry['answers'][$question_id] : '';
 				}
-				$template_vars_question['S_INPUT_NAME'] = 'answer_' . $entry['entry_id'] . '_' . $question_id . ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] ? '[]' : '');
+				$template_vars_question['S_INPUT_NAME'] = "answer_{$entry['entry_id']}_$question_id" . ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] ? '[]' : '');
 				$template_vars_question['TYPE_STRING'] = array_search($question['type'], survey::$QUESTION_TYPES);
 				$template_vars_question['CAP_EXEEDED'] = $this->survey->cap_exceeded($question_id);
 				$choices_to_assign = array();
@@ -418,18 +419,19 @@ class viewtopic implements EventSubscriberInterface
 		{
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']:
 				$sort_by = 'USERNAME';
-				break;
+			break;
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER']:
 				$sort_by = 'first_answer_text';
-				break;
+			break;
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER_REVERSE']:
 				$sort_by = 'first_answer_text';
 				$sort_order = SORT_DESC;
-				break;
+			break;
 			default:
 				$sort_by = false;
+			break;
 		}
-		if ($sort_by && !empty($this->survey->survey_entries))
+		if ($sort_by && !empty($this->survey->entries))
 		{
 			$only_sorting_row = array();
 			foreach ($entries_to_assign as $key => $row)
@@ -474,7 +476,7 @@ class viewtopic implements EventSubscriberInterface
 		if ($this->question_to_load !== false)
 		{
 			$template_vars = array();
-			foreach ($this->survey->survey_questions[$this->question_to_load] as $key => $value)
+			foreach ($this->survey->questions[$this->question_to_load] as $key => $value)
 			{
 				if ($key == 'cap')
 				{
@@ -486,7 +488,7 @@ class viewtopic implements EventSubscriberInterface
 				}
 			}
 			$choices_to_load = array();
-			foreach ($this->survey->survey_questions[$this->question_to_load]['choices'] as $choice)
+			foreach ($this->survey->questions[$this->question_to_load]['choices'] as $choice)
 			{
 				$choices_to_load[] = $choice['text'];
 			}
@@ -499,8 +501,8 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_IS_READ_OWNER'			=> $is_read_owner,
 			'S_SURVEY_IS_WRITE_OWNER'			=> $is_write_owner,
 			'S_IS_SURVEY_MEMBER'				=> $is_member,
-			'S_HAS_QUESTIONS'					=> empty($this->survey->survey_questions) ? false : true,
-			'S_HAS_ENTRIES'						=> empty($this->survey->survey_entries) ? false : true,
+			'S_HAS_QUESTIONS'					=> empty($this->survey->questions) ? false : true,
+			'S_HAS_ENTRIES'						=> empty($this->survey->entries) ? false : true,
 			'S_SHOW_USERNAMES'					=> !$this->survey->is_anonymized() || $is_read_owner,
 			'S_HIDE_ENTRIES'					=> $this->survey->hide_entries(),
 			'S_HIDE_EVERYTHING'					=> $this->survey->hide_everything(),
@@ -541,7 +543,7 @@ class viewtopic implements EventSubscriberInterface
 			'show_order'			=> 0,
 			'allow_change_answer'	=> 0,
 			'allow_multiple_answer'	=> 0,
-			'hide_results'			=> 0,
+			'visibility'			=> 0,
 			'stop_time'				=> '',
 		);
 		foreach ($new_settings as $setting => $default)
@@ -558,9 +560,9 @@ class viewtopic implements EventSubscriberInterface
 		}
 		$new_settings['allow_change_answer'] = ($new_settings['allow_change_answer'] ? 1 : 0);
 		$new_settings['allow_multiple_answer'] = ($new_settings['allow_multiple_answer'] ? 1 : 0);
-		if (!in_array($new_settings['hide_results'], survey::$HIDE_TYPES))
+		if (!in_array($new_settings['visibility'], survey::$VISIBILITY_TYPES))
 		{
-			return array($this->user->lang('SURVEY_INVALID_HIDE_TYPE'));
+			return array($this->user->lang('SURVEY_INVALID_VISIBILITY_TYPE'));
 		}
 		if ($new_settings['stop_time'] != '')
 		{
@@ -637,7 +639,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array();
 		}
-		if (!$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->survey_entries[$entry_id]['user_id']))
+		if (!$this->survey->can_modify_entry($this->user->data['user_id'], $this->survey->entries[$entry_id]['user_id']))
 		{
 			return array($this->user->lang('NO_AUTH_OPERATION'));
 		}
@@ -713,7 +715,7 @@ class viewtopic implements EventSubscriberInterface
 				{
 					continue;
 				}
-				else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->can_modify_entry($real_user_id, $this->survey->survey_entries[$entry_id]['user_id']))
+				else if ($entry_id != self::NEW_ENTRY_ID && !$this->survey->can_modify_entry($real_user_id, $this->survey->entries[$entry_id]['user_id']))
 				{
 					$errors[] = $this->user->lang('NO_AUTH_OPERATION');
 					continue;
@@ -721,9 +723,9 @@ class viewtopic implements EventSubscriberInterface
 			}
 			$answers = array();
 			$abort = false;
-			foreach ($this->survey->survey_questions as $question_id => $question)
+			foreach ($this->survey->questions as $question_id => $question)
 			{
-				$answers[$question_id] = $this->request->is_set_post('answer_' . $entry_id . '_'. $question_id) ? $this->request->variable('answer_' . $entry_id . '_'. $question_id, '', true) : '';
+				$answers[$question_id] = $this->request->is_set_post("answer_{$entry_id}_$question_id") ? $this->request->variable("answer_{$entry_id}_$question_id", '', true) : '';
 				if ($question['type'] == survey::$QUESTION_TYPES['DROP_DOWN_MENU'])
 				{
 					if (isset($question['choices'][$answers[$question_id]]))
@@ -735,9 +737,9 @@ class viewtopic implements EventSubscriberInterface
 						$answers[$question_id] = '';
 					}
 				}
-				else if ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] && isset($this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id]))
+				else if ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] && isset($this->request->get_super_global()["answer_{$entry_id}_$question_id"]))
 				{
-					$answers_choice_array = array_unique($this->request->get_super_global()['answer_' . $entry_id . '_'. $question_id]);
+					$answers_choice_array = array_unique($this->request->get_super_global()["answer_{$entry_id}_$question_id"]);
 					$answers[$question_id] = array();
 					foreach ($answers_choice_array as $choice_id)
 					{
@@ -759,12 +761,12 @@ class viewtopic implements EventSubscriberInterface
 					$filled_out = true;
 					if ($this->survey->has_cap($question_id) && !$this->survey->is_write_owner($real_user_id))
 					{
-						$old_exists = $entry_id != self::ADDUSER_ENTRY_ID && $entry_id != self::NEW_ENTRY_ID && isset($this->survey->survey_entries[$entry_id]['answers'][$question_id]);
-						$old_value = ($old_exists ? $this->survey->survey_entries[$entry_id]['answers'][$question_id] : 0);
+						$old_exists = $entry_id != self::ADDUSER_ENTRY_ID && $entry_id != self::NEW_ENTRY_ID && isset($this->survey->entries[$entry_id]['answers'][$question_id]);
+						$old_value = ($old_exists ? $this->survey->entries[$entry_id]['answers'][$question_id] : 0);
 						$diff = $this->survey->modify_sum_entry($question_id, true, $answers[$question_id], $old_exists, $old_value);
 						if ($diff != 0 && $this->survey->cap_exceeded($question_id, $diff))
 						{
-							$errors[] = $this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->survey_questions[$question_id]['label']);
+							$errors[] = $this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->questions[$question_id]['label']);
 							$abort = true;
 							continue;
 						}
@@ -905,7 +907,7 @@ class viewtopic implements EventSubscriberInterface
 				'question_to_delete'	=> $question_id,
 				$this->action_name	=> $this->request->variable($this->action_name, ''),
 			));
-			confirm_box(false, $this->user->lang('SURVEY_DELETE_QUESTION_CONFIRM', $this->survey->survey_questions[$question_id]['label']), $s_hidden_fields);
+			confirm_box(false, $this->user->lang('SURVEY_DELETE_QUESTION_CONFIRM', $this->survey->questions[$question_id]['label']), $s_hidden_fields);
 		}
 		return array();
 	}
@@ -988,7 +990,7 @@ class viewtopic implements EventSubscriberInterface
 		}
 		$action = $this->request->variable($this->action_name, '');
 
-		if (!$this->survey->survey_enabled)
+		if (!$this->survey->enabled)
 		{
 			return array($this->user->lang('SURVEY_IS_DISABLED'));
 		}
