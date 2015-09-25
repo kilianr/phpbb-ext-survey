@@ -96,7 +96,7 @@ function toggle_survey_table() {
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'CHECKBOX' -->
 									<input {$ALWAYS_SAME} type="checkbox" value="1" <!-- IF entries.questions.VALUE == '1' -->checked="checked"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING in ['DROP_DOWN_MENU', 'MULTIPLE_CHOICE']  -->
-									<select {$ALWAYS_SAME}<!-- IF entries.questions.TYPE_STRING == 'MULTIPLE_CHOICE' --> multiple<!-- ENDIF -->>
+									<select {$ALWAYS_SAME}<!-- IF entries.questions.TYPE_STRING == 'MULTIPLE_CHOICE' --> multiple size="{entries.questions.SELECT_MULTIPLE_HEIGHT}"<!-- ENDIF -->>
 									<!-- IF entries.questions.TYPE_STRING == 'DROP_DOWN_MENU' -->
 									<option value="none">---</option>
 									<!-- ENDIF -->
@@ -115,7 +115,7 @@ function toggle_survey_table() {
 								<!-- IF entries.questions.TYPE_STRING == 'CHECKBOX' -->
 									<input type="checkbox" value="1" disabled="disabled"<!-- IF entries.questions.VALUE == '1' -->checked="checked"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'MULTIPLE_CHOICE' -->
-									<select multiple disabled>
+									<select multiple disabled size="{entries.questions.SELECT_MULTIPLE_HEIGHT}">
 									<!-- BEGIN entries.questions.choices -->
 									<option{entries.questions.choices.SELECTED}>{entries.questions.choices.TEXT}</option>
 									<!-- END entries.questions.choices -->

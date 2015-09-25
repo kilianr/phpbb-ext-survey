@@ -27,7 +27,8 @@
 		"version-check": {
 			"host": "raw.githubusercontent.com",
 			"directory": "/kilianr/phpbb-ext-survey/master",
-			"filename": "version-check.json"
+			"filename": "version-check.json",
+			"ssl": true
 		}
 	}
 }
