@@ -4,6 +4,7 @@
 * Type-Checks / Input-Validation for old answers on modify_question
 * Access to survey by group
 * Option to de-owner the topic_poster
+* Random ordering of Drop-Down and MC Answers
 * Example field for questions
 * Migration routine for old phpBB3.0 survey data
 
@@ -31,4 +32,3 @@
 = QA =
 * Write tests
 * Documentation
-* version-check json in repository, link to github raw

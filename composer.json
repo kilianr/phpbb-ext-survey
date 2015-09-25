@@ -25,9 +25,9 @@
 			"phpbb/phpbb": ">=3.1.5,<3.2.*@dev"
 		},
 		"version-check": {
-			"host": "phpbb.mirdan.de",
-			"directory": "/extensions",
-			"filename": "phpbb-ext-survey.json"
+			"host": "raw.githubusercontent.com",
+			"directory": "/kilianr/phpbb-ext-survey/master",
+			"filename": "version-check.json"
 		}
 	}
 }
