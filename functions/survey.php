@@ -182,7 +182,7 @@ class survey
 			$db->sql_freeresult($result);
 		}
 
-		// load survey settings
+		// load settings
 		$sql = 'SELECT ';
 		$first = key($this->settings);
 		foreach ($this->settings as $setting => $entry)
@@ -206,8 +206,8 @@ class survey
 		}
 		$db->sql_freeresult($result);
 
-		// load questions for this survey
-		$sql = "SELECT q_id, label, type, sum_value, sum_type, sum_by, average, cap FROM {$this->tables['questions']} WHERE s_id = {$this->settings['s_id']}";
+		// load questions
+		$sql = "SELECT q_id, label, example_answer, type, random_choice_order, sum_value, sum_type, sum_by, average, cap FROM {$this->tables['questions']} WHERE s_id = {$this->settings['s_id']}";
 		$result = $db->sql_query($sql);
 		$this->questions = array();
 		while ($row = $db->sql_fetchrow($result))

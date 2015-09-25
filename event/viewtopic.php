@@ -292,6 +292,21 @@ class viewtopic implements EventSubscriberInterface
 		$entries_to_assign = array();
 		$extra_rows = array();
 		$adduser_entry_template_vars = array();
+		$questions = $this->survey->questions;
+		foreach ($questions as $question_id => $question)
+		{
+			if ($question['random_choice_order'])
+			{
+				$choice_ids = array_keys($question['choices']);
+				shuffle($choice_ids);
+				$randomized_choices = array();
+				foreach ($choice_ids as $choice_id)
+				{
+					$randomized_choices[$choice_id] = $question['choices'][$choice_id];
+				}
+				$questions[$question_id]['choices'] = $randomized_choices;
+			}
+		}
 		if ($can_add_new_entry)
 		{
 			$extra_rows[] = self::NEW_ENTRY_ID;
@@ -371,7 +386,7 @@ class viewtopic implements EventSubscriberInterface
 			}
 			$questions_to_assign = array();
 			$is_first_question = true;
-			foreach ($this->survey->questions as $question_id => $question)
+			foreach ($questions as $question_id => $question)
 			{
 				$template_vars_question = array();
 				if (isset($entry['answers'][$question_id]))
@@ -824,12 +839,14 @@ class viewtopic implements EventSubscriberInterface
 			}
 		}
 		$question = array(
-			'label'		=> '',
-			'type'		=> 0,
-			'sum_type'	=> 0,
-			'sum_by'	=> '',
-			'average'	=> 0,
-			'cap'		=> 0,
+			'label'					=> '',
+			'example_answer'		=> '',
+			'type'					=> 0,
+			'random_choice_order'	=> 0,
+			'sum_type'				=> 0,
+			'sum_by'				=> '',
+			'average'				=> 0,
+			'cap'					=> 0,
 		);
 		foreach ($question as $key => $value)
 		{
@@ -844,6 +861,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('SURVEY_QUESTION_ALREADY_ADDED', $question['label']));
 		}
+		$question['random_choice_order'] = ($question['random_choice_order'] ? 1 : 0);
 		$question['average'] = ($question['average'] ? 1 : 0);
 		$question['cap'] = ($question['cap'] != '' ? $question['cap'] : 0);
 		if (!in_array($question['type'], survey::$QUESTION_TYPES))
@@ -876,6 +894,10 @@ class viewtopic implements EventSubscriberInterface
 				return array($this->user->lang('SURVEY_INVALID_QUESTION_CHOICES'));
 			}
 			$choices = array_unique(explode(",", $choices_input));
+		}
+		else
+		{
+			$question['random_choice_order'] = 0;
 		}
 		$choices = array_map('trim', $choices);
 		if ($question_id == self::NEW_QUESTION_ID)

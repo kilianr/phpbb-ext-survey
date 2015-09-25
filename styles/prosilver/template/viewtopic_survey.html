@@ -54,7 +54,7 @@ function toggle_survey_table() {
 			<tr>
 				<th>&nbsp;</th>
 				<!-- BEGIN questions -->
-				<th style="white-space: nowrap" title="{questions.LABEL}">{questions.LABEL}<!-- IF S_SURVEY_IS_WRITE_OWNER --> <a href="{questions.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_QUESTION}"></a><!-- ENDIF --></th>
+				<th style="white-space: nowrap" title="<!-- IF questions.EXAMPLE_ANSWER -->{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}<!-- ELSE -->{questions.LABEL}<!-- ENDIF -->">{questions.LABEL}<!-- IF questions.EXAMPLE_ANSWER --> <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}"><!-- ENDIF --><!-- IF S_SURVEY_IS_WRITE_OWNER --> <a href="{questions.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_QUESTION}"></a><!-- ENDIF --></th>
 				<!-- END questions -->
 			</tr>
 		</thead>
@@ -306,12 +306,20 @@ function toggle_survey_table() {
 					<dd><input id="question_label" type="text" name="question_label"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_LABEL}"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
+					<dt><label for="question_example_answer">{L_SURVEY_EXAMPLE_ANSWER}{L_COLON}</label></dt>
+					<dd><input id="question_example_answer" type="text" name="question_example_answer"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_EXAMPLE_ANSWER}"<!-- ENDIF --> /></dd>
+				</dl>
+				<dl>
 					<dt><label for="question_type">{L_SURVEY_TYPE}{L_COLON}</label></dt>
 					<dd><select id="question_type" name="question_type">
 					<!-- BEGIN question_type -->
 					<option value="{question_type.NUM}"<!-- IF question_type.SELECTED --> selected="selected"<!-- ENDIF -->>{question_type.DESC}</option>
 					<!-- END question_type -->
 					</select></dd>
+				</dl>
+				<dl>
+					<dt><label for="question_random_choice_order" title="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}">{L_SURVEY_RANDOM_CHOICE_ORDER}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}"></label></dt>
+					<dd><input id="question_random_choice_order" type="checkbox" value="1" name="question_random_choice_order"<!-- IF S_SURVEY_LOADED_QUESTION and S_SURVEY_LOADED_QUESTION_RANDOM_CHOICE_ORDER --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_choices" title="{L_SURVEY_CHOICES_DESC}">{L_SURVEY_CHOICES}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CHOICES_DESC}"></label></dt>
