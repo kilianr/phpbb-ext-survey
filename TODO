@@ -2,12 +2,10 @@
 * new entry placement with different show_order's
 * Stop-Time as input=datetime(-local?)
 * Type-Checks / Input-Validation for old answers on modify_question
-* Access to survey by group
 * Option to de-owner the topic_poster
 * Migration routine for old phpBB3.0 survey data
 
 = Missing Events =
-* Group Deletion -> core.delete_group_after
 * Topic Merge -> NOT AVAILABLE!
 * Topic Split -> NOT AVAILABLE!
 * Topic Copy -> NOT AVAILABLE!

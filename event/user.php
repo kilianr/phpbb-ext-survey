@@ -23,6 +23,7 @@ class user implements EventSubscriberInterface
 	{
 		return array(
 			'core.delete_user_before' => 'delete_user',
+			'core.delete_group_after' => 'delete_group',
 		);
 	}
 
@@ -41,11 +42,21 @@ class user implements EventSubscriberInterface
 	 * Delete all entries of the users in all existing surveys
 	 *
 	 * @param object $event The event object
-	 * @return null
 	 * @access public
 	 */
 	public function delete_user($event)
 	{
 		$this->survey->delete_user($event['mode'], $event['user_ids'], $event['retain_username']);
+	}
+
+	/**
+	 * Delete all groupaccess entries of the group in all existing surveys
+	 *
+	 * @param object $event The event object
+	 * @access public
+	 */
+	public function delete_group($event)
+	{
+		$this->survey->delete_group($event['group_id']);
 	}
 }

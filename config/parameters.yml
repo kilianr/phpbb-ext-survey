@@ -5,3 +5,4 @@ parameters:
     tables.kilianr.survey.question_choices: %core.table_prefix%survey_q_choices
     tables.kilianr.survey.entries: %core.table_prefix%survey_entries
     tables.kilianr.survey.answers: %core.table_prefix%survey_answers
+    tables.kilianr.survey.groupaccess: %core.table_prefix%survey_g_access

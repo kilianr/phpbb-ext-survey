@@ -169,6 +169,18 @@ class viewtopic implements EventSubscriberInterface
 		}
 		$this->template->assign_vars($template_vars);
 
+		// Output groups
+		foreach ($this->survey->get_all_groups() as $group)
+		{
+			$template_vars = array(
+				'ID'			=> $group['group_id'],
+				'NAME'			=> ($group['group_type'] == GROUP_SPECIAL) ? $this->user->lang['G_' . $group['group_name']] : $group['group_name'],
+				'IS_SPECIAL'	=> $group['group_type'] == GROUP_SPECIAL,
+				'SELECTED'		=> $this->survey->group_can_access($group['group_id']),
+			);
+			$this->template->assign_block_vars('groups', $template_vars);
+		}
+
 		// Output show_order
 		foreach (survey::$SHOW_ORDER_TYPES as $type)
 		{
@@ -599,7 +611,19 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$new_settings['stop_time'] = null;
 		}
-		$this->survey->change_config($new_settings);
+		$groups = array_unique($this->request->variable("survey_setting_groupaccess", array(0)));
+		if (!empty($groups))
+		{
+			$sql = 'SELECT group_id FROM ' . GROUPS_TABLE . ' WHERE ' . $this->db->sql_in_set('group_id', $groups);
+			$result = $this->db->sql_query($sql);
+			$groups = array();
+			while ($row = $this->db->sql_fetchrow($result))
+			{
+				$groups[] = $row['group_id'];
+			}
+			$this->db->sql_freeresult($result);
+		}
+		$this->survey->change_config($new_settings, $groups);
 		return array();
 	}
 
@@ -759,9 +783,9 @@ class viewtopic implements EventSubscriberInterface
 						$answers[$question_id] = '';
 					}
 				}
-				else if ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] && isset($this->request->get_super_global()["answer_{$entry_id}_$question_id"]))
+				else if ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'])
 				{
-					$answers_choice_array = array_unique($this->request->get_super_global()["answer_{$entry_id}_$question_id"]);
+					$answers_choice_array = array_unique($this->request->variable("answer_{$entry_id}_$question_id", array(0)));
 					$answers[$question_id] = array();
 					foreach ($answers_choice_array as $choice_id)
 					{
