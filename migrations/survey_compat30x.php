@@ -39,6 +39,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						'visibility'			=> array('UINT:1', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING']),
 						'start_time'			=> array('TIMESTAMP', 0),
 						'stop_time'				=> array('TIMESTAMP', null),
+						'topic_poster_right'	=> array('UINT:1', survey::$TOPIC_POSTER_RIGHTS['WRITE_OWNER']),
 					),
 					'PRIMARY_KEY'	=> 's_id',
 					'KEYS'			=> array(
@@ -141,6 +142,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 				array('config.add', array('kilianr_survey_default_allow_change_answer', true)),
 				array('config.add', array('kilianr_survey_default_allow_multiple_answer', false)),
 				array('config.add', array('kilianr_survey_default_visibility', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING'])),
+				array('config.add', array('kilianr_survey_default_topic_poster_right', survey::$TOPIC_POSTER_RIGHTS['WRITE_OWNER'])),
 		);
 	}
 }

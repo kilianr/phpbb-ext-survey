@@ -186,6 +186,17 @@ class viewtopic implements EventSubscriberInterface
 			$this->template->assign_block_vars('visibility', $template_vars);
 		}
 
+		// Output topic poster rights
+		foreach (survey::$TOPIC_POSTER_RIGHTS as $right)
+		{
+			$template_vars = array(
+				'NUM'		=> $right,
+				'SELECTED'	=> ($this->survey->settings['topic_poster_right'] == $right) ? true : false,
+				'DESC'		=> $this->user->lang('SURVEY_TOPIC_POSTER_RIGHT_DESC_' . $right),
+			);
+			$this->template->assign_block_vars('topic_poster_right', $template_vars);
+		}
+
 		// Output question types
 		foreach (survey::$QUESTION_TYPES as $type)
 		{
@@ -516,6 +527,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_HAS_SURVEY'						=> true,
 			'S_SURVEY_IS_READ_OWNER'			=> $is_read_owner,
 			'S_SURVEY_IS_WRITE_OWNER'			=> $is_write_owner,
+			'S_SURVEY_IS_MODERATOR'				=> $this->survey->is_moderator(),
 			'S_IS_SURVEY_MEMBER'				=> $is_member,
 			'S_HAS_QUESTIONS'					=> empty($this->survey->questions) ? false : true,
 			'S_HAS_ENTRIES'						=> empty($this->survey->entries) ? false : true,
@@ -563,6 +575,10 @@ class viewtopic implements EventSubscriberInterface
 			'visibility'			=> 0,
 			'stop_time'				=> '',
 		);
+		if ($this->survey->is_moderator())
+		{
+			$new_settings['topic_poster_right'] = 0;
+		}
 		foreach ($new_settings as $setting => $default)
 		{
 			$new_settings[$setting] = $this->request->variable('survey_setting_'. $setting, $default, true);
@@ -593,6 +609,13 @@ class viewtopic implements EventSubscriberInterface
 		else
 		{
 			$new_settings['stop_time'] = null;
+		}
+		if ($this->survey->is_moderator())
+		{
+			if (!in_array($new_settings['topic_poster_right'], survey::$TOPIC_POSTER_RIGHTS))
+			{
+				return array($this->user->lang('SURVEY_INVALID_TOPIC_POSTER_RIGHT'));
+			}
 		}
 		$this->survey->change_config($new_settings);
 		return array();

@@ -225,6 +225,16 @@ function toggle_survey_table() {
 					<dt><label for="survey_setting_stop_time">{L_SURVEY_STOP_TIME}{L_COLON}</label></dt>
 					<dd><input id="survey_setting_stop_time" type="text" name="survey_setting_stop_time" value="{S_SURVEY_STOP_TIME}" /></dd>
 				</dl>
+				<!-- IF S_SURVEY_IS_MODERATOR -->
+				<dl>
+					<dt><label for="survey_setting_topic_poster_right">{L_SURVEY_TOPIC_POSTER_RIGHT_DESC}{L_COLON}</label></dt>
+					<dd><select id="survey_setting_topic_poster_right" name="survey_setting_topic_poster_right">
+					<!-- BEGIN topic_poster_right -->
+					<option value="{topic_poster_right.NUM}"<!-- IF topic_poster_right.SELECTED --> selected="selected"<!-- ENDIF -->>{topic_poster_right.DESC}</option>
+					<!-- END topic_poster_right -->
+					</select></dd>
+				</dl>
+				<!-- ENDIF -->
 				<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
 			</fieldset>
 		</form>

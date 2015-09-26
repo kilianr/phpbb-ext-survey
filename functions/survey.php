@@ -49,6 +49,12 @@ class survey
 		'HIDE_EVERYTHING'	=> 3,
 	);
 
+	static public $TOPIC_POSTER_RIGHTS = array(
+		'WRITE_OWNER'	=> 0,
+		'READ_OWNER'	=> 1,
+		'NO_OWNER'		=> 2,
+	);
+
 	/** @var \phpbb\db\driver\driver_interface */
 	protected $db;
 
@@ -118,6 +124,7 @@ class survey
 			'visibility'			=> 0,
 			'start_time'			=> 0,
 			'stop_time'				=> null,
+			'topic_poster_right'	=> 0,
 		);
 
 		$this->questions = array();
@@ -256,7 +263,17 @@ class survey
 	 */
 	public function can_create_survey($forum_id)
 	{
-		return $this->auth->acl_get('f_create_survey', $forum_id) || $this->auth->acl_get('m_edit', $forum_id);
+		return $this->auth->acl_get('f_create_survey', $forum_id) || $this->is_moderator();
+	}
+
+	/**
+	 * Checks if the user is a survey moderator
+	 *
+	 * @return boolean
+	 */
+	public function is_moderator()
+	{
+		return $this->auth->acl_get('m_edit', $this->forum_id);
 	}
 
 	/**
@@ -267,7 +284,7 @@ class survey
 	 */
 	public function is_write_owner($user_id)
 	{
-		return !$this->is_locked($user_id) && ($this->topic_poster == $user_id || $this->auth->acl_get('m_edit', $this->forum_id));
+		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['WRITE_OWNER']));
 	}
 
 	/**
@@ -278,18 +295,17 @@ class survey
 	 */
 	public function is_read_owner($user_id)
 	{
-		return $this->topic_poster == $user_id || $this->auth->acl_get('m_edit', $this->forum_id);
+		return $this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['WRITE_OWNER'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['READ_OWNER']));
 	}
 
 	/**
 	 * Checks if the survey is locked via forum or topic lock
 	 *
-	 * @param int $user_id
 	 * @return boolean
 	 */
-	public function is_locked($user_id)
+	public function is_locked()
 	{
-		return ($this->forum_status == ITEM_LOCKED || $this->topic_status == ITEM_LOCKED) && !$this->auth->acl_get('m_edit', $this->forum_id);
+		return ($this->forum_status == ITEM_LOCKED || $this->topic_status == ITEM_LOCKED) && !$this->is_moderator();
 	}
 
 	/**
@@ -323,7 +339,7 @@ class survey
 		{
 			$entry_user_id = $real_user_id;
 		}
-		if ($this->is_locked($real_user_id))
+		if ($this->is_locked())
 		{
 			return false;
 		}
@@ -363,7 +379,7 @@ class survey
 		{
 			$entry_user_id = $real_user_id;
 		}
-		if ($this->is_locked($real_user_id))
+		if ($this->is_locked())
 		{
 			return false;
 		}
@@ -445,7 +461,7 @@ class survey
 
 	/**
 	 * Change config
-	 * The $new_settings can contain caption, show_order, allow_change_answer, allow_multiple_answer, visibility and stop_time
+	 * The $new_settings can contain caption, show_order, allow_change_answer, allow_multiple_answer, visibility, stop_time and topic_poster_right
 	 * It MUST NOT contain s_id, topic_id, and start_time
 	 *
 	 * @param array $new_settings
