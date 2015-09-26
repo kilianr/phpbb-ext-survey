@@ -556,6 +556,21 @@ class survey
 	public function modify_question($question_id, $question, $choices)
 	{
 		$this->questions[$question_id] = $question;
+		// Here, we start some sort of a hack, to get the check_answer call working...
+		$this->questions[$question_id]['choices'] = array();
+		foreach ($choices as $choice)
+		{
+			$this->questions[$question_id]['choices'][] = array('text' => $choice);
+		}
+		foreach ($this->entries as $entry_id => $entry)
+		{
+			if (isset($entry['answers'][$question_id]) && !$this->check_answer($entry['answers'][$question_id], $question_id))
+			{
+				$this->delete_answer($question_id, $entry_id);
+			}
+		}
+		unset($this->questions[$question_id]['choices']);
+		// End of hack
 		$this->compute_sum($question_id);
 		$this->questions[$question_id]['sum_value'] = $this->questions[$question_id]['sum_value'];
 		$sql = "UPDATE {$this->tables['questions']} SET " . $this->db->sql_build_array('UPDATE', $this->questions[$question_id]) . " WHERE q_id = $question_id";
@@ -583,7 +598,6 @@ class survey
 			$insert_choice['c_id'] = $choice_id;
 			$this->questions[$question_id]['choices'][$choice_id] = $insert_choice;
 		}
-		//TODO: If type is choices, iterate through answers of this question and delete thoise with now inexistent choice
 	}
 
 	/**
@@ -677,6 +691,27 @@ class survey
 		$this->db->sql_query($sql);
 		$this->entries[$entry_id]['answers'][$question_id] = $answer;
 		$this->modify_sum_entry($question_id, true, true, $answer, false, 0, true);
+	}
+
+	/**
+	 * Delete answer
+	 * The question with $question_id and the entry with $entry_id must exist
+	 * Sums will NOT be handeled here!
+	 *
+	 * @param int $question_id
+	 * @param int $entry_id
+	 */
+	protected function delete_answer($question_id, $entry_id)
+	{
+		$sql = "DELETE FROM {$this->tables['answers']} WHERE q_id = $question_id AND entry_id = $entry_id";
+		$this->db->sql_query($sql);
+		unset($this->entries[$entry_id]['answers'][$question_id]);
+		if (empty($this->entries[$entry_id]['answers']))
+		{
+			$sql = "DELETE FROM {$this->tables['entries']} WHERE entry_id = $entry_id";
+			$this->db->sql_query($sql);
+			unset($this->entries[$entry_id]);
+		}
 	}
 
 	/**
