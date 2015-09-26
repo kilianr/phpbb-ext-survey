@@ -4,6 +4,7 @@
 * Type-Checks / Input-Validation for old answers on modify_question
 * Option to de-owner the topic_poster
 * Migration routine for old phpBB3.0 survey data
+* Configuration of default values
 
 = Missing Events =
 * Topic Merge -> NOT AVAILABLE!
@@ -22,6 +23,7 @@
 * Make forms look nice
 * successbox (green), warningbox (yellow), errorbox (red), infobox (blue)
 * Switch from "edit-mode" to "view-mode" for owners
+* fix bg-unset
 
 = QA =
 * Write tests
