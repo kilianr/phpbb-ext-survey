@@ -1068,13 +1068,12 @@ class viewtopic implements EventSubscriberInterface
 			return $this->process_reopen();
 		}
 
-		if ($this->survey->is_closed())
-		{
-			return array($this->user->lang('SURVEY_IS_CLOSED'));
-		}
-
 		if ($action == "close")
 		{
+			if ($this->survey->is_closed())
+			{
+				return array($this->user->lang('SURVEY_IS_CLOSED', $this->user->format_date($this->survey->settings['stop_time'])));
+			}
 			return $this->process_close();
 		}
 
