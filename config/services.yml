@@ -14,7 +14,6 @@ services:
             - %tables.kilianr.survey.question_choices%
             - %tables.kilianr.survey.entries%
             - %tables.kilianr.survey.answers%
-            - %tables.kilianr.survey.groupaccess%
     kilianr.survey.events.posting:
         class: kilianr\survey\event\posting
         arguments:

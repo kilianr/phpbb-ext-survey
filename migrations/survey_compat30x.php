@@ -107,18 +107,6 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						'ta_id'					=> array('INDEX', array('q_id', 'entry_id')),
 					),
 				),
-				$this->table_prefix . 'survey_g_access' => array(
-					'COLUMNS'		=> array(
-						's_id' 					=> array('UINT', 0),
-						'group_id'				=> array('UINT', 0),
-					),
-					'PRIMARY_KEY'	=> array('s_id', 'group_id'),
-					'KEYS'			=> array(
-						's_id' 					=> array('INDEX', 's_id'),
-						'group_id' 				=> array('INDEX', 'group_id'),
-						'ta_id'					=> array('INDEX', array('s_id', 'group_id')),
-					),
-				),
 			),
 			'add_columns' => array(
 				TOPICS_TABLE		=> array(
@@ -137,7 +125,6 @@ class survey_compat30x extends \phpbb\db\migration\migration
 				$this->table_prefix . 'survey_q_choices',
 				$this->table_prefix . 'survey_entries',
 				$this->table_prefix . 'survey_answers',
-				$this->table_prefix . 'survey_g_access',
 			),
 			'drop_columns' => array(
 				TOPICS_TABLE => array('survey_enabled',),
@@ -148,7 +135,8 @@ class survey_compat30x extends \phpbb\db\migration\migration
 	public function update_data()
 	{
 		return array(
-				array('permission.add', array('f_survey', false, 'f_read')),
+				array('permission.add', array('f_create_survey', false, 'f_poll')),
+				array('permission.add', array('f_answer_survey', false, 'f_reply')),
 				array('config.add', array('kilianr_survey_default_show_order', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME'])),
 				array('config.add', array('kilianr_survey_default_allow_change_answer', true)),
 				array('config.add', array('kilianr_survey_default_allow_multiple_answer', false)),

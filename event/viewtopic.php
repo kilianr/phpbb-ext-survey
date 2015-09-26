@@ -104,11 +104,6 @@ class viewtopic implements EventSubscriberInterface
 	{
 		$forum_id = $event['forum_id'];
 		$this->base_url = $event['base_url'];
-		if (!$this->survey->can_access($forum_id))
-		{
-			return;
-		}
-
 		$this->topic_id = $event['topic_id'];
 		$this->survey->set_env($forum_id, $event['topic_data']['topic_poster'], $event['topic_data']['topic_status'], $event['topic_data']['forum_status']);
 		if (!$this->survey->load_survey($this->topic_id))
@@ -168,18 +163,6 @@ class viewtopic implements EventSubscriberInterface
 			$template_vars['S_SURVEY_' . strtoupper($key)] = $value;
 		}
 		$this->template->assign_vars($template_vars);
-
-		// Output groups
-		foreach ($this->survey->get_all_groups() as $group)
-		{
-			$template_vars = array(
-				'ID'			=> $group['group_id'],
-				'NAME'			=> ($group['group_type'] == GROUP_SPECIAL) ? $this->user->lang['G_' . $group['group_name']] : $group['group_name'],
-				'IS_SPECIAL'	=> $group['group_type'] == GROUP_SPECIAL,
-				'SELECTED'		=> $this->survey->group_can_access($group['group_id']),
-			);
-			$this->template->assign_block_vars('groups', $template_vars);
-		}
 
 		// Output show_order
 		foreach (survey::$SHOW_ORDER_TYPES as $type)
@@ -611,19 +594,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			$new_settings['stop_time'] = null;
 		}
-		$groups = array_unique($this->request->variable("survey_setting_groupaccess", array(0)));
-		if (!empty($groups))
-		{
-			$sql = 'SELECT group_id FROM ' . GROUPS_TABLE . ' WHERE ' . $this->db->sql_in_set('group_id', $groups);
-			$result = $this->db->sql_query($sql);
-			$groups = array();
-			while ($row = $this->db->sql_fetchrow($result))
-			{
-				$groups[] = $row['group_id'];
-			}
-			$this->db->sql_freeresult($result);
-		}
-		$this->survey->change_config($new_settings, $groups);
+		$this->survey->change_config($new_settings);
 		return array();
 	}
 

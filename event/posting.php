@@ -52,7 +52,7 @@ class posting implements EventSubscriberInterface
 	 */
 	public function submit_post_modify_sql_data($event)
 	{
-		if (!$this->survey->can_access($event['data']['forum_id']))
+		if (!$this->survey->can_create_survey($event['data']['forum_id']))
 		{
 			return;
 		}
@@ -77,7 +77,7 @@ class posting implements EventSubscriberInterface
 	 */
 	public function submit_post_end($event)
 	{
-		if (!$this->survey->can_access($event['data']['forum_id']))
+		if (!$this->survey->can_create_survey($event['data']['forum_id']))
 		{
 			return;
 		}
@@ -95,7 +95,7 @@ class posting implements EventSubscriberInterface
 	 */
 	public function posting_display_template($event)
 	{
-		if (!$this->survey->can_access($event['forum_id']))
+		if (!$this->survey->can_create_survey($event['forum_id']))
 		{
 			return;
 		}

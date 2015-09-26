@@ -94,9 +94,6 @@ class survey
 	/** @var array */
 	public $entries;
 
-	/** @var array */
-	protected $groupaccess;
-
 	/**
 	 * Constructor
 	 *
@@ -110,7 +107,7 @@ class survey
 	 * @param string $entries_table
 	 * @param string $answers_table
 	 */
-	public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\config\config $config, \phpbb\user $user, \phpbb\auth\auth $auth, $surveys_table, $questions_table, $question_choices_table, $entries_table, $answers_table, $groupaccess_table)
+	public function __construct(\phpbb\db\driver\driver_interface $db, \phpbb\config\config $config, \phpbb\user $user, \phpbb\auth\auth $auth, $surveys_table, $questions_table, $question_choices_table, $entries_table, $answers_table)
 	{
 		$this->settings = array(
 			's_id'					=> 0,
@@ -126,8 +123,6 @@ class survey
 		$this->questions = array();
 		$this->entries = array();
 
-		$this->groupaccess = array();
-
 		$this->db = $db;
 		$this->config = $config;
 		$this->user = $user;
@@ -138,7 +133,6 @@ class survey
 			'question_choices'	=> $question_choices_table,
 			'entries'			=> $entries_table,
 			'answers'			=> $answers_table,
-			'groupaccess'		=> $groupaccess_table,
 		);
 		$this->time_called = false;
 	}
@@ -212,16 +206,6 @@ class survey
 		}
 		$db->sql_freeresult($result);
 
-		// load groupaccess
-		$sql = "SELECT group_id FROM {$this->tables['groupaccess']} WHERE s_id = {$this->settings['s_id']}";
-		$result = $db->sql_query($sql);
-		$this->groupaccess = array();
-		while ($row = $db->sql_fetchrow($result))
-		{
-			$this->groupaccess[] = $row['group_id'];
-		}
-		$db->sql_freeresult($result);
-
 		// load questions
 		$sql = "SELECT q_id, label, example_answer, type, random_choice_order, sum_value, sum_type, sum_by, average, cap FROM {$this->tables['questions']} WHERE s_id = {$this->settings['s_id']}";
 		$result = $db->sql_query($sql);
@@ -270,9 +254,9 @@ class survey
 	 * @param int $forum_id
 	 * @return boolean
 	 */
-	public function can_access($forum_id)
+	public function can_create_survey($forum_id)
 	{
-		return $this->auth->acl_get('f_survey', $forum_id) || $this->auth->acl_get('m_edit', $forum_id);
+		return $this->auth->acl_get('f_create_survey', $forum_id) || $this->auth->acl_get('m_edit', $forum_id);
 	}
 
 	/**
@@ -327,46 +311,6 @@ class survey
 	}
 
 	/**
-	 * Checks if the group is allowed to access
-	 *
-	 * @param int $group_id
-	 * @return boolean
-	 */
-	public function group_can_access($group_id)
-	{
-		return in_array($group_id, $this->groupaccess);
-	}
-
-	/**
-	 * Checks if the user is restricted via groupaccess or not
-	 *
-	 * @param int $user_id
-	 * @return boolean
-	 */
-	public function check_groupaccess($user_id)
-	{
-		if (empty($this->groupaccess))
-		{
-			return $this->auth->acl_get('f_reply', $this->forum_id);
-		}
-		return group_memberships($this->groupaccess, $user_id, true);
-	}
-
-	/**
-	 * Return an array of all available groups on the forum
-	 *
-	 * @return array
-	 */
-	public function get_all_groups()
-	{
-		$sql = 'SELECT group_id, group_type, group_name FROM ' . GROUPS_TABLE . ((!$this->config['coppa_enable']) ? " WHERE group_name <> 'REGISTERED_COPPA'" : '') . 'ORDER BY group_type DESC, group_name ASC';
-		$result = $this->db->sql_query($sql);
-		$groups = $this->db->sql_fetchrowset($result);
-		$this->db->sql_freeresult($result);
-		return $groups;
-	}
-
-	/**
 	 * Checks if the user can add a new entry of $entry_user_id
 	 *
 	 * @param int $real_user_id
@@ -403,7 +347,7 @@ class survey
 		{
 			return false;
 		}
-		return $this->check_groupaccess($real_user_id);
+		return $this->auth->acl_get('f_answer_survey', $this->forum_id);
 	}
 
 	/**
@@ -505,28 +449,12 @@ class survey
 	 * It MUST NOT contain s_id, topic_id, and start_time
 	 *
 	 * @param array $new_settings
-	 * @param array $groups
 	 */
-	public function change_config($new_settings, $groups)
+	public function change_config($new_settings)
 	{
 		$sql = "UPDATE {$this->tables['surveys']} SET " . $this->db->sql_build_array('UPDATE', $new_settings) . " WHERE s_id = {$this->settings['s_id']}";
 		$this->db->sql_query($sql);
 		$this->settings = array_merge($this->settings, $new_settings);
-		if (!empty(array_diff($this->groupaccess, $groups)))
-		{
-			$sql = "DELETE FROM {$this->tables['groupaccess']} WHERE s_id = {$this->settings['s_id']} AND " . $this->db->sql_in_set('group_id', array_diff($this->groupaccess, $groups));
-			$this->db->sql_query($sql);
-		}
-		$new_groups = array();
-		foreach (array_diff($groups, $this->groupaccess) as $group_id)
-		{
-			$new_groups[] = array(
-				's_id'		=> $this->settings['s_id'],
-				'group_id'	=> $group_id,
-			);
-		}
-		$this->db->sql_multi_insert($this->tables['groupaccess'], $new_groups);
-		$this->groupaccess = $groups;
 	}
 
 	/**
@@ -1408,16 +1336,5 @@ class survey
 				}
 			}
 		}
-	}
-
-	/**
-	 * Handle the deletion of one group
-	 *
-	 * @param int $group_id
-	 */
-	public function delete_group($group_id)
-	{
-		$sql = "DELETE FROM {$this->tables['groupaccess']} WHERE group_id = $group_id";
-		$this->db->sql_query($sql);
 	}
 }
