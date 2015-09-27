@@ -8,8 +8,6 @@
 * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License v3
 */
 
-use kilianr\survey\functions\survey;
-
 /**
 * DO NOT CHANGE
 */
