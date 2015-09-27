@@ -1,23 +1,16 @@
 <div style="clear:both"></div>
-<!-- <style type="text/css">
-#survey-table, #survey-tabs-boundary{
-	display: none;
-}
-</style> -->
 <script>
 function toggle_survey_table() {
-	if(document.getElementById('survey-table').style.display == 'block') {
-		var link_text = '{L_SURVEY_SHOW}';
-		var set_display = 'none';
-	}
-	else {
+	if(document.getElementById('survey-table').style.display == 'none') {
 		var link_text = '{L_SURVEY_HIDE}';
 		var set_display = 'block';
 	}
+	else {
+		var link_text = '{L_SURVEY_SHOW}';
+		var set_display = 'none';
+	}
 	document.getElementById('show-survey-link').innerHTML = link_text;
-	
 	document.getElementById('survey-table').style.display = set_display;
-	if(document.getElementById('survey-tabs-boundary')) document.getElementById('survey-tabs-boundary').style.display = set_display;
 }
 </script>
 
@@ -25,9 +18,9 @@ function toggle_survey_table() {
 <div id="survey-tabs-boundary">
 <div id="tabs" class="sub-panels" role="tablist" data-show-panel="<!-- IF S_SURVEY_LOADED_QUESTION -->manage-questions-panel<!-- ELSE -->survey-overview-panel<!-- ENDIF -->">
 	<ul>
-		<li id="survey-overview-panel-tab" class="tab activetab"><a href="#tabs" aria-controls="survey-overview-panel" role="tab" data-subpanel="survey-overview-panel"><span>{L_SURVEY_OVERVIEW}</span></a></li>
-		<li id="settings-tab" class="tab"><a href="#tabs" aria-controls="settings-panel" role="tab" data-subpanel="settings-panel"><span>{L_SURVEY_SETTINGS}</span></a></li>
-		<li id="manage-question-panel-tab" class="tab"><a href="#tabs" aria-controls="manage-questions-panel" role="tab" data-subpanel="manage-questions-panel"><span>{L_SURVEY_MANAGE_QUESTIONS}</span></a></li>
+		<li id="survey-overview-panel-tab" class="tab<!-- IF not S_SURVEY_LOADED_QUESTION --> activetab<!-- ENDIF -->"><a href="#tabs" aria-controls="survey-overview-panel" role="tab" data-subpanel="survey-overview-panel"><span>{L_SURVEY_OVERVIEW}</span></a></li>
+		<li id="settings-panel-tab" class="tab"><a href="#tabs" aria-controls="settings-panel" role="tab" data-subpanel="settings-panel"><span>{L_SURVEY_SETTINGS}</span></a></li>
+		<li id="manage-questions-panel-tab" class="tab<!-- IF S_SURVEY_LOADED_QUESTION --> activetab<!-- ENDIF -->"><a href="#tabs" aria-controls="manage-questions-panel" role="tab" data-subpanel="manage-questions-panel"><span>{L_SURVEY_MANAGE_QUESTIONS}</span></a></li>
 	</ul>
 </div>
 <!-- ENDIF -->
@@ -35,7 +28,7 @@ function toggle_survey_table() {
 <div class="<!-- IF not S_SURVEY_IS_WRITE_OWNER -->no-owner <!-- ENDIF -->panel bg3" id="survey-overview-panel">
 <div class="inner"><span class="corners-top"><span></span></span>
 <h2>{S_SURVEY_CAPTION}</h2>
-<!-- IF S_SURVEY_IS_WRITE_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_SHOW}</a>
+<!-- IF S_SURVEY_IS_WRITE_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_HIDE}</a>
 <p class="author">{S_DESC}<!-- IF not S_IS_CLOSED --> {S_WILL_CLOSE_DESC}<!-- ENDIF --></p>
 <!-- IF S_HIDE_ENTRIES and not S_SURVEY_IS_READ_OWNER --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_USER}</b></p><!-- ELSEIF S_HIDE_ENTRIES --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_OWNER}</b></p><!-- ENDIF -->
 <!-- IF S_IS_CLOSED --><p class="post-notice"><b>{S_IS_CLOSED_DESC}</b></p><!-- ENDIF -->
