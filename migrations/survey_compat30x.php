@@ -21,7 +21,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 
 	public function effectively_installed()
 	{
-		return isset($this->config['survey_default_show_order']);
+		return isset($this->config['kilianr_survey_default_show_order']);
 	}
 
 	public function update_schema()
@@ -137,14 +137,20 @@ class survey_compat30x extends \phpbb\db\migration\migration
 	public function update_data()
 	{
 		return array(
-				array('permission.add', array('f_survey_create', false, 'f_poll')),
-				array('permission.add', array('f_survey_answer', false, 'f_reply')),
-				array('config.add', array('kilianr_survey_default_show_order', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME'])),
-				array('config.add', array('kilianr_survey_default_reverse_order', false)),
-				array('config.add', array('kilianr_survey_default_allow_change_answer', true)),
-				array('config.add', array('kilianr_survey_default_allow_multiple_answer', false)),
-				array('config.add', array('kilianr_survey_default_visibility', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING'])),
-				array('config.add', array('kilianr_survey_default_topic_poster_right', survey::$TOPIC_POSTER_RIGHTS['WRITE_OWNER'])),
+			array('permission.add', array('f_survey_create', false, 'f_poll')),
+			array('permission.add', array('f_survey_answer', false, 'f_reply')),
+			array('config.add', array('kilianr_survey_default_show_order', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME'])),
+			array('config.add', array('kilianr_survey_default_reverse_order', false)),
+			array('config.add', array('kilianr_survey_default_allow_change_answer', true)),
+			array('config.add', array('kilianr_survey_default_allow_multiple_answer', false)),
+			array('config.add', array('kilianr_survey_default_visibility', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING'])),
+			array('config.add', array('kilianr_survey_default_topic_poster_right', survey::$TOPIC_POSTER_RIGHTS['WRITE_OWNER'])),
+			array('module.add', array('acp', 'ACP_CAT_DOT_MODS', 'ACP_SURVEY')),
+			array('module.add', array('acp', 'ACP_SURVEY', array(
+					'module_basename'	=> '\kilianr\survey\acp\survey_module',
+					'modes'				=> array('settings'),
+				),
+			)),
 		);
 	}
 }

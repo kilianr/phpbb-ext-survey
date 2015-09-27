@@ -1120,6 +1120,7 @@ class survey
 			'allow_multiple_answer'	=> $this->config['kilianr_survey_default_allow_multiple_answer'],
 			'visibility'			=> $this->config['kilianr_survey_default_visibility'],
 			'start_time'			=> $this->fixed_time(),
+			'topic_poster_right'	=> $this->config['kilianr_survey_default_topic_poster_right'],
 		);
 		$sql = 'INSERT INTO ' . $this->tables['surveys'] . ' ' . $this->db->sql_build_array('INSERT', $inserts);
 		$this->db->sql_query($sql);
