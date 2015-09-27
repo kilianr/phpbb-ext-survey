@@ -25,10 +25,9 @@
 			"phpbb/phpbb": ">=3.1.5,<3.2.*@dev"
 		},
 		"version-check": {
-			"host": "raw.githubusercontent.com",
-			"directory": "/kilianr/phpbb-ext-survey/master",
-			"filename": "version-check.json",
-			"ssl": true
+			"host": "kilianr.github.io",
+			"directory": "/phpbb-ext-survey",
+			"filename": "version-check.json"
 		}
 	}
 }
