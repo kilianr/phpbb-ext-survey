@@ -26,6 +26,7 @@ Current features:
     * Add, edit and remove answers of other users
     * Add, edit and remove questions
     * Disable or delete the whole survey
+* Forum-Admin can configure default survey settings in ACP
 * Languages
     * English
     * German
