@@ -94,7 +94,7 @@ function toggle_survey_table() {
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'LARGE_TEXT_BOX' -->
 									<textarea {$ALWAYS_SAME} rows="3" cols="35" style="width:100px"><!-- IF entries.questions.IS_SET -->{entries.questions.VALUE}<!-- ENDIF --></textarea>
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'NUMBER' -->
-									<input {$ALWAYS_SAME} type="number" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
+									<input {$ALWAYS_SAME} type="number" step="any" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'CHECKBOX' -->
 									<input {$ALWAYS_SAME} type="checkbox" value="1" <!-- IF entries.questions.VALUE == '1' -->checked="checked"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING in ['DROP_DOWN_MENU', 'MULTIPLE_CHOICE']  -->

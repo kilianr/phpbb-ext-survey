@@ -1,6 +1,5 @@
 = Features =
 * new entry placement with different show_order's
-* Stop-Time as input=datetime(-local?)
 * Migration routine for old phpBB3.0 survey data
 * Configuration of default values
 
