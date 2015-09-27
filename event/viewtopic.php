@@ -721,7 +721,7 @@ class viewtopic implements EventSubscriberInterface
 		$errors = array();
 		foreach ($entry_ids as $entry_id)
 		{
-			$filled_out = false;
+			$changed = $filled_out = false;
 			if ($entry_id == self::ADDUSER_ENTRY_ID)
 			{
 				$username = utf8_normalize_nfc(request_var('answer_adduser_username', '', true));
@@ -741,7 +741,6 @@ class viewtopic implements EventSubscriberInterface
 					$errors[] = $this->user->lang('NO_AUTH_OPERATION');
 					continue;
 				}
-				$filled_out = true;
 			}
 			else
 			{
@@ -790,6 +789,8 @@ class viewtopic implements EventSubscriberInterface
 					}
 					$answers[$question_id] = implode(",", $answers[$question_id]);
 				}
+				$old_exists = $entry_id != self::ADDUSER_ENTRY_ID && $entry_id != self::NEW_ENTRY_ID && isset($this->survey->entries[$entry_id]['answers'][$question_id]);
+				$old_value = ($old_exists ? $this->survey->entries[$entry_id]['answers'][$question_id] : 0);
 				if ($answers[$question_id] != '')
 				{
 					if (!$this->survey->check_answer($answers[$question_id], $question_id))
@@ -801,8 +802,6 @@ class viewtopic implements EventSubscriberInterface
 					$filled_out = true;
 					if ($this->survey->has_cap($question_id) && !$this->survey->is_write_owner($real_user_id))
 					{
-						$old_exists = $entry_id != self::ADDUSER_ENTRY_ID && $entry_id != self::NEW_ENTRY_ID && isset($this->survey->entries[$entry_id]['answers'][$question_id]);
-						$old_value = ($old_exists ? $this->survey->entries[$entry_id]['answers'][$question_id] : 0);
 						$diff = $this->survey->modify_sum_entry($question_id, true, $answers[$question_id], $old_exists, $old_value);
 						if ($diff != 0 && $this->survey->cap_exceeded($question_id, $diff))
 						{
@@ -811,7 +810,16 @@ class viewtopic implements EventSubscriberInterface
 							continue;
 						}
 					}
+					if (!$old_exists || $old_value != $answers[$question_id])
+					{
+						$changed = true;
+					}
 				}
+				else if ($old_exists && $old_value != '')
+				{
+					$changed = true;
+				}
+				print("\t\n");
 			}
 			if ($abort)
 			{
@@ -823,7 +831,7 @@ class viewtopic implements EventSubscriberInterface
 				{
 					$this->survey->add_entry($entry_user_id, $answers);
 				}
-				else
+				else if ($changed)
 				{
 					$this->survey->modify_entry($entry_id, $answers);
 				}
