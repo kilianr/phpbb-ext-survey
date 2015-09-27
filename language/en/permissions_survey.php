@@ -17,6 +17,6 @@ if (empty($lang) || !is_array($lang))
 
 // Define categories and permission types
 $lang = array_merge($lang, array(
-	'ACL_F_CREATE_SURVEY'	=> 'Can create surveys',
-	'ACL_F_ANSWER_SURVEY'	=> 'Can answer surveys',
+	'ACL_F_SURVEY_CREATE'	=> 'Can create surveys',
+	'ACL_F_SURVEY_ANSWER'	=> 'Can answer surveys',
 ));

@@ -45,8 +45,8 @@ Go to "ACP" > "Customise" > "Extensions" and enable the "Survey" extension.
 ## Configuration
 
 Two new forum permissions (content category) will be introduced:
-* f_create_survey: Can create surveys upon topic creation or when editing the first post. This permission is initially copied from f_poll.
-* f_answer_survey: Can answer surveys. This permission is initially copied from f_reply.
+* f_survey_create: Can create surveys upon topic creation or when editing the first post. This permission is initially copied from f_poll.
+* f_survey_answer: Can answer surveys. This permission is initially copied from f_reply.
 
 ## Development
 

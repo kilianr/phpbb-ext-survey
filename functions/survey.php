@@ -263,7 +263,7 @@ class survey
 	 */
 	public function can_create_survey($forum_id)
 	{
-		return $this->auth->acl_get('f_create_survey', $forum_id) || $this->is_moderator();
+		return $this->auth->acl_get('f_survey_create', $forum_id) || $this->is_moderator();
 	}
 
 	/**
@@ -363,7 +363,7 @@ class survey
 		{
 			return false;
 		}
-		return $this->auth->acl_get('f_answer_survey', $this->forum_id);
+		return $this->auth->acl_get('f_survey_answer', $this->forum_id);
 	}
 
 	/**

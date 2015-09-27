@@ -137,8 +137,8 @@ class survey_compat30x extends \phpbb\db\migration\migration
 	public function update_data()
 	{
 		return array(
-				array('permission.add', array('f_create_survey', false, 'f_poll')),
-				array('permission.add', array('f_answer_survey', false, 'f_reply')),
+				array('permission.add', array('f_survey_create', false, 'f_poll')),
+				array('permission.add', array('f_survey_answer', false, 'f_reply')),
 				array('config.add', array('kilianr_survey_default_show_order', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME'])),
 				array('config.add', array('kilianr_survey_default_reverse_order', false)),
 				array('config.add', array('kilianr_survey_default_allow_change_answer', true)),

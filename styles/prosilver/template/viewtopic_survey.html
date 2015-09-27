@@ -57,9 +57,9 @@ function toggle_survey_table() {
 			<!-- BEGIN entries -->
 			<!-- DEFINE $SPACEROW = 1 -->
 			<tr <!-- IF !entries.IS_SELF -->class="survey_hidemobile"<!-- ENDIF -->>
-				<td<!-- IF entries.IS_ADDUSER or entries.IS_NEW --> class="new-bg"<!-- ENDIF -->>
+				<td class="<!-- IF entries.IS_ADDUSER or entries.IS_NEW -->new-bg<!-- ELSE -->set-bg<!-- ENDIF -->">
 				<!-- IF entries.IS_ADDUSER -->
-					<input class="text medium" id="username" name="answer_adduser_username" type="text">
+					<input class="new-bg text medium" id="username" name="answer_adduser_username" type="text">
 					<br />[<a href="{U_FIND_USERNAME}" onclick="find_username(this.href); return false;">{L_FIND_USERNAME}</a>]
 				<!-- ELSE -->
 					<!-- IF S_SHOW_USERNAMES or entries.IS_SELF -->
