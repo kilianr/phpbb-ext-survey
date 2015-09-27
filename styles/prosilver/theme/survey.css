@@ -44,10 +44,13 @@ div.cap-reached {
 	color: red;
 }
 
-div.set-bg, td.set-bg, select.set-bg, option.set-bg {
+div.new-bg, td.new-bg, select.new-bg, option.new-bg, input.new-bg, textarea.new-bg {
+	background: #BBF0C0;
+}
+div.set-bg, td.set-bg, select.set-bg, option.set-bg, input.set-bg, textarea.set-bg {
 	background: #FEFEFE;
 }
-div.unset-bg, td.unset-bg, select.unset-bg, option.unset-bg {
+div.unset-bg, td.unset-bg, select.unset-bg, option.unset-bg, input.unset-bg, textarea.unset-bg {
 	background: #ABABAB;
 }
 

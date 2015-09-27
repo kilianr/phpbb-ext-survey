@@ -298,6 +298,7 @@ class viewtopic implements EventSubscriberInterface
 		$entries_to_assign = array();
 		$extra_rows = array();
 		$adduser_entry_template_vars = array();
+		$new_entry_template_vars = array();
 		$questions = $this->survey->questions;
 		foreach ($questions as $question_id => $question)
 		{
@@ -432,30 +433,31 @@ class viewtopic implements EventSubscriberInterface
 				$questions_to_assign[] = $template_vars_question;
 			}
 			$template_vars['questions'] = $questions_to_assign;
-			if ($entry['entry_id'] != self::ADDUSER_ENTRY_ID)
-			{
-				$entries_to_assign[] = $template_vars;
-			}
-			else
+			if ($entry['entry_id'] == self::ADDUSER_ENTRY_ID)
 			{
 				$adduser_entry_template_vars = $template_vars;
 			}
+			else if ($entry['entry_id'] == self::NEW_ENTRY_ID)
+			{
+				$new_entry_template_vars = $template_vars;
+			}
+			else
+			{
+				$entries_to_assign[] = $template_vars;
+			}
 		}
-		$sort_order = SORT_ASC;
+		$sort_by = false;
+		$sort_order = $this->survey->settings['reverse_order'] ? SORT_DESC : SORT_ASC;
 		switch ($this->survey->settings['show_order'])
 		{
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME']:
 				$sort_by = 'USERNAME';
 			break;
+			case survey::$SHOW_ORDER_TYPES['RESPONSE_TIME']:
+				$sort_by = 'ENTRY_ID';
+			break;
 			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER']:
 				$sort_by = 'first_answer_text';
-			break;
-			case survey::$SHOW_ORDER_TYPES['ALPHABETICAL_FIRST_ANSWER_REVERSE']:
-				$sort_by = 'first_answer_text';
-				$sort_order = SORT_DESC;
-			break;
-			default:
-				$sort_by = false;
 			break;
 		}
 		if ($sort_by && !empty($this->survey->entries))
@@ -466,6 +468,10 @@ class viewtopic implements EventSubscriberInterface
 				$only_sorting_row[$key] = $row[$sort_by];
 			}
 			array_multisort($only_sorting_row, $sort_order, $entries_to_assign);
+		}
+		if (!empty($new_entry_template_vars))
+		{
+			$entries_to_assign[] = $new_entry_template_vars;
 		}
 		if (!empty($adduser_entry_template_vars))
 		{
@@ -570,6 +576,7 @@ class viewtopic implements EventSubscriberInterface
 		$new_settings = array(
 			'caption'				=> '',
 			'show_order'			=> 0,
+			'reverse_order'			=> 0,
 			'allow_change_answer'	=> 0,
 			'allow_multiple_answer'	=> 0,
 			'visibility'			=> 0,
@@ -591,6 +598,7 @@ class viewtopic implements EventSubscriberInterface
 		{
 			return array($this->user->lang('SURVEY_INVALID_SHOW_ORDER_TYPE'));
 		}
+		$new_settings['reverse_order'] = ($new_settings['reverse_order'] ? 1 : 0);
 		$new_settings['allow_change_answer'] = ($new_settings['allow_change_answer'] ? 1 : 0);
 		$new_settings['allow_multiple_answer'] = ($new_settings['allow_multiple_answer'] ? 1 : 0);
 		if (!in_array($new_settings['visibility'], survey::$VISIBILITY_TYPES))

@@ -64,7 +64,7 @@ function toggle_survey_table() {
 			<!-- BEGIN entries -->
 			<!-- DEFINE $SPACEROW = 1 -->
 			<tr <!-- IF !entries.IS_SELF -->class="survey_hidemobile"<!-- ENDIF -->>
-				<td>
+				<td<!-- IF entries.IS_ADDUSER or entries.IS_NEW --> class="new-bg"<!-- ENDIF -->>
 				<!-- IF entries.IS_ADDUSER -->
 					<input class="text medium" id="username" name="answer_adduser_username" type="text">
 					<br />[<a href="{U_FIND_USERNAME}" onclick="find_username(this.href); return false;">{L_FIND_USERNAME}</a>]
@@ -81,7 +81,9 @@ function toggle_survey_table() {
 				</td>
 				<!-- IF (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (not entries.IS_NEW) or S_CAN_ADD_ENTRY or entries.IS_ADDUSER -->
 					<!-- BEGIN questions -->
-						<!-- IF entries.questions.IS_SET -->
+						<!-- IF entries.IS_ADDUSER or entries.IS_NEW -->
+						<!-- DEFINE $CLASS = 'class="survey_q_input new-bg"' -->
+						<!-- ELSEIF entries.questions.IS_SET -->
 						<!-- DEFINE $CLASS = 'class="survey_q_input set-bg"' -->
 						<!-- ELSE -->
 						<!-- DEFINE $CLASS = 'class="survey_q_input unset-bg"' -->
@@ -204,6 +206,10 @@ function toggle_survey_table() {
 					<option value="{show_order.NUM}"<!-- IF show_order.SELECTED --> selected="selected"<!-- ENDIF -->>{show_order.DESC}</option>
 					<!-- END show_order -->
 					</select></dd>
+				</dl>
+				<dl>
+					<dt><label for="survey_setting_reverse_order">{L_SURVEY_REVERSE_ORDER}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_reverse_order" type="checkbox" value="1" name="survey_setting_reverse_order"<!-- IF S_SURVEY_REVERSE_ORDER --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
 					<dt><label for="survey_setting_allow_change_answer">{L_SURVEY_ALLOW_CHANGE_ANSWER}{L_COLON}</label></dt>

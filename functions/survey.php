@@ -16,10 +16,9 @@ namespace kilianr\survey\functions;
 class survey
 {
 	static public $SHOW_ORDER_TYPES = array(
-		'ALPHABETICAL_USERNAME'				=> 0,
-		'RESPONSE_TIME'						=> 1,
-		'ALPHABETICAL_FIRST_ANSWER'			=> 2,
-		'ALPHABETICAL_FIRST_ANSWER_REVERSE'	=> 3,
+		'ALPHABETICAL_USERNAME'		=> 0,
+		'RESPONSE_TIME'				=> 1,
+		'ALPHABETICAL_FIRST_ANSWER'	=> 2,
 	);
 
 	static public $QUESTION_TYPES = array(
@@ -119,6 +118,7 @@ class survey
 			's_id'					=> 0,
 			'caption'				=> 0,
 			'show_order'			=> 0,
+			'reverse_order'			=> 0,
 			'allow_change_answer'	=> 0,
 			'allow_multiple_answer'	=> 0,
 			'visibility'			=> 0,
@@ -461,7 +461,7 @@ class survey
 
 	/**
 	 * Change config
-	 * The $new_settings can contain caption, show_order, allow_change_answer, allow_multiple_answer, visibility, stop_time and topic_poster_right
+	 * The $new_settings can contain caption, show_order, reverse_order, allow_change_answer, allow_multiple_answer, visibility, stop_time and topic_poster_right
 	 * It MUST NOT contain s_id, topic_id, and start_time
 	 *
 	 * @param array $new_settings
@@ -1115,6 +1115,7 @@ class survey
 			'topic_id'				=> $tid,
 			'caption'				=> $this->user->lang['SURVEY'],
 			'show_order'			=> $this->config['kilianr_survey_default_show_order'],
+			'reverse_order'			=> $this->config['kilianr_survey_default_reverse_order'],
 			'allow_change_answer'	=> $this->config['kilianr_survey_default_allow_change_answer'],
 			'allow_multiple_answer'	=> $this->config['kilianr_survey_default_allow_multiple_answer'],
 			'visibility'			=> $this->config['kilianr_survey_default_visibility'],
