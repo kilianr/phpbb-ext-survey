@@ -20,7 +20,6 @@
 * Make forms look nice
 * successbox (green), warningbox (yellow), errorbox (red), infobox (blue)
 * Switch from "edit-mode" to "view-mode" for owners
-* fix bg-unset
 
 = QA =
 * Write tests
