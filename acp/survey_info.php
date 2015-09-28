@@ -19,7 +19,7 @@ class survey_info
 			'title'		=> 'ACP_SURVEY',
 			'version'	=> '1.0.0',
 			'modes'		=> array(
-				'settings'	=> array('title' => 'ACP_SURVEY_SETTINGS', 'auth' => 'acl_a_board', 'cat' => array('ACP_SURVEY')),
+				'settings'	=> array('title' => 'ACP_SURVEY_SETTINGS', 'auth' => 'ext_kilianr/survey && acl_a_board', 'cat' => array('ACP_SURVEY')),
 			),
 		);
 	}
