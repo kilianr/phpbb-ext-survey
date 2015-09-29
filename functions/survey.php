@@ -49,9 +49,10 @@ class survey
 	);
 
 	static public $TOPIC_POSTER_RIGHTS = array(
-		'WRITE_OWNER'	=> 0,
-		'READ_OWNER'	=> 1,
-		'NO_OWNER'		=> 2,
+		'NONE'					=> 0,
+		'CAN_SEE_EVERYTHING'	=> 1,
+		'CAN_MANAGE'			=> 2,
+		'CAN_EDIT_OTHER_USERS'	=> 3,
 	);
 
 	/** @var \phpbb\db\driver\driver_interface */
@@ -277,25 +278,36 @@ class survey
 	}
 
 	/**
-	 * Checks if the user is owner of the survey in terms of writing
+	 * Checks if the user can manage questions, edit the settings and edit the entries of other users
 	 *
 	 * @param int $user_id
 	 * @return boolean
 	 */
-	public function is_write_owner($user_id)
+	public function can_edit_other_users($user_id)
 	{
-		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['WRITE_OWNER']));
+		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_EDIT_OTHER_USERS']));
 	}
 
 	/**
-	 * Checks if the user is owner of the survey in terms of reading
+	 * Checks if the user can manage questions and the edit the settings of the survey
 	 *
 	 * @param int $user_id
 	 * @return boolean
 	 */
-	public function is_read_owner($user_id)
+	public function can_manage($user_id)
 	{
-		return $this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['WRITE_OWNER'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['READ_OWNER']));
+		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_EDIT_OTHER_USERS'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_MANAGE'])));
+	}
+
+	/**
+	 * Checks if the user can see all the information of the survey
+	 *
+	 * @param int $user_id
+	 * @return boolean
+	 */
+	public function can_see_everything($user_id)
+	{
+		return $this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_EDIT_OTHER_USERS'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_MANAGE'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_SEE_EVERYTHING']));
 	}
 
 	/**
@@ -351,13 +363,17 @@ class survey
 		{
 			return false;
 		}
-		if ($this->is_write_owner($real_user_id))
+		if ($this->can_edit_other_users($real_user_id))
 		{
 			return true;
 		}
 		if ($real_user_id != $entry_user_id)
 		{
 			return false;
+		}
+		if ($this->can_manage($real_user_id))
+		{
+			return true;
 		}
 		if ($this->is_closed())
 		{
@@ -391,13 +407,17 @@ class survey
 		{
 			return false;
 		}
-		if ($this->is_write_owner($real_user_id))
+		if ($this->can_edit_other_users($real_user_id))
 		{
 			return true;
 		}
 		if ($real_user_id != $entry_user_id)
 		{
 			return false;
+		}
+		if ($this->can_manage($real_user_id))
+		{
+			return true;
 		}
 		if ($this->is_closed())
 		{

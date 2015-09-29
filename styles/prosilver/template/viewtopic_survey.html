@@ -14,7 +14,7 @@ function toggle_survey_table() {
 }
 </script>
 
-<!-- IF S_SURVEY_IS_WRITE_OWNER -->
+<!-- IF S_SURVEY_CAN_MANAGE -->
 <div id="survey-tabs-boundary">
 <div id="tabs" class="sub-panels" role="tablist" data-show-panel="<!-- IF S_SURVEY_LOADED_QUESTION -->manage-questions-panel<!-- ELSE -->survey-overview-panel<!-- ENDIF -->">
 	<ul>
@@ -25,12 +25,12 @@ function toggle_survey_table() {
 </div>
 <!-- ENDIF -->
 
-<div class="<!-- IF not S_SURVEY_IS_WRITE_OWNER -->no-owner <!-- ENDIF -->panel bg3" id="survey-overview-panel">
+<div class="<!-- IF not S_SURVEY_CAN_MANAGE -->no-owner <!-- ENDIF -->panel bg3" id="survey-overview-panel">
 <div class="inner"><span class="corners-top"><span></span></span>
 <h2>{S_SURVEY_CAPTION}</h2>
-<!-- IF S_SURVEY_IS_WRITE_OWNER --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_HIDE}</a>
+<!-- IF S_SURVEY_CAN_MANAGE --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_HIDE}</a>
 <p class="author">{S_DESC}<!-- IF not S_IS_CLOSED --> {S_WILL_CLOSE_DESC}<!-- ENDIF --></p>
-<!-- IF S_HIDE_ENTRIES and not S_SURVEY_IS_READ_OWNER --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_USER}</b></p><!-- ELSEIF S_HIDE_ENTRIES --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_OWNER}</b></p><!-- ENDIF -->
+<!-- IF S_HIDE_ENTRIES and not S_SURVEY_CAN_SEE_EVERYTHING --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_USER}</b></p><!-- ELSEIF S_HIDE_ENTRIES --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_OWNER}</b></p><!-- ENDIF -->
 <!-- IF S_IS_CLOSED --><p class="post-notice"><b>{S_IS_CLOSED_DESC}</b></p><!-- ENDIF -->
 <!-- IF SURVEY_ERRORS -->
 <div id="survey-error-box">
@@ -47,7 +47,7 @@ function toggle_survey_table() {
 			<tr>
 				<th>&nbsp;</th>
 				<!-- BEGIN questions -->
-				<th style="white-space: nowrap" title="<!-- IF questions.EXAMPLE_ANSWER -->{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}<!-- ELSE -->{questions.LABEL}<!-- ENDIF -->">{questions.LABEL}<!-- IF questions.EXAMPLE_ANSWER --> <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}"><!-- ENDIF --><!-- IF S_SURVEY_IS_WRITE_OWNER --> <a href="{questions.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_QUESTION}"></a><!-- ENDIF --></th>
+				<th style="white-space: nowrap" title="<!-- IF questions.EXAMPLE_ANSWER -->{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}<!-- ELSE -->{questions.LABEL}<!-- ENDIF -->">{questions.LABEL}<!-- IF questions.EXAMPLE_ANSWER --> <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}"><!-- ENDIF --><!-- IF S_SURVEY_CAN_MANAGE --> <a href="{questions.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_QUESTION}"></a><!-- ENDIF --></th>
 				<!-- END questions -->
 			</tr>
 		</thead>
@@ -67,7 +67,7 @@ function toggle_survey_table() {
 					<!-- ELSE -->
 						<i>{L_SURVEY_HIDDEN}</i>
 					<!-- ENDIF -->
-					<!-- IF not entries.IS_NEW and ( S_SURVEY_IS_WRITE_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) -->
+					<!-- IF not entries.IS_NEW and ( S_SURVEY_CAN_EDIT_OTHER_USERS or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) ) -->
 						<a href="{entries.DELETE_LINK}" class="gen"><img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a>
 					<!-- ENDIF -->
 				<!-- ENDIF -->
@@ -83,7 +83,7 @@ function toggle_survey_table() {
 						<!-- ENDIF -->
 						<!-- DEFINE $ALWAYS_SAME = 'name="{entries.questions.S_INPUT_NAME}" {$CLASS}' -->
 						<td {$CLASS} style="color: black;">
-							<!-- IF S_SURVEY_IS_WRITE_OWNER or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) or entries.IS_ADDUSER -->
+							<!-- IF S_SURVEY_CAN_EDIT_OTHER_USERS or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) or entries.IS_ADDUSER -->
 								<!-- IF entries.questions.TYPE_STRING == 'NORMAL_TEXT_BOX' -->
 									<input {$ALWAYS_SAME} type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'LARGE_TEXT_BOX' -->
@@ -127,7 +127,7 @@ function toggle_survey_table() {
 			</tr>
 			<!-- END entries -->
 		<!-- ENDIF -->
-		<!-- IF (S_CAN_SEE_SUMS or S_CAN_SEE_AVERAGES) and (S_SURVEY_IS_READ_OWNER or not S_HIDE_EVERYTHING) -->
+		<!-- IF (S_CAN_SEE_SUMS or S_CAN_SEE_AVERAGES) and (S_SURVEY_CAN_SEE_EVERYTHING or not S_HIDE_EVERYTHING) -->
 			<!-- IF $SPACEROW == 1 -->
 				<tr style="border-bottom: 3px double black;">
 					<td class="spacerow"></td>
@@ -177,7 +177,7 @@ function toggle_survey_table() {
 </div>
 
 
-<!-- IF S_SURVEY_IS_WRITE_OWNER -->
+<!-- IF S_SURVEY_CAN_MANAGE -->
 <div class="panel bg3" id="settings-panel">
 	<div class="inner"><span class="corners-top"><span></span></span>
 
