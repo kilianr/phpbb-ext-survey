@@ -48,7 +48,7 @@ class survey
 		'HIDE_EVERYTHING'	=> 3,
 	);
 
-	static public $TOPIC_POSTER_RIGHTS = array(
+	static public $TOPIC_POSTER_RIGHT_TYPES = array(
 		'NONE'					=> 0,
 		'CAN_SEE_EVERYTHING'	=> 1,
 		'CAN_MANAGE'			=> 2,
@@ -285,7 +285,7 @@ class survey
 	 */
 	public function can_edit_other_users($user_id)
 	{
-		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_EDIT_OTHER_USERS']));
+		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHT_TYPES['CAN_EDIT_OTHER_USERS']));
 	}
 
 	/**
@@ -296,7 +296,7 @@ class survey
 	 */
 	public function can_manage($user_id)
 	{
-		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_EDIT_OTHER_USERS'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_MANAGE'])));
+		return !$this->is_locked() && ($this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHT_TYPES['CAN_EDIT_OTHER_USERS'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHT_TYPES['CAN_MANAGE'])));
 	}
 
 	/**
@@ -307,7 +307,7 @@ class survey
 	 */
 	public function can_see_everything($user_id)
 	{
-		return $this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_EDIT_OTHER_USERS'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_MANAGE'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHTS['CAN_SEE_EVERYTHING']));
+		return $this->is_moderator() || ($this->topic_poster == $user_id && ($this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHT_TYPES['CAN_EDIT_OTHER_USERS'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHT_TYPES['CAN_MANAGE'] || $this->settings['topic_poster_right'] == self::$TOPIC_POSTER_RIGHT_TYPES['CAN_SEE_EVERYTHING']));
 	}
 
 	/**
@@ -1408,6 +1408,29 @@ class survey
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Assign template block vars for selection of settings with multiple options
+	 *
+	 * @param string $setting
+	 * @param \phpbb\template\template $template
+	 * @param \phpbb\user $user
+	 * @param $config_array
+	 * @param string key_prefix
+	 */
+	static public function assign_block_vars_for_selection($setting, \phpbb\template\template $template, \phpbb\user $user, $config_array, $key_prefix = '')
+	{
+		$setting_upper = mb_strtoupper($setting);
+		foreach (self::${"{$setting_upper}_TYPES"} as $type)
+		{
+			$template_vars = array(
+				'NUM'		=> $type,
+				'SELECTED'	=> ($config_array[$key_prefix . $setting] == $type) ? true : false,
+				'DESC'		=> $user->lang("SURVEY_{$setting_upper}_DESC_$type"),
+			);
+			$template->assign_block_vars($setting, $template_vars);
 		}
 	}
 }

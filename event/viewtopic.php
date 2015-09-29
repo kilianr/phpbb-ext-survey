@@ -165,37 +165,9 @@ class viewtopic implements EventSubscriberInterface
 		}
 		$this->template->assign_vars($template_vars);
 
-		// Output show_order
-		foreach (survey::$SHOW_ORDER_TYPES as $type)
+		foreach (array('show_order', 'visibility', 'topic_poster_right') as $block_setting)
 		{
-			$template_vars = array(
-				'NUM'		=> $type,
-				'SELECTED'	=> ($this->survey->settings['show_order'] == $type) ? true : false,
-				'DESC'		=> $this->user->lang('SURVEY_SHOW_ORDER_DESC_' . $type),
-			);
-			$this->template->assign_block_vars('show_order', $template_vars);
-		}
-
-		// Output visibility types
-		foreach (survey::$VISIBILITY_TYPES as $type)
-		{
-			$template_vars = array(
-				'NUM'		=> $type,
-				'SELECTED'	=> ($this->survey->settings['visibility'] == $type) ? true : false,
-				'DESC'		=> $this->user->lang('SURVEY_VISIBILITY_DESC_' . $type),
-			);
-			$this->template->assign_block_vars('visibility', $template_vars);
-		}
-
-		// Output topic poster rights
-		foreach (survey::$TOPIC_POSTER_RIGHTS as $right)
-		{
-			$template_vars = array(
-				'NUM'		=> $right,
-				'SELECTED'	=> ($this->survey->settings['topic_poster_right'] == $right) ? true : false,
-				'DESC'		=> $this->user->lang('SURVEY_TOPIC_POSTER_RIGHT_DESC_' . $right),
-			);
-			$this->template->assign_block_vars('topic_poster_right', $template_vars);
+			survey::assign_block_vars_for_selection($block_setting, $this->template, $this->user, $this->survey->settings);
 		}
 
 		// Output question types
@@ -622,9 +594,9 @@ class viewtopic implements EventSubscriberInterface
 		}
 		if ($this->survey->is_moderator())
 		{
-			if (!in_array($new_settings['topic_poster_right'], survey::$TOPIC_POSTER_RIGHTS))
+			if (!in_array($new_settings['topic_poster_right'], survey::$TOPIC_POSTER_RIGHT_TYPES))
 			{
-				return array($this->user->lang('SURVEY_INVALID_TOPIC_POSTER_RIGHT'));
+				return array($this->user->lang('SURVEY_INVALID_TOPIC_POSTER_RIGHT_TYPE'));
 			}
 		}
 		$this->survey->change_config($new_settings);

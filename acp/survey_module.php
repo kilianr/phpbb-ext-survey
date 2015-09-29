@@ -51,9 +51,9 @@ class survey_module
 			{
 				trigger_error('SURVEY_INVALID_VISIBILITY_TYPE');
 			}
-			if (!in_array($new_settings['topic_poster_right'], survey::$TOPIC_POSTER_RIGHTS))
+			if (!in_array($new_settings['topic_poster_right'], survey::$TOPIC_POSTER_RIGHT_TYPES))
 			{
-				trigger_error('SURVEY_INVALID_TOPIC_POSTER_RIGHT');
+				trigger_error('SURVEY_INVALID_TOPIC_POSTER_RIGHT_TYPE');
 			}
 			foreach ($new_settings as $setting => $value)
 			{
@@ -61,37 +61,10 @@ class survey_module
 			}
 			trigger_error($user->lang('CONFIG_UPDATED') . adm_back_link($this->u_action));
 		}
-		// Output show_order
-		foreach (survey::$SHOW_ORDER_TYPES as $type)
-		{
-			$template_vars = array(
-				'NUM'		=> $type,
-				'SELECTED'	=> ($config['kilianr_survey_default_show_order'] == $type) ? true : false,
-				'DESC'		=> $user->lang('SURVEY_SHOW_ORDER_DESC_' . $type),
-			);
-			$template->assign_block_vars('show_order', $template_vars);
-		}
 
-		// Output visibility types
-		foreach (survey::$VISIBILITY_TYPES as $type)
+		foreach (array('show_order', 'visibility', 'topic_poster_right') as $block_setting)
 		{
-			$template_vars = array(
-				'NUM'		=> $type,
-				'SELECTED'	=> ($config['kilianr_survey_default_visibility'] == $type) ? true : false,
-				'DESC'		=> $user->lang('SURVEY_VISIBILITY_DESC_' . $type),
-			);
-			$template->assign_block_vars('visibility', $template_vars);
-		}
-
-		// Output topic poster rights
-		foreach (survey::$TOPIC_POSTER_RIGHTS as $right)
-		{
-			$template_vars = array(
-				'NUM'		=> $right,
-				'SELECTED'	=> ($config['kilianr_survey_default_topic_poster_right'] == $right) ? true : false,
-				'DESC'		=> $user->lang('SURVEY_TOPIC_POSTER_RIGHT_DESC_' . $right),
-			);
-			$template->assign_block_vars('topic_poster_right', $template_vars);
+			survey::assign_block_vars_for_selection($block_setting, $template, $user, $config, 'kilianr_survey_default_');
 		}
 
 		$template->assign_vars(array(
