@@ -1,7 +1,7 @@
 parameters:
     kilianr.survey.path: %core.root_path%ext/kilianr/survey/
     tables.kilianr.survey.surveys: %core.table_prefix%surveys
-    tables.kilianr.survey.questions: %core.table_prefix%survey_questions
-    tables.kilianr.survey.question_choices: %core.table_prefix%survey_q_choices
-    tables.kilianr.survey.entries: %core.table_prefix%survey_entries
-    tables.kilianr.survey.answers: %core.table_prefix%survey_answers
+    tables.kilianr.survey.questions: %core.table_prefix%surveys_questions
+    tables.kilianr.survey.question_choices: %core.table_prefix%surveys_q_choices
+    tables.kilianr.survey.entries: %core.table_prefix%surveys_entries
+    tables.kilianr.survey.answers: %core.table_prefix%surveys_answers

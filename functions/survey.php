@@ -215,14 +215,14 @@ class survey
 		$db->sql_freeresult($result);
 
 		// load questions
-		$sql = "SELECT q_id, label, example_answer, type, random_choice_order, sum_value, sum_type, sum_by, average, cap FROM {$this->tables['questions']} WHERE s_id = {$this->settings['s_id']}";
+		$sql = "SELECT q_id, label, example_answer, type, random_choice_order, sum_value, sum_type, sum_by, average, cap FROM {$this->tables['questions']} WHERE s_id = {$this->settings['s_id']} ORDER BY q_id";
 		$result = $db->sql_query($sql);
 		$this->questions = array();
 		while ($row = $db->sql_fetchrow($result))
 		{
 			$this->questions[$row['q_id']] = $row;
 			// load question choices
-			$sql = "SELECT c_id, text, sum FROM {$this->tables['question_choices']} WHERE q_id = {$row['q_id']}";
+			$sql = "SELECT c_id, text, sum FROM {$this->tables['question_choices']} WHERE q_id = {$row['q_id']} ORDER BY c_id";
 			$result2 = $db->sql_query($sql);
 			$this->questions[$row['q_id']]['choices'] = array();
 			while ($row2 = $db->sql_fetchrow($result2))
@@ -234,14 +234,14 @@ class survey
 		$db->sql_freeresult($result);
 
 		// load entries
-		$sql = "SELECT entry_id, user_id, entry_username FROM {$this->tables['entries']} WHERE s_id = {$this->settings['s_id']}";
+		$sql = "SELECT entry_id, user_id, entry_username FROM {$this->tables['entries']} WHERE s_id = {$this->settings['s_id']} ORDER BY entry_id";
 		$result = $db->sql_query($sql);
 		$this->entries = array();
 		while ($row = $db->sql_fetchrow($result))
 		{
 			$this->entries[$row['entry_id']] = $row;
 			// load answers
-			$sql = "SELECT q_id, answer FROM {$this->tables['answers']} WHERE entry_id = {$row['entry_id']}";
+			$sql = "SELECT q_id, answer FROM {$this->tables['answers']} WHERE entry_id = {$row['entry_id']} ORDER BY q_id";
 			$result2 = $db->sql_query($sql);
 			$this->entries[$row['entry_id']]['answers'] = array();
 			while ($row2 = $db->sql_fetchrow($result2))
@@ -809,7 +809,7 @@ class survey
 		{
 			$given_choices = explode(",", $answer);
 		}
-		return empty(array_diff($given_choices, $valid_choices));
+		return !array_diff($given_choices, $valid_choices);
 	}
 
 	/**
@@ -1233,11 +1233,13 @@ class survey
 
 	/**
 	 * Enable the survey
+	 *
+	 * @param int $topic_id
 	 */
-	public function enable()
+	public function enable($topic_id)
 	{
 		$this->enabled = true;
-		$sql = 'UPDATE ' . TOPICS_TABLE . " SET survey_enabled = 1 WHERE topic_id = {$this->topic_id}";
+		$sql = 'UPDATE ' . TOPICS_TABLE . " SET survey_enabled = 1 WHERE topic_id = $topic_id";
 		$this->db->sql_query($sql);
 	}
 

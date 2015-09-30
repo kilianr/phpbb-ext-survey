@@ -706,7 +706,7 @@ class viewtopic implements EventSubscriberInterface
 			$changed = $filled_out = false;
 			if ($entry_id == self::ADDUSER_ENTRY_ID)
 			{
-				$username = utf8_normalize_nfc(request_var('answer_adduser_username', '', true));
+				$username = utf8_normalize_nfc($this->request->variable('answer_adduser_username', '', true));
 				if ($username == '')
 				{
 					continue;
@@ -801,7 +801,6 @@ class viewtopic implements EventSubscriberInterface
 				{
 					$changed = true;
 				}
-				print("\t\n");
 			}
 			if ($abort)
 			{

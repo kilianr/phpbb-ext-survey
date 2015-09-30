@@ -12,11 +12,11 @@ namespace kilianr\survey\migrations;
 
 use kilianr\survey\functions\survey;
 
-class survey_compat30x extends \phpbb\db\migration\migration
+class version_1_0 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array();
+		return array('\phpbb\db\migration\data\v310\gold');
 	}
 
 	public function effectively_installed()
@@ -48,7 +48,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						'topic_id' 				=> array('INDEX', 'topic_id'),
 					),
 				),
-				$this->table_prefix . 'survey_questions' => array(
+				$this->table_prefix . 'surveys_questions' => array(
 					'COLUMNS'		=> array(
 						'q_id' 					=> array('UINT', null, 'auto_increment'),
 						's_id'					=> array('UINT', 0),
@@ -68,7 +68,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						's_id' 					=> array('INDEX', 's_id'),
 					),
 				),
-				$this->table_prefix . 'survey_q_choices' => array(
+				$this->table_prefix . 'surveys_q_choices' => array(
 					'COLUMNS'		=> array(
 						'c_id' 					=> array('UINT', null, 'auto_increment'),
 						'q_id'					=> array('UINT', 0),
@@ -82,7 +82,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						'q_id' 		=> array('INDEX', 'q_id'),
 					),
 				),
-				$this->table_prefix . 'survey_entries' => array(
+				$this->table_prefix . 'surveys_entries' => array(
 					'COLUMNS'		=> array(
 						'entry_id'				=> array('UINT', null, 'auto_increment'),
 						's_id'					=> array('UINT', 0),
@@ -96,7 +96,7 @@ class survey_compat30x extends \phpbb\db\migration\migration
 						'user_id'				=> array('INDEX', 'user_id'),
 					),
 				),
-				$this->table_prefix . 'survey_answers' => array(
+				$this->table_prefix . 'surveys_answers' => array(
 					'COLUMNS'		=> array(
 						'q_id' 					=> array('UINT', 0),
 						'entry_id'				=> array('UINT', 0),
@@ -123,10 +123,10 @@ class survey_compat30x extends \phpbb\db\migration\migration
 		return array(
 			'drop_tables' => array(
 				$this->table_prefix . 'surveys',
-				$this->table_prefix . 'survey_questions',
-				$this->table_prefix . 'survey_q_choices',
-				$this->table_prefix . 'survey_entries',
-				$this->table_prefix . 'survey_answers',
+				$this->table_prefix . 'surveys_questions',
+				$this->table_prefix . 'surveys_q_choices',
+				$this->table_prefix . 'surveys_entries',
+				$this->table_prefix . 'surveys_answers',
 			),
 			'drop_columns' => array(
 				TOPICS_TABLE => array('survey_enabled',),

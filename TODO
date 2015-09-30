@@ -1,5 +1,6 @@
 = Features =
-* Migration routine for old phpBB3.0 survey data
+* remove old data after convert
+* Display total responses
 
 = Missing Events =
 * Topic Merge -> NOT AVAILABLE!
