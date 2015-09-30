@@ -12,7 +12,7 @@ namespace kilianr\survey\migrations;
 
 use kilianr\survey\functions\survey;
 
-class convert_from_phpBB30 extends \phpbb\db\migration\migration
+class convert_from_phpbb30 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
