@@ -7,10 +7,14 @@
 * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License v3
 */
 
-
 /**
 * DO NOT CHANGE
 */
+if (!defined('IN_PHPBB'))
+{
+	exit;
+}
+
 if (empty($lang) || !is_array($lang))
 {
 	$lang = array();
