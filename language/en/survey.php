@@ -44,6 +44,7 @@ $lang = array_merge($lang, array(
 	'SURVEY_CLOSE_CONFIRM'				=> 'Are you sure you want to close the survey?',
 	'SURVEY_CLOSED'						=> 'The survey has been closed.',
 	'SURVEY_DATEFORMAT'					=> 'Y-m-d H:i',
+	'SURVEY_DEFAULT_HIDE'				=> 'Hide survey per default',
 	'SURVEY_DELETE_ALL'					=> 'Delete all data',
 	'SURVEY_DELETE_ALL_CONFIRM'			=> 'Do you really want to delete this survey? All stored data (questions, answers) will be lost and cannot be restored.',
 	'SURVEY_DELETE_ALL_EXPLAIN'			=> 'All data related to this survey will be deleted.',

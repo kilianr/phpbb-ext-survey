@@ -40,6 +40,7 @@ class version_1_0 extends \phpbb\db\migration\migration
 						'visibility'			=> array('UINT:1', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING']),
 						'start_time'			=> array('TIMESTAMP', 0),
 						'stop_time'				=> array('TIMESTAMP', null),
+						'default_hide'			=> array('BOOL', 0),
 						'topic_poster_right'	=> array('UINT:1', survey::$TOPIC_POSTER_RIGHT_TYPES['CAN_MANAGE']),
 					),
 					'PRIMARY_KEY'	=> 's_id',
@@ -145,6 +146,7 @@ class version_1_0 extends \phpbb\db\migration\migration
 			array('config.add', array('kilianr_survey_default_allow_change_answer', true)),
 			array('config.add', array('kilianr_survey_default_allow_multiple_answer', false)),
 			array('config.add', array('kilianr_survey_default_visibility', survey::$VISIBILITY_TYPES['SHOW_EVERYTHING'])),
+			array('config.add', array('kilianr_survey_default_default_hide', false)),
 			array('config.add', array('kilianr_survey_default_topic_poster_right', survey::$TOPIC_POSTER_RIGHT_TYPES['CAN_MANAGE'])),
 			array('module.add', array('acp', 'ACP_CAT_DOT_MODS', 'ACP_SURVEY')),
 			array('module.add', array('acp', 'ACP_SURVEY', array(

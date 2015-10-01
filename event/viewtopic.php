@@ -555,6 +555,7 @@ class viewtopic implements EventSubscriberInterface
 			'allow_multiple_answer'	=> 0,
 			'visibility'			=> 0,
 			'stop_time'				=> '',
+			'default_hide'			=> 0,
 		);
 		if ($this->survey->is_moderator())
 		{
@@ -575,6 +576,7 @@ class viewtopic implements EventSubscriberInterface
 		$new_settings['reverse_order'] = ($new_settings['reverse_order'] ? 1 : 0);
 		$new_settings['allow_change_answer'] = ($new_settings['allow_change_answer'] ? 1 : 0);
 		$new_settings['allow_multiple_answer'] = ($new_settings['allow_multiple_answer'] ? 1 : 0);
+		$new_settings['default_hide'] = ($new_settings['default_hide'] ? 1 : 0);
 		if (!in_array($new_settings['visibility'], survey::$VISIBILITY_TYPES))
 		{
 			return array($this->user->lang('SURVEY_INVALID_VISIBILITY_TYPE'));

@@ -125,6 +125,7 @@ class survey
 			'visibility'			=> 0,
 			'start_time'			=> 0,
 			'stop_time'				=> null,
+			'default_hide'			=> 0,
 			'topic_poster_right'	=> 0,
 		);
 
@@ -481,8 +482,9 @@ class survey
 
 	/**
 	 * Change config
-	 * The $new_settings can contain caption, show_order, reverse_order, allow_change_answer, allow_multiple_answer, visibility, stop_time and topic_poster_right
-	 * It MUST NOT contain s_id, topic_id, and start_time
+	 * The $new_settings can contain caption, show_order, reverse_order, allow_change_answer, allow_multiple_answer, visibility, stop_time, default_hide and topic_poster_right
+	 * It MUST NOT contain s_id, topic_id
+	 * It MAY ONLY contain start_time if called from migrations/convert_from_phpbb30.php
 	 *
 	 * @param array $new_settings
 	 */
@@ -1140,6 +1142,7 @@ class survey
 			'allow_multiple_answer'	=> $this->config['kilianr_survey_default_allow_multiple_answer'],
 			'visibility'			=> $this->config['kilianr_survey_default_visibility'],
 			'start_time'			=> $this->fixed_time(),
+			'default_hide'			=> $this->config['kilianr_survey_default_default_hide'],
 			'topic_poster_right'	=> $this->config['kilianr_survey_default_topic_poster_right'],
 		);
 		$sql = 'INSERT INTO ' . $this->tables['surveys'] . ' ' . $this->db->sql_build_array('INSERT', $inserts);

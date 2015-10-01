@@ -34,6 +34,7 @@ class survey_module
 				'allow_change_answer'	=> 0,
 				'allow_multiple_answer'	=> 0,
 				'visibility'			=> 0,
+				'default_hide'			=> 0,
 				'topic_poster_right'	=> 0,
 			);
 			foreach ($new_settings as $setting => $default)
@@ -47,6 +48,7 @@ class survey_module
 			$new_settings['reverse_order'] = ($new_settings['reverse_order'] ? 1 : 0);
 			$new_settings['allow_change_answer'] = ($new_settings['allow_change_answer'] ? 1 : 0);
 			$new_settings['allow_multiple_answer'] = ($new_settings['allow_multiple_answer'] ? 1 : 0);
+			$new_settings['default_hide'] = ($new_settings['default_hide'] ? 1 : 0);
 			if (!in_array($new_settings['visibility'], survey::$VISIBILITY_TYPES))
 			{
 				trigger_error('SURVEY_INVALID_VISIBILITY_TYPE');
@@ -72,6 +74,7 @@ class survey_module
 			'SURVEY_DEFAULT_REVERSE_ORDER'			=> $config['kilianr_survey_default_reverse_order'],
 			'SURVEY_DEFAULT_ALLOW_CHANGE_ANSWER'	=> $config['kilianr_survey_default_allow_change_answer'],
 			'SURVEY_DEFAULT_ALLOW_MULTIPLE_ANSWER'	=> $config['kilianr_survey_default_allow_multiple_answer'],
+			'SURVEY_DEFAULT_DEFAULT_HIDE'			=> $config['kilianr_survey_default_default_hide'],
 		));
 	}
 }

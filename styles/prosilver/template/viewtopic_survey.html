@@ -28,7 +28,7 @@ function toggle_survey_table() {
 <div class="<!-- IF not S_SURVEY_CAN_MANAGE -->no-owner <!-- ENDIF -->panel bg3" id="survey-overview-panel">
 <div class="inner"><span class="corners-top"><span></span></span>
 <h2>{S_SURVEY_CAPTION}</h2>
-<!-- IF S_SURVEY_CAN_MANAGE --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()">{L_SURVEY_HIDE}</a>
+<!-- IF S_SURVEY_CAN_MANAGE --><a class="genmed" href="{U_CHANGE_OPEN}"><!-- IF S_IS_CLOSED -->{L_SURVEY_REOPEN}<!-- ELSE -->{L_SURVEY_CLOSE}<!-- ENDIF --></a> | <!-- ENDIF --><a class="genmed" id="show-survey-link" href="#" onclick="toggle_survey_table()"><!-- IF S_SURVEY_DEFAULT_HIDE -->{L_SURVEY_SHOW}<!-- ELSE -->{L_SURVEY_HIDE}<!-- ENDIF --></a>
 <p class="author">{S_DESC}<!-- IF not S_IS_CLOSED --> {S_WILL_CLOSE_DESC}<!-- ENDIF --></p>
 <!-- IF S_HIDE_ENTRIES and not S_SURVEY_CAN_SEE_EVERYTHING --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_USER}</b></p><!-- ELSEIF S_HIDE_ENTRIES --><p class="post-notice"><b>{L_SURVEY_VISIBILITY_HIDE_DESC_OWNER}</b></p><!-- ENDIF -->
 <!-- IF S_IS_CLOSED --><p class="post-notice"><b>{S_IS_CLOSED_DESC}</b></p><!-- ENDIF -->
@@ -40,7 +40,7 @@ function toggle_survey_table() {
 
 <!-- IF S_HAS_QUESTIONS and (S_SURVEY_CAN_SEE_OR_ADD_ENTRIES or S_CAN_SEE_SUMS) -->
 <!-- IF S_CAN_MODIFY_OWN_ENTRY or S_CAN_ADD_ENTRY --><form method="post" action="{S_SURVEY_ACTION}" id="surveyform"><!-- ENDIF -->
-<div id="survey-table">
+<div id="survey-table" style="display:<!-- IF S_SURVEY_DEFAULT_HIDE -->none<!-- ELSE -->block<!-- ENDIF -->">
 	<div id="survey-table-scrollwrapper">
 	<table class="table1" cellspacing="0" cellpadding="4">
 		<thead>
@@ -224,6 +224,10 @@ function toggle_survey_table() {
 					<dt><label for="survey_setting_stop_time">{L_SURVEY_STOP_TIME}{L_COLON}</label></dt>
 					<dd><input id="survey_setting_stop_time" type="text" name="survey_setting_stop_time" value="{S_SURVEY_STOP_TIME}" /></dd>
 				</dl>
+				<dl>
+					<dt><label for="survey_setting_default_hide">{L_SURVEY_DEFAULT_HIDE}{L_COLON}</label></dt>
+					<dd><input id="survey_setting_default_hide" type="checkbox" value="1" name="survey_setting_default_hide"<!-- IF S_SURVEY_DEFAULT_HIDE --> checked="checked"<!-- ENDIF --> /></dd>
+				</dl>
 				<!-- IF S_SURVEY_IS_MODERATOR -->
 				<dl>
 					<dt><label for="survey_setting_topic_poster_right">{L_SURVEY_TOPIC_POSTER_RIGHT_DESC}{L_COLON}</label></dt>
@@ -326,12 +330,12 @@ function toggle_survey_table() {
 					</select></dd>
 				</dl>
 				<dl>
-					<dt><label for="question_random_choice_order" title="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}">{L_SURVEY_RANDOM_CHOICE_ORDER}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}"></label></dt>
-					<dd><input id="question_random_choice_order" type="checkbox" value="1" name="question_random_choice_order"<!-- IF S_SURVEY_LOADED_QUESTION and S_SURVEY_LOADED_QUESTION_RANDOM_CHOICE_ORDER --> checked="checked"<!-- ENDIF --> /></dd>
-				</dl>
-				<dl>
 					<dt><label for="question_choices" title="{L_SURVEY_CHOICES_DESC}">{L_SURVEY_CHOICES}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CHOICES_DESC}"></label></dt>
 					<dd><input id="question_choices" type="text" name="question_choices"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_CHOICES}"<!-- ENDIF --> /></dd>
+				</dl>
+				<dl>
+					<dt><label for="question_random_choice_order" title="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}">{L_SURVEY_RANDOM_CHOICE_ORDER}{L_COLON} <img src="{S_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}"></label></dt>
+					<dd><input id="question_random_choice_order" type="checkbox" value="1" name="question_random_choice_order"<!-- IF S_SURVEY_LOADED_QUESTION and S_SURVEY_LOADED_QUESTION_RANDOM_CHOICE_ORDER --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
 					<dt><label for="question_sum_type">{L_SURVEY_SUM_TYPE}{L_COLON}</label></dt>

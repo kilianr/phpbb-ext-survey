@@ -44,6 +44,7 @@ $lang = array_merge($lang, array(
 	'SURVEY_CLOSE_CONFIRM'				=> 'Bist du sicher, dass du den Fragebogen schließen möchtest?',
 	'SURVEY_CLOSED'						=> 'Der Fragebogen wurde geschlossen',
 	'SURVEY_DATEFORMAT'					=> 'Y-m-d H:i',
+	'SURVEY_DEFAULT_HIDE'				=> 'Standardmäßig Fragebogen verstecken',
 	'SURVEY_DELETE_ALL'					=> 'Alle Daten löschen',
 	'SURVEY_DELETE_ALL_CONFIRM'			=> 'Willst du den Fragebogen wirklich vollständig löschen? Die Gespeicherten Daten (Fragen, Antworten) gehen verloren und können nicht wiederhergestellt werden.',
 	'SURVEY_DELETE_ALL_EXPLAIN'			=> 'Alle Daten dieses Fragebogens werden aus der Datenbank gelöscht.',
