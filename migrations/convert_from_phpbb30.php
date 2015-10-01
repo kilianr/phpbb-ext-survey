@@ -16,7 +16,7 @@ class convert_from_phpbb30 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\kilianr\survey\migrations\version_1_0');
+		return array('\kilianr\survey\migrations\version_1_0_0');
 	}
 
 	public function update_data()
