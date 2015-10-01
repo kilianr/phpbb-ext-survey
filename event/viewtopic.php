@@ -525,6 +525,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_IS_CLOSED'						=> $is_closed,
 			'U_CHANGE_OPEN'						=> $action_url . ($is_closed ? 'reopen' : 'close'),
 			'S_DESC'							=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),
+			'S_TOTAL_ENTRIES'					=> $this->user->lang('SURVEY_TOTAL_ENTRIES', $entry_count),
 			'S_SURVEY_MODIFYABLE_ENTRIES'		=> implode(",", $entries_modifyable),
 			'S_SURVEY_CAN_SEE_OR_ADD_ENTRIES'	=> $can_see_or_add_entries,
 			'S_CAN_SEE_SUMS'					=> $can_see_sums,

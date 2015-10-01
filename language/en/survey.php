@@ -124,6 +124,7 @@ $lang = array_merge($lang, array(
 	'SURVEY_TOPIC_POSTER_RIGHT_DESC_' . survey::$TOPIC_POSTER_RIGHT_TYPES['CAN_SEE_EVERYTHING']		=> 'Can see everything.',
 	'SURVEY_TOPIC_POSTER_RIGHT_DESC_' . survey::$TOPIC_POSTER_RIGHT_TYPES['CAN_MANAGE']				=> 'Can manage settings and questions and see everything.',
 	'SURVEY_TOPIC_POSTER_RIGHT_DESC_' . survey::$TOPIC_POSTER_RIGHT_TYPES['CAN_EDIT_OTHER_USERS']	=> 'Can manage settings, question and answers (also of other users) and see everything.',
+	'SURVEY_TOTAL_ENTRIES'				=> 'Total: %s responses',
 	'SURVEY_TYPE'						=> 'Type',
 	'SURVEY_USER_EXISTS'				=> 'The user %s is already a member of this survey.',
 	'SURVEY_USERS_EXIST'				=> 'The selected users are already members of this survey.',

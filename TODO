@@ -1,16 +1,8 @@
-= Features =
-* Display total responses
-
 = Missing Events =
 * Topic Merge -> NOT AVAILABLE!
 * Topic Split -> NOT AVAILABLE!
 * Topic Copy -> NOT AVAILABLE!
 * Move Post -> NOT AVAILABLE!
-
-= Security =
-* SQL Injections
-* XSS Injections
-* HTMLSpecialchars
 
 = Style =
 * Mobile?

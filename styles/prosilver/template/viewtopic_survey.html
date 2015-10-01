@@ -82,7 +82,7 @@ function toggle_survey_table() {
 						<!-- DEFINE $CLASS = 'class="survey_q_input unset-bg"' -->
 						<!-- ENDIF -->
 						<!-- DEFINE $ALWAYS_SAME = 'name="{entries.questions.S_INPUT_NAME}" {$CLASS}' -->
-						<td {$CLASS} style="color: black;">
+						<td {$CLASS} style="color:black">
 							<!-- IF S_SURVEY_CAN_EDIT_OTHER_USERS or (entries.IS_SELF and S_CAN_MODIFY_OWN_ENTRY) or (entries.IS_NEW and S_CAN_ADD_ENTRY) or entries.IS_ADDUSER -->
 								<!-- IF entries.questions.TYPE_STRING == 'NORMAL_TEXT_BOX' -->
 									<input {$ALWAYS_SAME} type="text" <!-- IF entries.questions.IS_SET -->value="{entries.questions.VALUE}"<!-- ENDIF --> />
@@ -129,7 +129,7 @@ function toggle_survey_table() {
 		<!-- ENDIF -->
 		<!-- IF (S_CAN_SEE_SUMS or S_CAN_SEE_AVERAGES) and (S_SURVEY_CAN_SEE_EVERYTHING or not S_HIDE_EVERYTHING) -->
 			<!-- IF $SPACEROW == 1 -->
-				<tr style="border-bottom: 3px double black;">
+				<tr style="border-bottom: 3px double black">
 					<td class="spacerow"></td>
 					<!-- BEGIN questions -->
 					<td class="spacerow"></td>
@@ -163,12 +163,16 @@ function toggle_survey_table() {
 		<!-- ENDIF -->
 		</tbody>
 	</table>
-	</div><!--scrollwrapper ende-->
+	</div>
 	<!-- IF S_CAN_MODIFY_OWN_ENTRY or S_CAN_ADD_ENTRY -->
-	{S_FORM_TOKEN}
-	<input type="hidden" name="entries_to_modify" value="{S_SURVEY_MODIFYABLE_ENTRIES}" />
-	<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="entry_modification" />
-	<input class="button1" type="submit" name="post" value="{L_SUBMIT}" />
+	<div>
+		{S_FORM_TOKEN}
+		<input type="hidden" name="entries_to_modify" value="{S_SURVEY_MODIFYABLE_ENTRIES}" />
+		<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="entry_modification" />
+		<p style="float:left"><input class="button1" type="submit" name="post" value="{L_SUBMIT}" /></p>
+		<!-- IF S_SURVEY_CAN_SEE_EVERYTHING or not S_HIDE_EVERYTHING --><p style="float:right"><b>{S_TOTAL_ENTRIES}</b></p><!-- ENDIF -->
+	</div>
+	<div style="clear:both"></div>
 	<!-- ENDIF -->
 </div>
 <!-- IF S_CAN_MODIFY_OWN_ENTRY or S_CAN_ADD_ENTRY --></form><!-- ENDIF -->
