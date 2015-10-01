@@ -274,7 +274,7 @@ class survey
 	 */
 	public function is_moderator()
 	{
-		return $this->auth->acl_get('m_edit', $this->forum_id);
+		return $this->auth->acl_get('m_survey', $this->forum_id);
 	}
 
 	/**
@@ -726,7 +726,7 @@ class survey
 		$sql = "DELETE FROM {$this->tables['answers']} WHERE q_id = $question_id AND entry_id = $entry_id";
 		$this->db->sql_query($sql);
 		unset($this->entries[$entry_id]['answers'][$question_id]);
-		if (empty($this->entries[$entry_id]['answers']))
+		if (!$this->entries[$entry_id]['answers'])
 		{
 			$sql = "DELETE FROM {$this->tables['entries']} WHERE entry_id = $entry_id";
 			$this->db->sql_query($sql);

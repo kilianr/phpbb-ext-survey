@@ -24,4 +24,5 @@ if (empty($lang) || !is_array($lang))
 $lang = array_merge($lang, array(
 	'ACL_F_SURVEY_CREATE'	=> 'Can create surveys',
 	'ACL_F_SURVEY_ANSWER'	=> 'Can answer surveys',
+	'ACL_M_SURVEY'			=> 'Can manage surveys',
 ));

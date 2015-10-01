@@ -135,11 +135,11 @@ class viewtopic implements EventSubscriberInterface
 		$action_url = "{$viewtopic_url}&amp;{$this->action_name}=";
 		$can_add_new_entry = $this->survey->can_add_new_entry($user_id);
 
-		if (empty($this->survey->questions))
+		if (!$this->survey->questions)
 		{
 			$survey_errors[] = $this->user->lang['SURVEY_NO_QUESTIONS'];
 		}
-		if (empty($this->survey->entries))
+		if (!$this->survey->entries)
 		{
 			$survey_errors[] = $this->user->lang['SURVEY_NO_ENTRIES'];
 		}
@@ -212,7 +212,7 @@ class viewtopic implements EventSubscriberInterface
 			$template_vars['SUM_STRING'] = $this->survey->get_sum_string($question_id);
 			$template_vars['AVERAGE_STRING'] = $this->survey->get_average_string($question_id, $entry_count);
 			$template_vars['CAP_REACHED'] = $this->survey->cap_reached($question_id);
-			$template_vars['HAS_CHOICES'] = !empty($question['choices']);
+			$template_vars['HAS_CHOICES'] = (bool) $question['choices'];
 			if ($template_vars['SUM_STRING'] != '')
 			{
 				$can_see_sums = true;
@@ -433,7 +433,7 @@ class viewtopic implements EventSubscriberInterface
 				$sort_by = 'first_answer_text';
 			break;
 		}
-		if ($sort_by && !empty($this->survey->entries))
+		if ($sort_by && $this->survey->entries)
 		{
 			$only_sorting_row = array();
 			foreach ($entries_to_assign as $key => $row)
@@ -442,11 +442,11 @@ class viewtopic implements EventSubscriberInterface
 			}
 			array_multisort($only_sorting_row, $sort_order, $entries_to_assign);
 		}
-		if (!empty($new_entry_template_vars))
+		if ($new_entry_template_vars)
 		{
 			$entries_to_assign[] = $new_entry_template_vars;
 		}
-		if (!empty($adduser_entry_template_vars))
+		if ($adduser_entry_template_vars)
 		{
 			$entries_to_assign[] = $adduser_entry_template_vars;
 		}
@@ -509,8 +509,8 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_CAN_EDIT_OTHER_USERS'		=> $can_edit_other_users,
 			'S_SURVEY_IS_MODERATOR'				=> $this->survey->is_moderator(),
 			'S_IS_SURVEY_MEMBER'				=> $is_member,
-			'S_HAS_QUESTIONS'					=> empty($this->survey->questions) ? false : true,
-			'S_HAS_ENTRIES'						=> empty($this->survey->entries) ? false : true,
+			'S_HAS_QUESTIONS'					=> (bool) $this->survey->questions,
+			'S_HAS_ENTRIES'						=> (bool) $this->survey->entries,
 			'S_SHOW_USERNAMES'					=> !$this->survey->is_anonymized() || $can_see_everything,
 			'S_HIDE_ENTRIES'					=> $this->survey->hide_entries(),
 			'S_HIDE_EVERYTHING'					=> $this->survey->hide_everything(),
@@ -519,7 +519,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_ACTION'					=> $viewtopic_url,
 			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
 			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
-			'SURVEY_ERRORS'						=> (!empty($survey_errors)) ? implode('<br />', $survey_errors) : false,
+			'SURVEY_ERRORS'						=> $survey_errors ? implode('<br />', $survey_errors) : false,
 			'S_ROOT_PATH'						=> $this->phpbb_root_path,
 			'S_EXT_PATH'						=> $this->survey_path,
 			'S_IS_CLOSED'						=> $is_closed,

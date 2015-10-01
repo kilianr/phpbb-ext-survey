@@ -113,13 +113,10 @@ class posting implements EventSubscriberInterface
 			$this->survey->load_survey($event['topic_id']);
 		}
 
-		$is_inactive = !((empty($this->survey->entries) && empty($this->survey->questions)) || $this->survey->enabled);
-
 		$this->template->assign_vars(array(
 			'S_SURVEY_ALLOWED'				=> true,
 			'S_TOPIC_HAS_SURVEY'			=> $this->survey->enabled,
-			'S_TOPIC_HAS_INACTIVE_SURVEY'	=> $is_inactive,
-			'S_SURVEY_CHECKED'				=> $this->survey->enabled ? "checked='checked'" : '',
+			'S_TOPIC_HAS_INACTIVE_SURVEY'	=> (($this->survey->entries || $this->survey->questions) && !$this->survey->enabled),
 		));
 	}
 }

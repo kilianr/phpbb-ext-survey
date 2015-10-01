@@ -49,6 +49,9 @@ Two new forum permissions (content category) will be introduced:
 * f_survey_create: Can create surveys upon topic creation or when editing the first post. This permission is initially copied from f_poll.
 * f_survey_answer: Can answer surveys. This permission is initially copied from f_reply.
 
+One new forum Moderator permission (topic category) will be introduced:
+* m_survey: Can manage surveys: Edit settings, manage questions and edit all answers, also of other users. This permission is initially copied from m_edit.
+
 ## Development
 
 If you find a bug, please report it on https://github.com/kilianr/phpbb-ext-survey
@@ -61,4 +64,4 @@ master: [![Build Status](https://travis-ci.org/kilianr/phpbb-ext-survey.png?bran
 
 ## License
 
-[AGPLv3](LICENCE)
+[AGPLv3](license.txt)

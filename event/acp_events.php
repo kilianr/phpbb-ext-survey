@@ -43,9 +43,9 @@ class acp_events implements EventSubscriberInterface
 	public function add_permissions($event)
 	{
 		$event['permissions'] = array_merge($event['permissions'], array(
-			// Forum perms
 			'f_survey_create'	=> array('lang' => 'ACL_F_SURVEY_CREATE', 'cat' => 'content'),
 			'f_survey_answer'	=> array('lang' => 'ACL_F_SURVEY_ANSWER', 'cat' => 'content'),
+			'm_survey'			=> array('lang' => 'ACL_M_SURVEY', 'cat' => 'topic_actions'),
 		));
 	}
 }

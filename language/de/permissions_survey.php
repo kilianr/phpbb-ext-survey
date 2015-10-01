@@ -24,4 +24,5 @@ if (empty($lang) || !is_array($lang))
 $lang = array_merge($lang, array(
 	'ACL_F_SURVEY_CREATE'	=> 'Kann Fragebogen erstellen',
 	'ACL_F_SURVEY_ANSWER'	=> 'Kann Fragebogen beantworten',
+	'ACL_M_SURVEY'			=> 'Kann Fragebogen verwalten',
 ));
