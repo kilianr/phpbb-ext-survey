@@ -3,7 +3,7 @@
 		"1.0": {
 			"current": "1.0.0-b2",
 			"announcement": "https://www.phpbb.com/community/viewtopic.php?t=2333241",
-			"download": "https://github.com/kilianr/phpbb-ext-survey ext/kilianr/survey",
+			"download": "https://github.com/kilianr/phpbb-ext-survey",
 			"eol": null,
 			"security": false
 		}
