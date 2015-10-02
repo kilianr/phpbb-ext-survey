@@ -112,11 +112,11 @@ function toggle_survey_table() {
 								<!-- IF entries.questions.TYPE_STRING == 'CHECKBOX' -->
 									<input type="checkbox" value="1" disabled="disabled"<!-- IF entries.questions.VALUE == '1' -->checked="checked"<!-- ENDIF --> />
 								<!-- ELSEIF entries.questions.TYPE_STRING == 'MULTIPLE_CHOICE' -->
-									<select multiple disabled size="{entries.questions.SELECT_MULTIPLE_HEIGHT}">
+									<ul>
 									<!-- BEGIN entries.questions.choices -->
-									<option{entries.questions.choices.SELECTED}>{entries.questions.choices.TEXT}</option>
+									<!-- IF entries.questions.choices.SELECTED --><li>{entries.questions.choices.TEXT}</li><!-- ENDIF -->
 									<!-- END entries.questions.choices -->
-									</select>
+									</ul>
 								<!-- ELSE -->
 									{entries.questions.VALUE}
 								<!-- ENDIF -->

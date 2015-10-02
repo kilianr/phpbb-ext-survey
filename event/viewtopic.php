@@ -386,7 +386,7 @@ class viewtopic implements EventSubscriberInterface
 				$template_vars_question['S_INPUT_NAME'] = "answer_{$entry['entry_id']}_$question_id" . ($question['type'] == survey::$QUESTION_TYPES['MULTIPLE_CHOICE'] ? '[]' : '');
 				$template_vars_question['TYPE_STRING'] = array_search($question['type'], survey::$QUESTION_TYPES);
 				$template_vars_question['CAP_EXEEDED'] = $this->survey->cap_exceeded($question_id);
-				$template_vars_question['SELECT_MULTIPLE_HEIGHT'] = min(4, sizeof($question['choices']));
+				$template_vars_question['SELECT_MULTIPLE_HEIGHT'] = min(6, sizeof($question['choices']));
 				$choices_to_assign = array();
 				if (isset($entry['answers'][$question_id]))
 				{
