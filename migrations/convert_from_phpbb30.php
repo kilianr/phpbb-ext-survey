@@ -35,6 +35,7 @@ class convert_from_phpbb30 extends \phpbb\db\migration\migration
 		{
 			include("{$this->phpbb_root_path}includes/functions_user.{$this->php_ext}");
 		}
+		$user->add_lang_ext('kilianr/survey', 'survey');
 		$sql = 'SELECT topic_id FROM ' . TOPICS_TABLE . ' WHERE topic_survey = 1';
 		$result = $this->db->sql_query($sql);
 		while ($row = $this->db->sql_fetchrow($result))
@@ -53,7 +54,7 @@ class convert_from_phpbb30 extends \phpbb\db\migration\migration
 
 				// Convert the settings
 				$settings = array(
-					'caption'				=> $old_settings['survey_caption'] ? $old_settings['survey_caption'] : 'Survey',
+					'caption'				=> $old_settings['survey_caption'] ? $old_settings['survey_caption'] : $user->lang('SURVEY'),
 					'show_order'			=> min(max((int) $old_settings['show_order'], 0), 2),
 					'reverse_order'			=> $old_settings['show_order'] == 3 ? 1 : 0,
 					'allow_change_answer'	=> $old_settings['allow_change_answers'] == 1 ? 1 : 0,

@@ -26,14 +26,12 @@ Current features:
     * Add, edit and remove answers of other users
     * Add, edit and remove questions
     * Disable or delete the whole survey
-* Forum-Admin can configure default survey settings in ACP
+* Forum-Admin can
+    * Configure default survey settings in ACP
+    * Import survey data from the phpBB3.0.x mod up (done automatically at installation time)
 * Languages
     * English
     * German
-
-Planned features:
-
-* See [TODO](TODO)
 
 ## Installation
 
@@ -41,7 +39,8 @@ Clone into ext/kilianr/survey:
 
     git clone https://github.com/kilianr/phpbb-ext-survey ext/kilianr/survey
 
-Go to "ACP" > "Customise" > "Extensions" and enable the "Survey" extension.
+* Backup your data! This extension will convert data from the old phpBB3.0.x survey mod and then delete the old data.
+* Go to "ACP" > "Customise" > "Extensions" and enable the "Survey" extension.
 
 ## Configuration
 
