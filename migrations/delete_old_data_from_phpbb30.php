@@ -14,7 +14,7 @@ class delete_old_data_from_phpbb30 extends \phpbb\db\migration\migration
 {
 	static public function depends_on()
 	{
-		return array('\kilianr\survey\migrations\convert_from_phpbb30', '\kilianr\survey\migrations\legacy_data_from_phpbb30');
+		return array('\kilianr\survey\migrations\legacy_data_from_phpbb30');
 	}
 
 	public function update_schema()
