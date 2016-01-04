@@ -787,7 +787,7 @@ class viewtopic implements EventSubscriberInterface
 					$filled_out = true;
 					if ($this->survey->has_cap($question_id) && !$this->survey->can_manage($real_user_id))
 					{
-						$diff = $this->survey->modify_sum_entry($question_id, true, $answers[$question_id], $old_exists, $old_value);
+						$diff = $this->survey->modify_sum_entry($question_id, false, true, $answers[$question_id], $old_exists, $old_value);
 						if ($diff != 0 && $this->survey->cap_exceeded($question_id, $diff))
 						{
 							$errors[] = $this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->questions[$question_id]['label']);
