@@ -33,7 +33,6 @@ services:
             - @request
             - %core.root_path%
             - %core.php_ext%
-            - %kilianr.survey.path%
         tags:
             - { name: event.listener }
     kilianr.survey.events.mcp_events:
