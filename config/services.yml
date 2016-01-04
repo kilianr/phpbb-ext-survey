@@ -33,6 +33,7 @@ services:
             - @request
             - %core.root_path%
             - %core.php_ext%
+            - %kilianr.survey.form_key_name%
         tags:
             - { name: event.listener }
     kilianr.survey.events.mcp_events:
@@ -51,3 +52,10 @@ services:
             - @kilianr.survey.functions.survey
         tags:
             - { name: event.listener }
+    kilianr.survey.events.add_form_key:
+        class: kilianr\survey\event\add_form_key
+        tags:
+            - { name: event.listener }
+        arguments:
+            - @template
+            - %kilianr.survey.form_key_name%

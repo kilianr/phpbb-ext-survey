@@ -166,7 +166,7 @@ function toggle_survey_table() {
 	</div>
 	<!-- IF S_SURVEY_CAN_MODIFY_OWN_ENTRY or S_SURVEY_CAN_ADD_ENTRY -->
 	<div>
-		{S_FORM_TOKEN}
+		{S_SURVEY_FORM_TOKEN}
 		<input type="hidden" name="entries_to_modify" value="{S_SURVEY_MODIFYABLE_ENTRIES}" />
 		<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="entry_modification" />
 		<p style="float:left"><input class="button1" type="submit" name="post" value="{L_SUBMIT}" /></p>
@@ -190,7 +190,7 @@ function toggle_survey_table() {
 	<fieldset class="fields1">
 		<form method="post" action="{S_SURVEY_ACTION}">
 			<fieldset>
-				{S_FORM_TOKEN}
+				{S_SURVEY_FORM_TOKEN}
 				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="config_change" />
 				<dl>
 					<dt><label for="survey_setting_caption">{L_SURVEY_CAPTION}{L_COLON}</label></dt>
@@ -254,7 +254,7 @@ function toggle_survey_table() {
 	<fieldset class="fields1">
 		<form method="post" action="{S_SURVEY_ACTION}">
 			<fieldset>
-				{S_FORM_TOKEN}
+				{S_SURVEY_FORM_TOKEN}
 				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="disable">
 				<dl>
 					<dt><label>{L_SURVEY_DISABLE}{L_COLON}</label></dt>
@@ -268,7 +268,7 @@ function toggle_survey_table() {
 				
 		<form method="post" action="{S_SURVEY_ACTION}">
 			<fieldset>
-				{S_FORM_TOKEN}
+				{S_SURVEY_FORM_TOKEN}
 				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="delete">
 				<dl>
 					<dt><label>{L_SURVEY_DELETE_ALL}{L_COLON}</label></dt>
@@ -291,7 +291,7 @@ function toggle_survey_table() {
 
 		<form method="post" action="{S_SURVEY_ACTION}">
 			<fieldset>
-				{S_FORM_TOKEN}
+				{S_SURVEY_FORM_TOKEN}
 				<input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="question_load_modify">
 				<dl>
 					<dt><label>{L_SURVEY_QUESTION_MODIFY}{L_COLON}</label></dt>
@@ -316,7 +316,7 @@ function toggle_survey_table() {
 			<fieldset>
 				<!-- IF S_SURVEY_LOADED_QUESTION --><input type="hidden" name="question_to_modify" value="{S_SURVEY_LOADED_QUESTION_ID}" />
 				<!-- ENDIF --><input type="hidden" name="{S_SURVEY_ACTION_NAME}" value="question_addition_or_modification">
-				{S_FORM_TOKEN}
+				{S_SURVEY_FORM_TOKEN}
 				<dl>
 					<dt><label for="question_label">{L_SURVEY_LABEL}{L_COLON}</label></dt>
 					<dd><input id="question_label" type="text" name="question_label"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_LABEL}"<!-- ENDIF --> /></dd>

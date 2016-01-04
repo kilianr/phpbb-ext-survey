@@ -1,4 +1,5 @@
 parameters:
+    kilianr.survey.form_key_name: kilianr_survey
     tables.kilianr.survey.surveys: %core.table_prefix%surveys
     tables.kilianr.survey.questions: %core.table_prefix%surveys_questions
     tables.kilianr.survey.question_choices: %core.table_prefix%surveys_q_choices
