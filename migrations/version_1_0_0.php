@@ -138,9 +138,9 @@ class version_1_0_0 extends \phpbb\db\migration\migration
 	public function update_data()
 	{
 		return array(
-			array('permission.add', array('f_survey_create', false, 'f_poll')),
-			array('permission.add', array('f_survey_answer', false, 'f_reply')),
-			array('permission.add', array('m_survey', false, 'm_edit')),
+			array('permission.add', array('f_survey_create', true, 'f_poll')),
+			array('permission.add', array('f_survey_answer', true, 'f_reply')),
+			array('permission.add', array('m_survey', true, 'm_edit')),
 			array('config.add', array('kilianr_survey_default_show_order', survey::$SHOW_ORDER_TYPES['ALPHABETICAL_USERNAME'])),
 			array('config.add', array('kilianr_survey_default_reverse_order', false)),
 			array('config.add', array('kilianr_survey_default_allow_change_answer', true)),

@@ -520,7 +520,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
 			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
 			'SURVEY_ERRORS'						=> $survey_errors ? implode('<br />', $survey_errors) : false,
-			'S_ROOT_PATH'						=> $this->phpbb_root_path,
+			'S_SURVEY_EXT_ROOT_PATH'			=> $this->phpbb_root_path,
 			'S_EXT_PATH'						=> $this->survey_path,
 			'S_IS_CLOSED'						=> $is_closed,
 			'U_CHANGE_OPEN'						=> $action_url . ($is_closed ? 'reopen' : 'close'),
@@ -787,7 +787,7 @@ class viewtopic implements EventSubscriberInterface
 					$filled_out = true;
 					if ($this->survey->has_cap($question_id) && !$this->survey->can_manage($real_user_id))
 					{
-						$diff = $this->survey->modify_sum_entry($question_id, true, $answers[$question_id], $old_exists, $old_value);
+						$diff = $this->survey->modify_sum_entry($question_id, false, true, $answers[$question_id], $old_exists, $old_value);
 						if ($diff != 0 && $this->survey->cap_exceeded($question_id, $diff))
 						{
 							$errors[] = $this->user->lang('SURVEY_CAP_EXEEDED', $this->survey->questions[$question_id]['label']);
