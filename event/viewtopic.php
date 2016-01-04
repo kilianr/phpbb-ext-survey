@@ -50,6 +50,9 @@ class viewtopic implements EventSubscriberInterface
 	protected $phpEx;
 
 	/** @var string */
+	protected $form_key_name;
+
+	/** @var string */
 	protected $action_name;
 
 	/** @var string */
@@ -76,7 +79,7 @@ class viewtopic implements EventSubscriberInterface
 	 * @param string $phpbb_root_path
 	 * @param string $phpEx
 	 */
-	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx)
+	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $form_key_name)
 	{
 		$this->survey			= $survey;
 		$this->template			= $template;
@@ -85,8 +88,8 @@ class viewtopic implements EventSubscriberInterface
 		$this->request			= $request;
 		$this->phpbb_root_path	= $phpbb_root_path;
 		$this->phpEx			= $phpEx;
+		$this->form_key_name	= $form_key_name;
 		$this->action_name		= 'survey_action';
-		$this->form_key			= 'survey_form_key';
 		$this->question_to_load	= false;
 	}
 
@@ -525,7 +528,7 @@ class viewtopic implements EventSubscriberInterface
 			'U_SURVEY_CHANGE_OPEN'				=> $action_url . ($is_closed ? 'reopen' : 'close'),
 			'U_SURVEY_FIND_USERNAME'			=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
 		));
-		add_form_key($this->form_key);
+		add_form_key($this->form_key_name);
 	}
 
 	/**
@@ -535,7 +538,7 @@ class viewtopic implements EventSubscriberInterface
 	 */
 	protected function process_config_change()
 	{
-		if (!check_form_key($this->form_key))
+		if (!check_form_key($this->form_key_name))
 		{
 			return array($this->user->lang('FORM_INVALID'));
 		}
@@ -684,7 +687,7 @@ class viewtopic implements EventSubscriberInterface
 	 */
 	protected function process_entry_modification()
 	{
-		if (!check_form_key($this->form_key))
+		if (!check_form_key($this->form_key_name))
 		{
 			return array($this->user->lang('FORM_INVALID'));
 		}
@@ -826,7 +829,7 @@ class viewtopic implements EventSubscriberInterface
 	 */
 	protected function process_question_addition_or_modification()
 	{
-		if (!check_form_key($this->form_key))
+		if (!check_form_key($this->form_key_name))
 		{
 			return array($this->user->lang('FORM_INVALID'));
 		}
@@ -949,7 +952,7 @@ class viewtopic implements EventSubscriberInterface
 	 */
 	protected function process_question_load_modify()
 	{
-		if (!check_form_key($this->form_key))
+		if (!check_form_key($this->form_key_name))
 		{
 			return array($this->user->lang('FORM_INVALID'));
 		}
