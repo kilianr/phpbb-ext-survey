@@ -124,7 +124,6 @@ class viewtopic implements EventSubscriberInterface
 		$can_see_everything  = $this->survey->can_see_everything($user_id);
 		$can_manage  = $this->survey->can_manage($user_id);
 		$can_edit_other_users = $this->survey->can_edit_other_users($user_id);
-		$is_member = $this->survey->is_participating($user_id);
 		$is_closed = $this->survey->is_closed();
 		$viewtopic_url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->phpEx}?f=$forum_id&t={$this->topic_id}");
 		$action_url = "{$viewtopic_url}&amp;{$this->action_name}=";
@@ -141,11 +140,11 @@ class viewtopic implements EventSubscriberInterface
 
 		if ($is_closed)
 		{
-			$this->template->assign_var('S_IS_CLOSED_DESC', $this->user->lang('SURVEY_IS_CLOSED' . ($can_manage ? '_DESC_OWNER' : ''), $this->user->format_date($this->survey->settings['stop_time'])));
+			$this->template->assign_var('SURVEY_IS_CLOSED_DESC', $this->user->lang('SURVEY_IS_CLOSED' . ($can_manage ? '_DESC_OWNER' : ''), $this->user->format_date($this->survey->settings['stop_time'])));
 		}
 		else if ($this->survey->settings['stop_time'])
 		{
-			$this->template->assign_var('S_WILL_CLOSE_DESC', $this->user->lang('SURVEY_DESC_STOP', $this->user->format_date($this->survey->settings['stop_time'])));
+			$this->template->assign_var('SURVEY_WILL_CLOSE_DESC', $this->user->lang('SURVEY_DESC_STOP', $this->user->format_date($this->survey->settings['stop_time'])));
 		}
 
 		// Output settings
@@ -499,34 +498,32 @@ class viewtopic implements EventSubscriberInterface
 
 		$this->template->assign_vars(array(
 			'S_HAS_SURVEY'						=> true,
-			'S_SURVEY_CAN_SEE_EVERYTHING'		=> $can_see_everything,
-			'S_SURVEY_CAN_MANAGE'				=> $can_manage,
-			'S_SURVEY_CAN_EDIT_OTHER_USERS'		=> $can_edit_other_users,
-			'S_SURVEY_IS_MODERATOR'				=> $this->survey->is_moderator(),
-			'S_IS_SURVEY_MEMBER'				=> $is_member,
-			'S_HAS_QUESTIONS'					=> (bool) $this->survey->questions,
-			'S_HAS_ENTRIES'						=> (bool) $this->survey->entries,
-			'S_SHOW_USERNAMES'					=> !$this->survey->is_anonymized() || $can_see_everything,
-			'S_HIDE_ENTRIES'					=> $this->survey->hide_entries(),
-			'S_HIDE_EVERYTHING'					=> $this->survey->hide_everything(),
-			'S_CAN_ADD_ENTRY'					=> $can_add_new_entry,
-			'S_CAN_MODIFY_OWN_ENTRY'			=> $this->survey->can_modify_entry($user_id),
 			'S_SURVEY_ACTION'					=> $viewtopic_url,
 			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
-			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
-			'SURVEY_ERRORS'						=> $survey_errors ? implode('<br />', $survey_errors) : false,
 			'S_SURVEY_EXT_ROOT_PATH'			=> $this->phpbb_root_path,
-			'S_IS_CLOSED'						=> $is_closed,
-			'U_CHANGE_OPEN'						=> $action_url . ($is_closed ? 'reopen' : 'close'),
-			'S_DESC'							=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),
-			'S_TOTAL_ENTRIES'					=> $this->user->lang('SURVEY_TOTAL_ENTRIES', $entry_count),
-			'S_SURVEY_MODIFYABLE_ENTRIES'		=> implode(",", $entries_modifyable),
+			'S_SURVEY_HAS_QUESTIONS'			=> (bool) $this->survey->questions,
+			'S_SURVEY_HIDE_ENTRIES'				=> $this->survey->hide_entries(),
+			'S_SURVEY_HIDE_EVERYTHING'			=> $this->survey->hide_everything(),
+			'S_SURVEY_IS_CLOSED'				=> $is_closed,
+			'S_SURVEY_IS_MODERATOR'				=> $this->survey->is_moderator(),
+			'S_SURVEY_CAN_ADD_ENTRY'			=> $can_add_new_entry,
+			'S_SURVEY_CAN_EDIT_OTHER_USERS'		=> $can_edit_other_users,
+			'S_SURVEY_CAN_MANAGE'				=> $can_manage,
+			'S_SURVEY_CAN_MODIFY_OWN_ENTRY'		=> $this->survey->can_modify_entry($user_id),
+			'S_SURVEY_CAN_SEE_AVERAGES'			=> $can_see_averages,
+			'S_SURVEY_CAN_SEE_EVERYTHING'		=> $can_see_everything,
 			'S_SURVEY_CAN_SEE_OR_ADD_ENTRIES'	=> $can_see_or_add_entries,
-			'S_CAN_SEE_SUMS'					=> $can_see_sums,
-			'S_CAN_SEE_AVERAGES'				=> $can_see_averages,
-			'S_SOME_CAP_SET'					=> $some_cap_set,
+			'S_SURVEY_CAN_SEE_SUMS'				=> $can_see_sums,
 			'S_SURVEY_LOADED_QUESTION'			=> ($this->question_to_load !== false ? true : false),
 			'S_SURVEY_LOADED_QUESTION_ID'		=> $this->question_to_load,
+			'S_SURVEY_MODIFYABLE_ENTRIES'		=> implode(",", $entries_modifyable),
+			'S_SURVEY_SHOW_USERNAMES'			=> !$this->survey->is_anonymized() || $can_see_everything,
+			'S_SURVEY_SOME_CAP_SET'				=> $some_cap_set,
+			'SURVEY_DESC'						=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),
+			'SURVEY_ERRORS'						=> $survey_errors ? implode('<br />', $survey_errors) : false,
+			'SURVEY_TOTAL_ENTRIES'				=> $this->user->lang('SURVEY_TOTAL_ENTRIES', $entry_count),
+			'U_SURVEY_CHANGE_OPEN'				=> $action_url . ($is_closed ? 'reopen' : 'close'),
+			'U_SURVEY_FIND_USERNAME'			=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
 		));
 		add_form_key($this->form_key);
 	}
