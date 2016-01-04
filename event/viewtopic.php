@@ -50,9 +50,6 @@ class viewtopic implements EventSubscriberInterface
 	protected $phpEx;
 
 	/** @var string */
-	protected $survey_path;
-
-	/** @var string */
 	protected $action_name;
 
 	/** @var string */
@@ -78,9 +75,8 @@ class viewtopic implements EventSubscriberInterface
 	 * @param \phpbb\request\request_interface $request
 	 * @param string $phpbb_root_path
 	 * @param string $phpEx
-	 * @param string $survey_path
 	 */
-	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $survey_path)
+	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx)
 	{
 		$this->survey			= $survey;
 		$this->template			= $template;
@@ -89,7 +85,6 @@ class viewtopic implements EventSubscriberInterface
 		$this->request			= $request;
 		$this->phpbb_root_path	= $phpbb_root_path;
 		$this->phpEx			= $phpEx;
-		$this->survey_path		= $survey_path;
 		$this->action_name		= 'survey_action';
 		$this->form_key			= 'survey_form_key';
 		$this->question_to_load	= false;
@@ -521,7 +516,6 @@ class viewtopic implements EventSubscriberInterface
 			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
 			'SURVEY_ERRORS'						=> $survey_errors ? implode('<br />', $survey_errors) : false,
 			'S_SURVEY_EXT_ROOT_PATH'			=> $this->phpbb_root_path,
-			'S_EXT_PATH'						=> $this->survey_path,
 			'S_IS_CLOSED'						=> $is_closed,
 			'U_CHANGE_OPEN'						=> $action_url . ($is_closed ? 'reopen' : 'close'),
 			'S_DESC'							=> $this->user->lang('SURVEY_DESC', $this->user->format_date($this->survey->settings['start_time'])),

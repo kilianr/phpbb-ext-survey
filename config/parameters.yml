@@ -1,5 +1,4 @@
 parameters:
-    kilianr.survey.path: %core.root_path%ext/kilianr/survey/
     tables.kilianr.survey.surveys: %core.table_prefix%surveys
     tables.kilianr.survey.questions: %core.table_prefix%surveys_questions
     tables.kilianr.survey.question_choices: %core.table_prefix%surveys_q_choices
