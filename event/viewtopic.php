@@ -520,7 +520,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
 			'U_FIND_USERNAME'					=> append_sid("{$this->phpbb_root_path}memberlist.{$this->phpEx}", 'mode=searchuser&amp;form=surveyform&amp;field=answer_adduser_username&amp;select_single=true'),
 			'SURVEY_ERRORS'						=> $survey_errors ? implode('<br />', $survey_errors) : false,
-			'S_ROOT_PATH'						=> $this->phpbb_root_path,
+			'S_SURVEY_EXT_ROOT_PATH'			=> $this->phpbb_root_path,
 			'S_EXT_PATH'						=> $this->survey_path,
 			'S_IS_CLOSED'						=> $is_closed,
 			'U_CHANGE_OPEN'						=> $action_url . ($is_closed ? 'reopen' : 'close'),
