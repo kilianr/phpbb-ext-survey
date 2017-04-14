@@ -16,7 +16,7 @@ function toggle_survey_table() {
 
 <!-- IF S_SURVEY_CAN_MANAGE -->
 <div id="survey-tabs-boundary">
-<div id="tabs" class="sub-panels" role="tablist" data-show-panel="<!-- IF S_SURVEY_LOADED_QUESTION -->manage-questions-panel<!-- ELSE -->survey-overview-panel<!-- ENDIF -->">
+<div id="tabs" class="sub-panels tabs" role="tablist" data-show-panel="<!-- IF S_SURVEY_LOADED_QUESTION -->manage-questions-panel<!-- ELSE -->survey-overview-panel<!-- ENDIF -->">
 	<ul>
 		<li id="survey-overview-panel-tab" class="tab<!-- IF not S_SURVEY_LOADED_QUESTION --> activetab<!-- ENDIF -->"><a href="#tabs" aria-controls="survey-overview-panel" role="tab" data-subpanel="survey-overview-panel"><span>{L_SURVEY_OVERVIEW}</span></a></li>
 		<li id="settings-panel-tab" class="tab"><a href="#tabs" aria-controls="settings-panel" role="tab" data-subpanel="settings-panel"><span>{L_SURVEY_SETTINGS}</span></a></li>
@@ -47,7 +47,7 @@ function toggle_survey_table() {
 			<tr>
 				<th>&nbsp;</th>
 				<!-- BEGIN questions -->
-				<th style="white-space: nowrap" title="<!-- IF questions.EXAMPLE_ANSWER -->{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}<!-- ELSE -->{questions.LABEL}<!-- ENDIF -->">{questions.LABEL}<!-- IF questions.EXAMPLE_ANSWER --> <img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}"><!-- ENDIF --><!-- IF S_SURVEY_CAN_MANAGE --> <a href="{questions.DELETE_LINK}" class="gen"><img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_QUESTION}"></a><!-- ENDIF --></th>
+				<th style="white-space: nowrap" title="<!-- IF questions.EXAMPLE_ANSWER -->{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}<!-- ELSE -->{questions.LABEL}<!-- ENDIF -->">{questions.LABEL}<!-- IF questions.EXAMPLE_ANSWER --> <img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_EXAMPLE_ANSWER}{L_COLON} {questions.EXAMPLE_ANSWER}"><!-- ENDIF --><!-- IF S_SURVEY_CAN_MANAGE --> <a href="{questions.DELETE_LINK}" class="gen"><img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_QUESTION}"></a><!-- ENDIF --></th>
 				<!-- END questions -->
 			</tr>
 		</thead>
@@ -68,7 +68,7 @@ function toggle_survey_table() {
 						<i>{L_SURVEY_HIDDEN}</i>
 					<!-- ENDIF -->
 					<!-- IF not entries.IS_NEW and ( S_SURVEY_CAN_EDIT_OTHER_USERS or (entries.IS_SELF and S_SURVEY_CAN_MODIFY_OWN_ENTRY) ) -->
-						<a href="{entries.DELETE_LINK}" class="gen"><img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a>
+						<a href="{entries.DELETE_LINK}" class="gen"><img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_delete_cookies.gif" alt="{L_SURVEY_DELETE_ANSWER}"></a>
 					<!-- ENDIF -->
 				<!-- ENDIF -->
 				</td>
@@ -142,7 +142,7 @@ function toggle_survey_table() {
 					<!-- BEGIN questions -->
 						<td<!-- IF questions.HAS_CHOICES --> title="<!-- BEGIN choices -->{questions.choices.TEXT}{L_COLON}&nbsp;{questions.choices.SUM}&#013;<!-- END choices -->"<!-- ENDIF -->>
 						<div class="summary-box">
-							<div class="<!-- IF questions.CAP_REACHED -->cap-reached<!-- ELSE -->summary<!-- ENDIF -->" ><!-- IF questions.HAS_CHOICES --><img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_topic_poll.gif" alt="{L_SURVEY_CHOICES}">&nbsp;<!-- ENDIF -->{questions.SUM_STRING}<!-- IF questions.CAP > 0 --> ({questions.CAP})<!-- ENDIF --></div>
+							<div class="<!-- IF questions.CAP_REACHED -->cap-reached<!-- ELSE -->summary<!-- ENDIF -->" ><!-- IF questions.HAS_CHOICES --><img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_topic_poll.gif" alt="{L_SURVEY_CHOICES}">&nbsp;<!-- ENDIF -->{questions.SUM_STRING}<!-- IF questions.CAP > 0 --> ({questions.CAP})<!-- ENDIF --></div>
 						</div>
 						</td>
 					<!-- END questions -->
@@ -334,11 +334,11 @@ function toggle_survey_table() {
 					</select></dd>
 				</dl>
 				<dl>
-					<dt><label for="question_choices" title="{L_SURVEY_CHOICES_DESC}">{L_SURVEY_CHOICES}{L_COLON} <img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CHOICES_DESC}"></label></dt>
+					<dt><label for="question_choices" title="{L_SURVEY_CHOICES_DESC}">{L_SURVEY_CHOICES}{L_COLON} <img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CHOICES_DESC}"></label></dt>
 					<dd><input id="question_choices" type="text" name="question_choices"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_CHOICES}"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
-					<dt><label for="question_random_choice_order" title="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}">{L_SURVEY_RANDOM_CHOICE_ORDER}{L_COLON} <img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}"></label></dt>
+					<dt><label for="question_random_choice_order" title="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}">{L_SURVEY_RANDOM_CHOICE_ORDER}{L_COLON} <img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_RANDOM_CHOICE_ORDER_DESC}"></label></dt>
 					<dd><input id="question_random_choice_order" type="checkbox" value="1" name="question_random_choice_order"<!-- IF S_SURVEY_LOADED_QUESTION and S_SURVEY_LOADED_QUESTION_RANDOM_CHOICE_ORDER --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
@@ -350,15 +350,15 @@ function toggle_survey_table() {
 					</select></dd>
 				</dl>
 				<dl>
-					<dt><label for="question_sum_by" title="{L_SURVEY_SUM_BY_DESC}">{L_SURVEY_SUM_BY}{L_COLON} <img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_SUM_BY_DESC}"></label></dt>
+					<dt><label for="question_sum_by" title="{L_SURVEY_SUM_BY_DESC}">{L_SURVEY_SUM_BY}{L_COLON} <img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_SUM_BY_DESC}"></label></dt>
 					<dd><input id="question_sum_by" type="text" name="question_sum_by"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_SUM_BY}"<!-- ENDIF -->/></dd>
 				</dl>
 				<dl>
-					<dt><label for="question_average" title="{L_SURVEY_AVERAGE_DESC}">{L_SURVEY_AVERAGE}{L_COLON} <img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_AVERAGE_DESC}"></label></dt>
+					<dt><label for="question_average" title="{L_SURVEY_AVERAGE_DESC}">{L_SURVEY_AVERAGE}{L_COLON} <img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_AVERAGE_DESC}"></label></dt>
 					<dd><input id="question_average" type="checkbox" value="1" name="question_average"<!-- IF S_SURVEY_LOADED_QUESTION and S_SURVEY_LOADED_QUESTION_AVERAGE --> checked="checked"<!-- ENDIF --> /></dd>
 				</dl>
 				<dl>
-					<dt><label for="question_cap" title="{L_SURVEY_CAP_DESC}">{L_SURVEY_CAP}{L_COLON} <img src="{S_SURVEY_EXT_ROOT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CAP_DESC}"></label></dt>
+					<dt><label for="question_cap" title="{L_SURVEY_CAP_DESC}">{L_SURVEY_CAP}{L_COLON} <img src="{S_SURVEY_EXT_PATH}styles/prosilver/theme/images/icon_faq.gif" alt="{L_SURVEY_CAP_DESC}"></label></dt>
 					<dd><input id="question_cap" type="number" name="question_cap"<!-- IF S_SURVEY_LOADED_QUESTION --> value="{S_SURVEY_LOADED_QUESTION_CAP}"<!-- ENDIF -->/></dd>
 				</dl>
 

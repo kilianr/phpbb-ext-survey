@@ -53,6 +53,9 @@ class viewtopic implements EventSubscriberInterface
 	protected $form_key_name;
 
 	/** @var string */
+	protected $survey_path;
+
+	/** @var string */
 	protected $action_name;
 
 	/** @var string */
@@ -78,8 +81,10 @@ class viewtopic implements EventSubscriberInterface
 	 * @param \phpbb\request\request_interface $request
 	 * @param string $phpbb_root_path
 	 * @param string $phpEx
+	 * @param string $form_key_name
+	 * @param string $survey_path
 	 */
-	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $form_key_name)
+	public function __construct(\kilianr\survey\functions\survey $survey, \phpbb\template\template $template, \phpbb\db\driver\driver_interface $db, \phpbb\user $user, \phpbb\request\request_interface $request, $phpbb_root_path, $phpEx, $form_key_name, $survey_path)
 	{
 		$this->survey			= $survey;
 		$this->template			= $template;
@@ -89,6 +94,7 @@ class viewtopic implements EventSubscriberInterface
 		$this->phpbb_root_path	= $phpbb_root_path;
 		$this->phpEx			= $phpEx;
 		$this->form_key_name	= $form_key_name;
+		$this->survey_path		= $survey_path;
 		$this->action_name		= 'survey_action';
 		$this->question_to_load	= false;
 	}
@@ -503,7 +509,7 @@ class viewtopic implements EventSubscriberInterface
 			'S_HAS_SURVEY'						=> true,
 			'S_SURVEY_ACTION'					=> $viewtopic_url,
 			'S_SURVEY_ACTION_NAME'				=> $this->action_name,
-			'S_SURVEY_EXT_ROOT_PATH'			=> $this->phpbb_root_path,
+			'S_SURVEY_EXT_PATH'					=> $this->survey_path,
 			'S_SURVEY_HAS_QUESTIONS'			=> (bool) $this->survey->questions,
 			'S_SURVEY_HIDE_ENTRIES'				=> $this->survey->hide_entries(),
 			'S_SURVEY_HIDE_EVERYTHING'			=> $this->survey->hide_everything(),
