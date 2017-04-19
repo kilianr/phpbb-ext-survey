@@ -3,8 +3,6 @@ sudo: required
 
 matrix:
   include:
-    - php: 5.3
-      env: DB=mysqli
     - php: 5.4
       env: DB=mysqli
     - php: 5.4
@@ -21,11 +19,15 @@ matrix:
       env: DB=mysqli
     - php: 7.0
       env: DB=mysqli
+    - php: 7.1
+      env: DB=mysqli
+    - php: nightly
+      env: DB=mysqli
     - php: hhvm
       env: DB=mysqli
   allow_failures:
     - php: hhvm
-    - php: 7.0
+    - php: nightly
   fast_finish: true
 
 env:
@@ -46,7 +48,7 @@ install:
   - mkdir survey
   - mv `find . -maxdepth 1 ! -name . ! -name survey` survey
   - mkdir -p survey/travis
-  - git clone --depth=1 "git://github.com/phpbb/phpbb.git" --branch=3.1.x
+  - git clone --depth=1 "git://github.com/phpbb/phpbb.git" --branch=3.2.x
   - cp -R phpbb/travis/* survey/travis
   - mkdir phpbb/phpBB/ext/kilianr
   - mv survey phpbb/phpBB/ext/kilianr
