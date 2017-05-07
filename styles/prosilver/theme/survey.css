@@ -71,3 +71,9 @@ div.unset-bg, td.unset-bg, select.unset-bg, option.unset-bg, input.unset-bg, tex
 input[type=number].survey_q_input {
 	width: 80px;
 }
+
+@media all and (min-width: 700px) {
+	#survey-table-scrollwrapper {
+		overflow: auto;
+	}
+}
