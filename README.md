@@ -1,4 +1,4 @@
-# phpBB 3.1 Extension - Survey
+# phpBB 3.2 Extension - Survey
 This Extension adds the possibility of performing surveys with multiple people to your topics.
 
 This Extension is intended to be fully backwards compatible to the existing phpBB 3.0.x Mod "tabulated survey at topic head" from the asinshesq (see https://www.phpbb.com/customise/db/mod/tabulated_survey_at_topic_head_2/) for upgrades, but may include additional features.
