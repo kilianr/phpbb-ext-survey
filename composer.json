@@ -3,7 +3,7 @@
 	"type": "phpbb-extension",
 	"description": "This Extension adds the possibility of permofming surveys with multiple people to your topics.",
 	"homepage": "https://github.com/kilianr/phpbb-ext-survey/",
-	"version": "1.1.1",
+	"version": "1.1.2",
 	"time": "2018-04-21",
 	"license": "AGPL-3.0",
 	"authors": [
