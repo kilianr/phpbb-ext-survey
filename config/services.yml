@@ -5,42 +5,42 @@ services:
     kilianr.survey.functions.survey:
         class: kilianr\survey\functions\survey
         arguments:
-            - @dbal.conn
-            - @config
-            - @user
-            - @auth
-            - %tables.kilianr.survey.surveys%
-            - %tables.kilianr.survey.questions%
-            - %tables.kilianr.survey.question_choices%
-            - %tables.kilianr.survey.entries%
-            - %tables.kilianr.survey.answers%
+            - '@dbal.conn'
+            - '@config'
+            - '@user'
+            - '@auth'
+            - '%tables.kilianr.survey.surveys%'
+            - '%tables.kilianr.survey.questions%'
+            - '%tables.kilianr.survey.question_choices%'
+            - '%tables.kilianr.survey.entries%'
+            - '%tables.kilianr.survey.answers%'
     kilianr.survey.events.posting:
         class: kilianr\survey\event\posting
         arguments:
-            - @kilianr.survey.functions.survey
-            - @template
-            - @user
-            - @request
+            - '@kilianr.survey.functions.survey'
+            - '@template'
+            - '@user'
+            - '@request'
         tags:
             - { name: event.listener }
     kilianr.survey.events.viewtopic:
         class: kilianr\survey\event\viewtopic
         arguments:
-            - @kilianr.survey.functions.survey
-            - @template
-            - @dbal.conn
-            - @user
-            - @request
-            - %core.root_path%
-            - %core.php_ext%
-            - %kilianr.survey.form_key_name%
-            - %kilianr.survey.path%
+            - '@kilianr.survey.functions.survey'
+            - '@template'
+            - '@dbal.conn'
+            - '@user'
+            - '@request'
+            - '%core.root_path%'
+            - '%core.php_ext%'
+            - '%kilianr.survey.form_key_name%'
+            - '%kilianr.survey.path%'
         tags:
             - { name: event.listener }
     kilianr.survey.events.mcp_events:
         class: kilianr\survey\event\mcp_events
         arguments:
-            - @kilianr.survey.functions.survey
+            - '@kilianr.survey.functions.survey'
         tags:
             - { name: event.listener }
     kilianr.survey.events.acp_events:
@@ -50,7 +50,7 @@ services:
     kilianr.survey.events.user:
         class: kilianr\survey\event\user
         arguments:
-            - @kilianr.survey.functions.survey
+            - '@kilianr.survey.functions.survey'
         tags:
             - { name: event.listener }
     kilianr.survey.events.add_form_key:
@@ -58,5 +58,5 @@ services:
         tags:
             - { name: event.listener }
         arguments:
-            - @template
-            - %kilianr.survey.form_key_name%
+            - '@template'
+            - '%kilianr.survey.form_key_name%'
