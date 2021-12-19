@@ -9,11 +9,11 @@ services:
             - '@config'
             - '@user'
             - '@auth'
-            - '%tables.kilianr.survey.surveys%'
-            - '%tables.kilianr.survey.questions%'
-            - '%tables.kilianr.survey.question_choices%'
-            - '%tables.kilianr.survey.entries%'
-            - '%tables.kilianr.survey.answers%'
+            - %tables.kilianr.survey.surveys%
+            - %tables.kilianr.survey.questions%
+            - %tables.kilianr.survey.question_choices%
+            - %tables.kilianr.survey.entries%
+            - %tables.kilianr.survey.answers%
     kilianr.survey.events.posting:
         class: kilianr\survey\event\posting
         arguments:
@@ -31,10 +31,10 @@ services:
             - '@dbal.conn'
             - '@user'
             - '@request'
-            - '%core.root_path%'
-            - '%core.php_ext%'
-            - '%kilianr.survey.form_key_name%'
-            - '%kilianr.survey.path%'
+            - %core.root_path%
+            - %core.php_ext%
+            - %kilianr.survey.form_key_name%
+            - %kilianr.survey.path%
         tags:
             - { name: event.listener }
     kilianr.survey.events.mcp_events:
@@ -59,4 +59,4 @@ services:
             - { name: event.listener }
         arguments:
             - '@template'
-            - '%kilianr.survey.form_key_name%'
+            - %kilianr.survey.form_key_name%
